@@ -1,4 +1,13 @@
 class Store {
+  static THE_HOTWIRE_CLUB(){
+    return "The Hotwire Club"
+  }
+  static FRONTEND_FOCUS(){
+    return 'Frontend Focus'
+  }
+  static HOTWIRE_WEEKLY(){
+    return 'Hotwire Weekly'
+  }
   static init(){
     const index = Store.index()
     if(index === 0){

@@ -4,35 +4,39 @@ function execute_Test_gmail_x(){
   execute_Test_gmail()
 }
 
-function setup_for_gmail(base_name, arg_store=null){
-  // YKLiba.Log.debug(`setup_for_gmail base_name=${base_name}`)
-  // YKLiba.Log.debug(`setup_for_gmail arg_store=${arg_store}`)
-  // const store = Store.get_valid_store(arg_store, base_name)
-  const store = get_valid_store( base_name, arg_store )
-  // YKLiba.Log.debug(`setup_for_gmail store.index=${store.index}`)
-  // YKLiba.Log.debug(`setup_for_gmail store.base_name=${store.base_name}`)
-  // YKLiba.Log.debug(`v=${v}`)
-  // YKLiba.setup_folder_info(store, base_name)
-
-  return store
-}
-
 // The Hotwire Club
 function get_mail_list_from_Hotwire_Club(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const base_name = 'The Hotwire Club'
-  // YKLiba.Log.debug(`base_name=${base_name}`)
-  // YKLiba.Log.debug(`arg_store=${arg_store}`)
+  const base_name = Store.THE_HOTWIRE_CLUB()
+  get_mail_list(base_name, arg_store)
+}
+
+function get_mail_list_from_Frontend_Focus(arg_store = null){
+  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  const base_name = Store.FRONTEND_FOCUS()
+  get_mail_list(base_name, arg_store)
+}
+
+// Hotwire Weekly
+function get_mail_list_from_hotwire_weekly(arg_store = null){
+  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  const base_name = Store.HOTWIRE_WEEKLY()
+  get_mail_list(base_name, arg_store)
+}
+
+function get_mail_list(base_name, arg_store){
   const store = get_valid_store(base_name, arg_store)
-  // YKLiba.Log.debug(`store.index=${store.index}`)
-  // YKLiba.Log.debug(`store.base_namex=${store.base_name}`)
-  // YKLiba.Log.debug(`Store.index()=${Store.index()}`)
-  store.set('KEY', 'Value')
   setup_for_gmail(base_name, store)
   get_mail_list_base(store, base_name)
 }
 
+function setup_for_gmail(base_name, arg_store=null){
+  const store = get_valid_store( base_name, arg_store )
+  YKLiba.setup_folder_info(store, base_name)
+
+  return store
+}
 
 function get_lastest_date_and_valid_messages_from_message_array(store, msgs, new_last_date){
   YKLiba.Log.debug(`get_lastest_date_and_valid_messages_from_message_array msgs.length=${msgs.length}`)
@@ -85,41 +89,47 @@ function threads_op(store, threads, last_date){
 }
 
 function get_mail_list_base(store, base_name){
+  const last_date = store.get('last_date')
   const [targetlabel_name, endlabel_name] = make_two_names(base_name)
   const [targetlabel, endlabel] = get_or_create_two_labels(targetlabel_name, endlabel_name)
 
   // const threads_1 = get_mail_list_with_query(`label:${targetlabel_name}`, 0, 100)
-  const threads_1 = get_mail_list_with_query(`label:${targetlabel_name} -label:${endlabel_name}`, 0, 100)
-  if( threads_1.length > 0 ){
-    [filtered_msgs, filtered_rawcontents, new_last_date_1] = threads_op(store, threads_1, last_date)
-    if( filtered_msgs.length > 0){
-      register_data(store, filtered_msgs, base_name)
-      const folder = store.get('folder')
-      output_supplementary_file_from_array(filtered_rawcontents, folder)
-    }
-  
-    endlabel.addToThreads(threads_1)
-  }
+  const query = `label:${targetlabel_name} -label:${endlabel_name}`
+  const [threads_1, new_last_date_1] = search_and_register_and_save_data(store, query, 0, 100, base_name,last_date)
+  endlabel.addToThreads(threads_1)
 
-  // const threads_2 = get_mail_list_with_query(`label:${targetlabel_name}`, 0, 100)
-  const threads_2 = get_mail_list_with_query(`from: ${base_name} -label:${targetlabel_name}`, 0, 100)
-  if( threads_2.length > 0 ){
-    [filtered_msgs_2, filtered_rawcontents_2, new_last_date_2] = threads_op(store, threads_2, last_date)
-    if( filtered_msgs_2.length > 0){
-      register_data(store, filtered_msgs_2, base_name)
-      const folder = store.get('folder')
-      output_supplementary_file_from_array(filtered_rawcontents_2, folder)
-    }
-    targetlabel.addToThreads(threads_2)
-    endlabel.addToThreads(threads_2)
-  }
+  const query2 = `from: ${base_name} -label:${targetlabel_name}`
+  const [threads_2, new_last_date_2] = search_and_register_and_save_data(store, query2, 0, 100, base_name, last_date)
+  endlabel.addToThreads(threads_2)
+  targetlabel.addToThreads(threads_2)
 
   const array = [new_last_date_1, new_last_date_2, last_date]
   const latest_date = YKLiba.get_max(array)
   store.set('new_last_date', latest_date)
   if( YKLiba.isAfterDate(last_date, latest_date) ){
-    YKLiba.update_folder_info_list_at_last_date(range_values, base_name, latest_date)
+    YKLiba.update_last_date_of_folder_info_list(store, base_name, latest_date)
   }
+}
+// `label:${targetlabel_name} -label:${endlabel_name}`
+// start 0
+// max 100
+function search_and_register_and_save_data(store, query, start, max, base_name,last_date){
+  let new_last_date = null
+  const threads = get_mail_list_with_query(query, start, max)
+  if( threads.length > 0 ){
+    new_last_date = register_and_save_data(store, base_name, threads, last_date)
+  }
+  return [threads, new_last_date]
+}
+
+function register_and_save_data(store, base_name, threads, last_date){
+  [filtered_msgs, filtered_rawcontents, new_last_date] = threads_op(store, threads, last_date)
+  if( filtered_msgs.length > 0){
+    register_data(store, filtered_msgs, base_name)
+    const folder = store.get('folder')
+    output_supplementary_file_from_array(filtered_rawcontents, folder)
+  }
+  return new_last_date
 }
 
 function output_supplementary_file_from_array(rawcontents, folder){
@@ -201,19 +211,6 @@ function register_data(store, result, sheetname){
   //  Logger.log( result )
 }
 // Frontend Focus
-function get_mail_list_from_Frontend_Focus(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
-  const base_name = 'Frontend Focus'
-  get_mail_list_base(base_name)
-}
-
-// Hotwire Weekly
-function get_mail_list_from_hotwire_weekly(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
-  const base_name = 'Hotwire Weekly'
-  get_mail_list_base(base_name)
-}
-
 function gmail_search(query, start, max){
   threads = GmailApp.search(query, start, max);
   return [true, threads];
@@ -279,7 +276,8 @@ function register_message(store, msg, arg_date = null){
 }
 
 function remove_labels(base_name){
-  [targetlabel, endlabel] = make_labels(base_name)
+  const [targetlabel_name, endlabel_name] = make_two_names(base_name)
+  const [targetlabel, endlabel] = get_or_create_two_labels(targetlabel_name, endlabel_name)
 
   const threads = targetlabel.getThreads()
   targetlabel.removeFromThreads(threads)

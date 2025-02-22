@@ -1,26 +1,132 @@
-  function execute_Test_gmail_x(){
-  execute_Test_gmail()
+function __A(){}
+function getMailThreadList(){
+  const values = YKLiba.get_values_from_config_sheet_y();
+  Logger.log(values);
 }
-
 // The Hotwire Club
-function get_mail_list_from_Hotwire_Club(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG)
-  const base_name = 'The Hotwire Club'
-  get_mail_list_base(base_name)
+function get_mail_list_from_Hotwire_Club(arg_store = null){
+  const basename = Store.THE_HOTWIRE_CLUB()
+  // remove_labels(basename)
+  const op = YKLiba.configADD_UNDER_ROW()
+  get_mail_list_x(basename, op, arg_store)
 }
 
-// Frontend Focus
-function get_mail_list_from_Frontend_Focus(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG)
-  const base_name = 'Frontend Focus'
-  get_mail_list_base(base_name)
+function get_mail_list_from_Frontend_Focus(arg_store = null){
+  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  const basename = Store.FRONTEND_FOCUS()
+  // remove_labels(basename)
+  const op = YKLiba.configADD_UNDER_ROW()
+  // const op = YKLiba.Config.REWRITE()
+  get_mail_list_x(basename, op, arg_store)
 }
 
 // Hotwire Weekly
-function get_mail_list_from_hotwire_weekli(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG)
-  const base_name = 'Hotwire Weekly'
-  get_mail_list_base(base_name)
+function get_mail_list_from_hotwire_weekly(arg_store = null){
+  const basename = Store.HOTWIRE_WEEKLY()
+  const op = YKLiba.configADD_UNDER_ROW()
+  get_mail_list_x(basename, op, arg_store)
+}
+
+function get_mail_list_x(basename, op, arg_store = null){
+  const pairLabel = new PairLabel(basename)
+  const queryInfo = new QueryInfo(basename, pairLabel)
+  get_mail_list(basename, op, queryInfo, arg_store)
+}
+
+function get_mail_list(base_name, op, queryInfo, arg_store=null){
+  // YKLiba.Log.debug(`get_mail_list 1 queryInfo.endLabel=${queryInfo.endLabel}`)
+  // YKLiba.Log.debug(`get_mail_list 1 queryInfo=${queryInfo}`)
+  // queryInfo.isValid()
+
+  // const store = get_valid_store(base_name, arg_store)
+  const store = setup_for_gmail(base_name);
+  const values = YKLiba.get_values_from_config_sheet_x();
+
+  const [parent_folder_info, folder_info_hash] = YKLiba.get_info_list(values);
+  // const folder_info_hash = YKLiba.get_folder_info_hash(values);
+  const info = folder_info_hash[base_name];
+  // const value = YKLiba.get_folder_by_key(base_name);
+  store.set("folder_id", info.folder_id );
+  store.set("folder_url", info.folder_url );
+  store.set("last_date", info.last_date );
+  Logger.log(info);
+  const folder = YKLiba.get_folder_by_id( info.folder_id );
+  store.set("folder",  folder );
+  // const values = YKLiba.get_values_from_config_sheet_x();
+  // const folder_info_hash = YKLiba.get_folder_info_hash(values);
+  // YKLiba.get_folder_info_list(values);
+  get_mail_list_base(store, base_name, op, queryInfo)
+}
+
+function setup_for_gmail(base_name, arg_store=null){
+  const store = get_valid_store( base_name, arg_store )
+  // YKLiba.setup_folder_info(store, base_name)
+  // Store.add(base_name, store);
+  return store
+}
+
+function get_mail_list_base(store, base_name, op, queryInfo){
+  let start = queryInfo.start
+  let max = queryInfo.max
+  let new_last_date = null
+
+  let last_date = store.get('last_date')
+  YKLiba.Log.debug(`last_date=${last_date}`)
+  if( YKLiba.is_undefined(last_date) ){
+    // throw new Error(`last_date is undefined`)
+    last_date = null
+  }
+  last_date = new Date(last_date)
+
+  const targetLabel = queryInfo.pairLabel.targetLabel
+  const endLabel = queryInfo.pairLabel.endLabel
+  
+  const firstQuery = queryInfo.getQuery0()
+  const [threads, msgs] = get_threads_and_messages(firstQuery, start, max)
+  const [[filtered_msgs, rawcontents], new_last_date_1] = get_latest_date_and_valid_messages_from_message_array(msgs, last_date)
+  register_and_save_data(store, base_name, op, filtered_msgs, rawcontents)
+  endLabel.addToThreads(threads)
+  /********************************** */
+  const secondQuery = queryInfo.getQuery1()
+  const [threads_2, msgs_2] = get_threads_and_messages(secondQuery, start, max)
+  const [[filtered_msgs_2, rawcontents_2], new_last_date_2] = get_latest_date_and_valid_messages_from_message_array(msgs_2, last_date)
+  register_and_save_data(store, base_name, op, filtered_msgs_2, rawcontents_2)
+  targetLabel.addToThreads(threads_2)
+  endLabel.addToThreads(threads_2)
+
+  const array = [new_last_date_1, new_last_date_2, last_date]
+  const [latest_date, earlist_date] = YKLiba.getMaxAndMin(array)
+  store.set('new_last_date', latest_date)
+  Logger.log(`latest_date=${latest_date}`)
+  if( YKLiba.isAfterDate2(last_date, latest_date) ){
+    YKLiba.update_last_date_of_folder_info_list(store, base_name, latest_date)
+  }
+}
+
+//  const firstQuery = queryInfo.getQuery0()
+function get_threads_and_messages(query, start, max){
+  YKLiba.Log.debug(`################## query=${query}`)
+  const threads = get_mail_list_with_query(query, start, max)
+  const msgs = getMessages(threads)
+  return [threads, msgs]
+}
+function get_mail_list_with_query(query, start, max){
+  YKLiba.Log.debug(`### get_mail_list_with_query 0 query=${query} start=${start} max=${max}`)
+  const [ret, threads] = gmail_search(query, start, max)
+  if( ret ){
+    YKLiba.Log.debug(`### get_mail_list_with_query 1 threads.length=${threads.length}`)
+    return threads
+  }
+  else{
+    YKLiba.Log.debug(`### get_mail_list_with_query 2 threads.length=${threads.length}`)
+    return []
+  }
+}
+
+function gmail_search(query, start, max){
+  threads = GmailApp.search(query, start, max)
+  YKLiba.Log.debug(`### get_mail_search threads.length=${threads.length}`)
+  return [true, threads]
 }
 
 function gmail_search(query, start, max){
@@ -28,110 +134,68 @@ function gmail_search(query, start, max){
   return [true, threads];
 }
 
-function get_all_messages(threads){
-  const array = []
-  for(let i=0; i<other_threads.length; i++ ){
-    messages = threads[i].getMessages()
-    array = [...array, ...messages]
-  }
-  return array
+function getMessages(threads){
+  const msgs = threads.map( (thread) => {
+      const messages = thread.getMessages()
+      return messages
+  } ).flat(3)
+
+  return msgs
 }
 
-function remove_labels(base_name){
-  [targetlabel, endlabel] = make_labels(base_name)
+function get_latest_date_and_valid_messages_from_message_array(msgs, new_last_date){
+  const filtered_msgs = msgs
+    .filter( msg => {
+      const ret = YKLiba.isAfterDate(new_last_date, msg.getDate())
+      YKLiba.Log.debug(`ret=${ret} msg.getDate()=${msg.getDate()}`)
+      return ret
+    } )
 
-  const threads = targetlabel.getThreads()
-  targetlabel.removeFromThreads(threads)
+  const ret = filtered_msgs
+    .reduce( (accumulator, msg) => {
+      let date = null
+      let msgdata = null
+      try{
+        date = msg.getDate()
+        msgdata = make_message(msg, date)
+        rawcontent = {date: date, subject: msg.getSubject(), rawcontent:msg.getRawContent()}
+      }
+      catch(error){
+        YKLiba.Log.unknown(error.name)
+        YKLiba.Log.unknown(error.message)
+        YKLiba.Log.unknown(error.stack)
+      }
 
-  const threads2 = endlabel.getThreads()
-  endlabel.removeFromThreads(threads2)
+      if(msgdata !== null){
+        accumulator[0][0].push(msgdata)
+        accumulator[0][1].push(rawcontent)
+      }
+
+      if( date !== null && (YKLiba.isNullOrWhitespace(accumulator[1]) || accumulator[1] < date) ){
+        accumulator[1] = date
+      }
+      return accumulator
+    }, [[[],[]], new_last_date] )
+
+  return ret
 }
 
-function get_or_create_two_labels(targetlabel_name, endlabel_name){
-  let targetlabel = GmailApp.getUserLabelByName(targetlabel_name)
-  if (targetlabel === null){
-    targetlabel = GmailApp.createLabel(targetlabel_name)
-  }
-  let endlabel = GmailApp.getUserLabelByName(endlabel_name)
-  if( endlabel === null){
-    endlabel = GmailApp.createLabel(endlabel_name)
-  }
-
-  return [targetlabel, endlabel]
-}
-
-function make_two_names(base_name, post_fix='_'){
-  const targetlabel_name = base_name
-  const endlabel_name = targetlabel_name + post_fix
-
-  return [targetlabel_name, endlabel_name]
-}
-
-
-function get_mail_list_base(base_name){
-  //from: Frontend Focus 
-  const [targetlabel_name, endlabel_name] = make_two_names(base_name)
-  const [targetlabel, endlabel] = get_or_create_two_labels(targetlabel_name, endlabel_name)
-
-  Store.init()
-  Store.set('sheetname', base_name)
-
-  const sheet = YKLiba.get_config_sheet()
-  const range = YKLiba.get_simple_rows_range(sheet)
-  const values = range.getValues()
-  const folder_info_hash = YKLiba.get_folder_info_hash(values)
-
-  const folder = YKLiba.get_folder_by_key(base_name, folder_info_hash)
-  const last_date = YKLiba.get_last_date_by_key(base_name, folder_info_hash)
-
-  Store.set('folder', folder)
-  Store.set('last_date', last_date)
-  Store.set('new_last_date', last_date)
-
-  const threads1 = get_mail_list_with_query(`label:${targetlabel_name} -label:${endlabel_name}`, 0, 100)
-  YKLiba.Log.display(threads1)
-  new_last_date_1 = get_lastest_date_and_register_messages_from_thread(threads1, base_name)
-  endlabel.addToThreads(threads1)
-  const threads2 = get_mail_list_with_query(`from: ${base_name} -label:${targetlabel_name}`, 0, 100)
-  new_last_date_2 = get_lastest_date_and_register_messages_from_thread(threads2, base_name)
-  targetlabel.addToThreads(threads2)
-  endlabel.addToThreads(threads2)
-
-  let latest_date = new_last_date;
-  if( YKLiba.diff_date(new_last_date_1, lastest_date) > 0){
-    latest_date = new_last_date_1
-  }
-  if( YKLiba.diff_date(new_last_date_2, lastest_date) > 0){
-    latest_date = new_last_date_2
-  }
-  Store.set('new_last_date', latest_date)
-  YKLiba.update_folder_info_list_at_last_date(values, base_name, latest_date)
-  range.setValues(values)
-}
-
-function get_mail_list_with_query(query, start, max){
-  const [ret, threads] = gmail_search(query, start, max)
-  if( ret ){
-    return threads
-  }
-  else{
-    return []
-  }
-}
-
-// "Frontend Focus"
-function register_message(msg, arg_date = null){
+function make_message(msg, arg_date = null){
   let date
 
-  if( arg_date === null){
-    date = msg.getDate()
-  }
-  else{
+  if( arg_date !== null){
     date = arg_date
   }
+  else{
+    try{
+      date = msg.getDate()
+    }
+    catch(error){
+      YKLiba.Log.unknown(error)
+      return null
+    }
+  }
   const date_str = YKLiba.make_date_string(date)
-  const folder = Store.get('folder')
-  output_supplementary_file(msg, date_str, folder)
   //break
   const msgdata = [
     msg.getId(),
@@ -143,221 +207,71 @@ function register_message(msg, arg_date = null){
   return msgdata
 }
 
-function isAfterDate(last_date, date){
-  return (last_date !== null && YKLiba.diff_date(date, last_date) >= 0 )
+function register_and_save_data(store, base_name, op, msgs, rawcontents){
+  register_data(store, op, msgs, base_name)
+  const folder = store.get('folder')
+  output_supplementary_file_from_array(rawcontents, folder)
 }
 
-function get_lastest_date_and_register_messages_from_message_array(msgs, last_date){
-  return msgs
-    .filter( msg => isAfterDate(msg.getDate(), last_date) )
-    .reduce( (accumulator, msg) => {
-      const date = msg.getDate()
-      const msgdata = register_message(msg, date)
-
-      accmulator[0].push(msgdata)
-
-      if( isAfterDate(accumulator, date) ){
-        accmulator[1] = date
-      }
-
-      return accmulator
-    }, [[], new_last_date] )
-}
-function get_lastest_date_and_register_messages_from_thread(thread){
-  const last_date = Store.get('last_date')
-  const new_last_date = Store.get('new_last_date')
-
-  YKLiba.Log.display(`get_lastest_date_and_register_messages_from_thread thread=${thread}`)
-  const msgs = thread.getMessages()
-
-  const msg = msgs[0]
-  const date = msg.getDate()
-  if( isAfterDate(date, last_date) ){
-    return get_lastest_date_and_register_messages_from_message_array([msg], last_date, new_last_date)
-  }
-  else{
-    return [[], new_last_date]
-  }
-}
-
-function get_lastest_date_and_register_messages(threads){
-  const result = threads.map( thread => get_messages_and_register_from_thread(thread) )
-  const array = result.reduce( (accumlator, item) => [...accumlator, ...item[0]], [])
-  if(array.length > 0){
-    register_data(array)
-  }
-  return result[1]
-}
-
-function get_messages_and_register_0(threads){
-  const result = []
-  const folder = Store.get('folder')
-  const sheetname = Store.get('sheetname')
-
-  for(let i=0; i<threads.length; i++){
-    const msgs = threads[i].getMessages();
-    if( msgs === null ){
-      break
-    }
-    for(let j=0; j<msgs.length; j++){
-      const msg = msgs[j]
-      //  msg.getRawContent() 
-      date = msg.getDate()
-      // YKLiba.Log.debug(`msg.getDate()=${date}`)
-      const date_str = YKLiba.make_date_string(date)
-      // YKLiba.Log.debug(`date_str=${date_str}`)
-      output_supplementary_file(msg, date_str, folder)
-      //break
-      const msgdata = [
-        msg.getId(),
-        msg.getFrom(),
-        msg.getSubject(),
-        date_str,
-        msg.getPlainBody(),
-      ]
-      result.push(msgdata)
-    }
-  }
-  if(result.length === 0){
-    result.push([])
-  }
-  register_data(result, sheetname)
-}
-
-function output_supplementary_file(msg, date_str, folder){
-  const filename = `${date_str}_${msg.getSubject()}`
-  YKLiba.Log.debug(`filename=${filename}`)
-  // YKLiba.output_file_under_folder(folder, filename, msg.getRawContent())
-}
-
-function register_data(result, sheetname){
+function register_data(store, op, result, sheetname){
   YKLiba.Log.debug(`register_data sheetName=${sheetname}`)
-  const last_date = Store.get('last_date')
+  if( result.length === 0 ){
+    return
+  }
+  const last_date = store.get('last_date')
 
   const ss_id = YKLiba.get_ss_id()
   let [ss, sheet] = YKLiba.get_spreadsheet(ss_id, sheetname)
   if(sheet === null){
     sheet = ss.insertSheet(sheetname)
   }
-  const [range, values] = YKLiba.get_range_and_values(sheet)
-  // range.getLastColumn()
-  range.deleteCells(SpreadsheetApp.Dimension.COLUMNS);
+  const [values, dataRange] = YKLibb.getValuesFromSheet(sheet);
+  let range = dataRange;
+  let range2;
+  if( op === YKLiba.configREWRITE() ){
+    range2 = range;
+    range2.deleteCells(SpreadsheetApp.Dimension.ROWS);
+  }
+  else{
+    // YKLiba.Config.ADD_UNDER_ROW
+    // 既存のrangeの最後のROWの直下から追加する
+    const rangeShape = YKLiba.getRangeShape(range)
+    range2 = range.offset(rangeShape.h, 0, rangeShape.h, rangeShape.w)
+  }
+
+  YKLiba.Log.debug(`result`)
+  YKLiba.Log.debug(result)
 
   const height = result.length
   const width = result[0].length
-  YKLiba.Log.debug(`height=${height} width=${width}`)
-  let new_range = null 
+  // YKLiba.Log.debug(`register_data height=${height} width=${width}`)
+  Logger.log(`register_data height=${height} width=${width}`)
 
-  if (height > 0){
-    if(width > 0){
-      new_range = range.offset(
-        0, 
-        0, 
-        height, 
-        width
-      )
-    }
-    else{
-      return
-    }
-  }
-  else{
-    if(width > 0){
-      new_range = range.offset(
-        0, 
-        0,
-        0,
-        width,
-      )
-    }
-    else{
-      return
-    }
-  }
-  new_range.setValues( result )
-  //  Logger.log( result )
+  const range3 = YKLiba.transformRange2(range2, height, width)
+  range3.setValues( result );
 }
 
-function get_mail_list_0(query, key, targetlabel, endlabel, start, max){
-  //from: Frontend Focus 
-  const [ret, threads] = gmail_search(query, start, max)
-  if (ret){
-    const folder = YKLiba.get_folder_by_key(key)
-    const result = []
-    // Logger.log(`treads.length=${treads.length}`)
-    for(let i=0; i<treads.length; i++){
-      const msgs = threads[i].getMessages();
-      if( msgs === null ){
-        break
-      }
-      // Logger.log(`msgs.length=${msgs.length}`)
-      for(let j=0; j<msgs.length; j++){
-        const msg = msgs[j]
-        //  msg.getRawContent() 
-        YKLiba.output_file_under_folder(folder, msg.getSubject(), msg.getRawContent())
- 
-        const msgdata = [
-          msg.getId(),
-          msg.getFrom(),
-          msg.getSubject(),
-          msg.getDate(),
-          msg.getPlainBody(),
-        ]
-        result.push(msgdata)
-      }
-    }
-    const ss_id = YKLiba.get_ss_id()
-    let [ss, sheet] = YKLiba.get_spreadsheet(ss_id, sheetName)
-    if(sheet === null){
-      sheet = ss.insertSheet(sheetName)
-    }
-    const [range, values] = YKLiba.get_range_and_values(sheet)
-    const new_range = range.offset(0, 0, result.length, result[0].length)
-    new_range.setValues( [[]] )
-    new_range.setValues( result )
-   //  Logger.log( result )
-  }
+function output_supplementary_file_from_array(rawcontents, folder){
+  rawcontents.map( rawcontent => output_supplementary_file(rawcontent, folder) )
 }
-function get_mail_list_from_hotwire_weekli_0(){
-  let date_str = ""
-  const ret = gmail_search('from: "Hotwire Weekly', 0, 100)
-  if (ret[0] ){
-    const result = []
-    const treads = ret[1]
-    // Logger.log(`treads.length=${treads.length}`)
-    for(let i=0; i<treads.length; i++){
-      const msgs = threads[i].getMessages();
-      if( msgs === null ){
-        break
-      }
-      // Logger.log(`msgs.length=${msgs.length}`)
-      for(let j=0; j<msgs.length; j++){
-        const msg = msgs[j]
-        /*
-        const msgdata = [
-          msg.getFrom(),
-          msg.getSubject(),
-          msg.getDate().toLocalString(),
-          msg.getMessages()
-        ]
-        */
-        date_str = make_date_string(msg.getDate())
-        const msgdata = [
-          msg.getId(),
-          msg.getFrom(),
-          msg.getSubject(),
-          date_str,
-          msg.getPlainBody(),
-          msg.getRawContent() 
-        ]
-        result.push(msgdata)
-      }
-    }
-    const ss_id = YKLiba.get_ss_id()
-    const [ss, sheet] = YKLiba.get_spreadsheet(ss_id, "Sheet1")
-    const [range, values] = YKLiba.get_range_and_values(sheet)
-    const new_range = range.offset(0, 0, result.length, result[0].length)
-    new_range.setValues( result )
-    Logger.log( result )
-  }
+
+function output_supplementary_file(rawcontent, folder){
+  const filename = `${rawcontent.date}_${rawcontent.subject}`
+  YKLiba.Log.debug(`filename=${filename}`)
+  YKLiba.output_file_under_folder(folder, filename, rawcontent.rawcontent)
+}
+
+function remove_labels(base_name){
+  pairLabel = new PairLabel(base_name)
+
+  const threads = pairLabel.targetLabel.getThreads()
+  pairLabel.targetLabel.removeFromThreads(threads)
+
+  const threads2 = pairLabel.endLabel.getThreads()
+  pairLabel.endLabel.removeFromThreads(threads2)
+}
+
+function clear_sheet(sheetname){
+  const sheet = YKLiba.get_sheet(sheetname)
+  YKLiba.clear_sheet(sheet)
 }

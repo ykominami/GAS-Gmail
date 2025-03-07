@@ -1,5 +1,5 @@
 class QueryInfo {
-  constructor(from, pairLabel){
+  constructor(from, pairLabel, maxThreads, maxSearchesAvailable ){
     this.from = from
     this.pairLabel = pairLabel
 
@@ -22,7 +22,8 @@ class QueryInfo {
     this.queries = [query, query2]
 
     this.start = 0
-    this.max = 100
+    this.maxThreads = maxThreads
+    this.maxSearchesAvailable = maxSearchesAvailable
   }
   setQuery0(query){
     this.queries[0] = query
@@ -35,6 +36,18 @@ class QueryInfo {
   }
   getQuery1(query){
     return this.queries[1]
+  }
+  setCount(value){
+    this.count = value
+  }
+  getCount(){
+    return this.count
+  }
+  setCount2(value){
+    this.count2 = value
+  }
+  getCount2(){
+    return this.count2    
   }
   isValid(){
     let ret

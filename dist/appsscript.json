@@ -19,6 +19,12 @@
         "userSymbol": "TestGAS",
         "version": "1",
         "libraryId": "1CRjWWWYfjD7WzPl43RB1BiD7XDLJmR03eEpXr2LMh75yAq5qMlczOIfm"
+      },
+      {
+        "userSymbol": "YKLibb",
+        "version": "0",
+        "libraryId": "1hzyle-Z7aswSGsLA2bfr2wWCCwc3KazD2FtAD19gUgjFc8Zq2FyraHaH",
+        "developmentMode": true
       }
     ]
   },

@@ -1,3 +1,12 @@
+function testConfig(){
+  // const ret = Config.x();
+  // console.log(`ret=${ret}`);
+
+  const [header, values, dataRange] = Config.getConfig();
+  console.log(header);
+  console.log(values[0]);
+}
+
 function y(){
   const base_name = "HOT";
   const store = get_valid_store(base_name);
@@ -20,4 +29,7 @@ function x(){
   const value2=Store.get(key);
 
   Logger.log(`value2=${value2}`);
+}
+function splitByNewline(input) {
+    return input.split(/\r?\n/);
 }

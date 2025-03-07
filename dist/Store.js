@@ -11,6 +11,10 @@ class Store {
   static TEST_NAME(){
     return "0-AA-TEST_NAME"
   }
+  
+  static keys(){
+
+  }
   static init(){
     const index = Store.index()
     if(index === 0){
@@ -52,7 +56,8 @@ class Store {
     YKLiba.Store.set(Store.index, key, value)
   }
   static get(key){
-    return YKLiba.Store.get(Store.index, key)
+    // return YKLiba.Store.get(Store.index, key)
+    return YKLiba.Store.keys(index)
   }
   constructor(base_name, idx, store_index){
     YKLiba.Log.debug(`Store constructor base_name=${base_name}`)
@@ -66,6 +71,9 @@ class Store {
   }
   get(key){
     return YKLiba.Store.get_level_3(this.store_index, this.idx, this.base_name, key)
+  }
+  keys(){
+    return YKLiba.Store.keys_level_3(this.store_index, this.index, this.base_name)
   }
 }
 

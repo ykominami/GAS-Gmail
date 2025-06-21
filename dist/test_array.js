@@ -67,7 +67,7 @@ function test_data_array(){
     ]
   ]
 }
-class Test_gmail {
+class Test_gmaila {
 /*
   test_gmail_search(){
     const query = 'is:starred subject:"IMPORTANT"'

@@ -161,7 +161,7 @@ function test_register_data_x_aur_b(base_name){
 // 済
 function test_register_data_1_aur(store, sheetname){
   let result = []
-  register_data(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 
 // 済
@@ -169,7 +169,7 @@ function test_register_data_2_aur(store, sheetname){
   let result = []
   const msgdata = test_make_msgdata()
   result.push(msgdata)
-  register_data(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 
 // 済
@@ -180,20 +180,20 @@ function test_register_data_3_aur(store, sheetname){
 
   const msgdata2 = test_make_msgdata_2()
   result.push(msgdata2)
-  register_data(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 //////////////// rewrite
 // 済
 function test_register_data_1_rewrite(store, sheetname){
   let result = []
-  register_data(store, YKLiba.configREWRITE(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }
 // 済
 function test_register_data_2_rewrite(store, sheetname){
   let result = []
   const msgdata = test_make_msgdata()
   result.push(msgdata)
-  register_data(store, YKLiba.configREWRITE(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }
 // 済
 function test_register_data_3_rewrite(store, sheetname){
@@ -203,5 +203,5 @@ function test_register_data_3_rewrite(store, sheetname){
 
   const msgdata2 = test_make_msgdata_2()
   result.push(msgdata2)
-  register_data(store, YKLiba.configREWRITE(), result, sheetname)
+  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }

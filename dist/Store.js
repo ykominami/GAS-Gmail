@@ -59,6 +59,25 @@ class Store {
     // return YKLiba.Store.get(Store.index, key)
     return YKLiba.Store.keys(index)
   }
+  static get_valid_store(base_name, arg_store=null){
+    YKLiba.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
+    let store;
+    if( arg_store === null ){
+      YKLiba.Log.debug(`get_valid_store 1`)
+      const store_index = Store.init()
+      const idx = Store.index();
+      // const store_index = Store.store_index()
+      store = new Store(base_name, idx, store_index)
+      // YKLiba.Store.add_level_2(store_index, base_name, {})
+      YKLiba.Log.debug("get_valid_store T")
+      YKLiba.Log.debug(store)
+    }
+    else{
+      store = arg_store
+      YKLiba.Log.debug("get_valid_store F")
+    }
+    return store
+  }
   constructor(base_name, idx, store_index){
     YKLiba.Log.debug(`Store constructor base_name=${base_name}`)
     this.base_name = base_name

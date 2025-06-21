@@ -25,22 +25,36 @@ class Test_Gmail_Label {
     let max = 5
     const base_name = Store.TEST_NAME()
     const query = `from : me after:2024/12/1 before:2024/12/3`
-    const [threads, msgs] = get_threads_and_messages(query, start, max)
-    YKLiba.Log.debug(`testcase| threads.length=${threads.length}`)
-    YKLiba.Log.debug(`testcase| msgs.length=${msgs.length}`)
+    const tamda = GmailSearch.getThreadsAndMessagedataArray(query, start, max)
+    tamda.forEach( function(item, idx) {
+      Logger.log(`tamda idx=${idx} item.constructor=${ item.constructor }`)
+      Logger.log(`tamda item=${ JSON.stringify(item)}`)
+      Logger.log(`tamda item.ar()=${ JSON.stringify(item.ar()) }` )
+    })
+    Logger.log(`tamda.constructor=${tamda.constructor}`)
+    // YKLiba.Log.debug(`testcase| tamda.thread=${tamda.tx()}`)
+    // YKLiba.Log.debug(`testcase| tamda.messagedataArray.length=${tamda.mx().length}`)
 
     const pairLabel = new PairLabel(base_name)
     let targetLabel = pairLabel.targetLabel
     const threads_2 = targetLabel.getThreads()
+    threads_2.forEach( (item, index) => {
+      const messages = item.getMessages()
+      return messages
+    })
     YKLiba.Log.debug(`threads_2.length=${threads_2.length}`)
 
     targetLabel.removeFromThreads(threads_2)
-
-    targetLabel.addToThreads(threads)
+    const txs = tamda.filter((item) => {
+      return item.tx
+    })
+    targetLabel.addToThreads(txs)
 
     const threads_3 = targetLabel.getThreads()
     YKLiba.Log.debug(`threads_3.length=${threads_3.length}`)
-    const msgs_3 = getMessages(threads_3)
+    const msgs_3 = threads_3.filter( (item, index) => {
+      return item.getMessages()      
+    })
     YKLiba.Log.debug(`msgs_3.length=${msgs_3.length}`)
     const actual = threads_3.length
     const expected = max
@@ -55,7 +69,9 @@ class Test_Gmail_Label {
 
     const targetLabel = pairLabel.targetLabel
     const threads = targetLabel.getThreads()
-    const msgs = getMessages(threads)
+    const msgs = threads.filter( (item) => {
+      return item.getMessages()
+    })
 
     const actual = msgs.length > 0
     const expected = true
@@ -73,7 +89,9 @@ class Test_Gmail_Label {
     pairLabel.targetLabel.removeFromThreads(threads)
 
     const threads_2 = targetLabel.getThreads()
-    const msgs = getMessages(threads_2)
+    const msgs = threads_2.filter( (item) => {
+      return item.getMessages()
+    } )
     
     const actual = msgs.length
     const expected = 0

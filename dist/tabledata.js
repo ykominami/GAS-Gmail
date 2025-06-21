@@ -3,25 +3,30 @@ class Tabledata {
     this.header = header;
     this.values = values;
     this.dataRange = dataRange;
-    this.folderInfolist = new FolderInfoList(this.values);
-    this.parentFolderInfo = this.folderInfolist.parentFolderInfo;
-    this.folderInfoAssoc = this.folderInfolist.folderInfoAssoc;
+    const targetedEmailList = new TargetedEmailList(this.values);
+    this.parentFolderInfo = targetedEmailList.parentFolderInfo;
+    this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
+    this.folderConf = targetedEmailList.folderConf;
+    this.targetedEmailList = targetedEmailList;
   }
   keys(){
-    return Object.keys(this.folderInfoAssoc);
+    const keyArray = Object.keys(this.targetedEmailAssoc)
+    return keyArray;
   }
-  getInfo(key){
-    return this.folderInfoAssoc[key];
+  getTargetedEmail(key){
+    return this.targetedEmailAssoc[key];
   }
   rewrite(item){
+    // Logger.log(`------------------rewrite`)
     if( !item.old_id ){
       this.values[item.index][item.index_id] = item.id;
     }
     if( !item.old_url ){
       this.values[item.index][item.index_url] = item.url;
     }
-    if( !item.old_last_date ){
-      this.values[item.index][item.index_last_date] = item.last_date;
+    if( !item.oldLastDateTime ){
+      this.values[item.index][item.indexLastDateTime] = item.lastDateTime;
+      // Logger.log(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
     }
     if( item.old_nth != item.nth){
       this.values[item.index][item.index_nth] = item.nth;
@@ -34,7 +39,7 @@ class Tabledata {
     }
   }
   update(){
-    // Logger.log(`Tabledata.update`)
-    this.dataRange.setValues( [this.header, ...this.values]);
+    // Logger.log(`Tabledata.update=${ [this.header, ...this.values] }`)
+    this.dataRange.setValues( [this.header, ...this.values] );
   }
 }

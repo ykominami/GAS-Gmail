@@ -2,7 +2,7 @@ function execute_Test_gmail_x(){
   execute_Test_gmail_ForTestGas()
 }
 function execute_Test_gmail_ForTestGas(){
-  let failureFuncs = tester.executeTestGas(Test_Gmail);
+  let failureFuncs = tester.executeTestGas(Test_Gmail2);
 }
 
 function setup_for_test_gmail(base_name){
@@ -12,7 +12,7 @@ function setup_for_test_gmail(base_name){
   return [pairLabel, queryInfo, store]
 }
 
-class Test_Gmail {
+class Test_Gmail2 {
   test_thread(){
     const base_name = Store.THE_HOTWIRE_CLUB();
     // const base_name = Store.TEST_NAME()
@@ -29,17 +29,22 @@ class Test_Gmail {
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
     const targetLabel = pairLabel.targetLabel
     const threads = targetLabel.getThreads()
-    const msgs = getMessages(threads)
+
+    const threadAndMessagedataarrayList = threads.map( (thread) => {
+      return thread.getMessages()
+    } )
   
-    const actual = msgs.length > 0
+    const actual = threadAndMessagedataarrayList.length > 0
     const expected = true
     tester.assertEquals(actual, expected)
   }
   test_priority_inbox() {
     const threads = GmailApp.getPriorityInboxThreads()
-    const msgs = getMessages(threads)
+    const threadAndMessagedataarrayList = threads.map( (thread) => {
+      return thread.getMessages()
+    } )
   
-    const actual = msgs.length > 0
+    const actual = threadAndMessagedataarrayList.length > 0
     const expected = true
     tester.assertEquals(actual, expected)
   }

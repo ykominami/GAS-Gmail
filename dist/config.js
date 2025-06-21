@@ -1,26 +1,14 @@
 class Config {
-  static x(){
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_SPREADSHEET_ID');
-    const sheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_SHEETNAME');
-    console.log(`spreadsheetId=${spreadsheetId} sheetName=${sheetName}`);
-    const [header, values, dataRange] = YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
-    // return [header, values, dataRange];
-    // return header;
-    return values;
-    // return "x";
-  }
-  static getConfig(){
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_SPREADSHEET_ID');
-    const sheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_SHEETNAME');
-    // [header, values, dataRange] = YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
-    return YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
-    // return [header, values, dataRange];
-    // return [header];
-  }
-  static isNoop(){
-    return CONFIG.isNoop()
-  }
   constructor(option = null){
+    this.configInfoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO_SPREADSHEET_ID');
+    this.configInfoxSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFOX_SHEETNAME');
+    this.configInfo2SheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO2_SHEETNAME');
+    this.parentFolderId = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_ID');
+    this.parentFolderPath = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_PATH');
+    this.destinationSpreadsheetId = PropertiesService.getScriptProperties().getProperty('DESTINATION_SPREADSHEET_ID');
+    this.infoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('INFO_SPREADSHEET_ID');
+    this.infoWorksheetName = PropertiesService.getScriptProperties().getProperty('INFO_WORKSHEET_NAME');
+
     this.noop = false
     if( option == "noop"){
       this.noop = true
@@ -31,6 +19,20 @@ class Config {
   }
   setNoop(value){
     this.noop = value
+  }
+  getConfig(){
+    Logger.log(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
+    return YKLibb.setupSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName);
+  }
+  getConfigInfo2(){
+    // [header, values, dataRange] = YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
+    return YKLibb.setupSpreadsheet(this.configInfoSpreadsheetId, this.configInfo2SheetName);
+  }
+  getConfigInfo2x(){
+    return YKLibb.setupSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName);
+  }
+  nolimit(){
+    return -1
   }
 }
 function testdatef(){

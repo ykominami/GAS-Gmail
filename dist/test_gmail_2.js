@@ -14,8 +14,8 @@ function setup_for_test_gmail(base_name){
 
 class Test_Gmail2 {
   test_thread(){
-    const base_name = Store.THE_HOTWIRE_CLUB();
-    // const base_name = Store.TEST_NAME()
+    const base_name = Store.theHotwireClub();
+    // const base_name = Store.testName()
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
     const targetLabel = pairLabel.targetLabel
 
@@ -25,7 +25,7 @@ class Test_Gmail2 {
     tester.assertEquals(actual, expected)
   }
   test_msgs(){
-    const base_name = Store.THE_HOTWIRE_CLUB()
+    const base_name = Store.theHotwireClub()
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
     const targetLabel = pairLabel.targetLabel
     const threads = targetLabel.getThreads()
@@ -59,7 +59,7 @@ class Test_Gmail2 {
   */
 }
 function test_get_mail_threads(){
-  base_name = Store.THE_HOTWIRE_CLUB()
+  base_name = Store.theHotwireClub()
   const store = get_valid_store(base_name, null)
   const threads = get_mail_threads(store, base_name)
   return threads
@@ -84,4 +84,30 @@ function test_make_msgdata_2(){
     "body2"
   ]
   return msgdata
+}
+
+function test_gmail_2_1(){
+  const gmail = new Gmail()
+  const base_name = Store.theHotwireClub();
+  // const base_name = Store.testName()
+  gmail.init(base_name, "test_gmail_2_1")
+  const thread = gmail.threads[0]
+}
+
+function test_gmail_2_2(){
+  const gmail = new Gmail()
+  gmail.init_("test_gmail_2_2", ()=>{
+    const base_name = Store.theHotwireClub()
+    return gmail.search_query(base_name)
+  })
+  const thread = gmail.threads[0]
+}
+
+function test_gmail_2_3(){
+  let base_name;
+  const gmail = new Gmail()
+  gmail.init_("test_gmail_2_3", ()=>{
+    base_name = Store.theHotwireClub()
+    return gmail.search_query(base_name)
+  })
 }

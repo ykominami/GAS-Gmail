@@ -32,13 +32,13 @@ class TargetedEmail {
 
     this.oldLastDateTime = this.lastDateTime;
     this.old_nth = this.nth;
-    this.old_count = this.coount;
+    this.old_count = this.count;
     this.old_count2 = this.count2;
   }
   overWriteLastData(other){
     this.lastDateTime = other.lastDateTime
     this.lastDate = other.lastDate
-    this.oldLastDateTime = other.odlLastDateTime
+    this.oldLastDateTime = other.oldLastDateTime
   }
   setMaxSearchesAvailable(value){
     this.maxSearchesAvailable = value

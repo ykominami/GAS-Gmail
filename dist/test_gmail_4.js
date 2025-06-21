@@ -41,11 +41,11 @@ function xtestb(gmail, key, numOfItems = 0){
   gmail.tabledata.update();
   // return
 
-  const store = gmail.get_mail_list_x(targetedEmail, gmail.op);
+  const gmailList = new GmailList(targetedEmail, gmail.tabledata);
+  const store = gmailList.getMailListX(gmail.op);
   targetedEmail.setNth(folderConf.nth);
   targetedEmail.lastDateTime = store.get('last_date_time');
   Logger.log(`targetedEmail=${targetedEmail}`);
-  return
 
   gmail.tabledata.rewrite(targetedEmail);
   gmail.tabledata.update();

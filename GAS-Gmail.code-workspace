@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../YKLiba"
+		},
+		{
+			"path": "../YKLibb"
+		}
+	],
+	"settings": {}
+}

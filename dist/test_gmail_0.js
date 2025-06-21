@@ -1,22 +1,18 @@
-function test_label_Frontend_Focus(){
-  removeFromThread(thread)
-  removeFromThread(thread)
-}
 function test_remove_labes(){
   remove_labels('Frontend Focus')
 }
 
 
 function execute_Test_gmail(){
-  let failureFuncs = tester.executeTestGas(Test_gmail);
+  let failureFuncs = tester.executeTestGas(Test_gmai0);
 }
 
 function test_gmail_search(query, start, max){
-  ret = gmail_search(query, start, max)
+  ret = GmailSearch.gmail_search(query, start, max)
   return ret[0]  
 }
 
-class Test_gmail {
+class Test_gmail0 {
 /*
   test_gmail_search(){
     const query = 'is:starred subject:"IMPORTANT"'

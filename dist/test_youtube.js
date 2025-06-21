@@ -1,3 +1,5 @@
+let tester = TestGAS.createExecutor();
+
 function execute_Test_youtube(){
   let failureFuncs = tester.executeTestGas(Test_youtube);
 }
@@ -16,12 +18,4 @@ class Test_youtube {
     const expected = true
     tester.assertEquals(actual, expected)
   }
-  /*
-  test_isObject_undefined(){
-    const array = undefined
-    const actual = is_valid_object(array)
-    const expected = false
-    tester.assertEquals(actual, expected)
-  }
-  */
 }

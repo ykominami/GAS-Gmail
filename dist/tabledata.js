@@ -3,18 +3,17 @@ class Tabledata {
     this.header = header;
     this.values = values;
     this.dataRange = dataRange;
-    const targetedEmailList = new TargetedEmailList(this.values);
-    this.parentFolderInfo = targetedEmailList.parentFolderInfo;
-    this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
-    this.folderConf = targetedEmailList.folderConf;
-    this.targetedEmailList = targetedEmailList;
+    this.folderInfolist = new FolderInfoList(this.values);
+    this.parentFolderInfo = this.folderInfolist.parentFolderInfo;
+    this.folderInfoAssoc = this.folderInfolist.folderInfoAssoc;
+    this.folderConf = this.folderInfolist.folderConf;
   }
   keys(){
-    const keyArray = Object.keys(this.targetedEmailAssoc)
+    const keyArray = Object.keys(this.folderInfoAssoc)
     return keyArray;
   }
-  getTargetedEmail(key){
-    return this.targetedEmailAssoc[key];
+  getFolderInfo(key){
+    return this.folderInfoAssoc[key];
   }
   rewrite(item){
     // Logger.log(`------------------rewrite`)

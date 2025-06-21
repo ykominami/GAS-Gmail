@@ -4,7 +4,7 @@ class Gmail{
   constructor(tabledata, makeindexFlag = 0){
     this.parentFolderInfo = tabledata.parentFolderInfo
     this.folderConf = tabledata.folderConf
-    // this.tabledata = tabledata
+    this.tabledata = tabledata
 
     this.op = YKLiba.Config.addUnderRow()
     const keyList = tabledata.keys()
@@ -70,8 +70,8 @@ class Gmail{
   }
   removeLavel(key){
     Logger.log(`key=${key}`)
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
-    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
+    const folderInfo = this.tabledata.getFolderInfo(key);
+    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(folderInfo);
     removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
     removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
     Logger.log(pairLabel)
@@ -94,53 +94,74 @@ class Gmail{
   }
   getMailList(key, op, arg_store){
     Logger.log(`key=${key}`)
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
+    const folderInfo = this.tabledata.getFolderInfo(key);
 
-    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
-    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
-    const folder = targetedEmail.getOrCreateFolderUnderDocsFolder(this.parentFolderInfo);
-    targetedEmail.backup();
-    this.tabledata.rewrite(targetedEmail);
+    folderInfo.setMaxSearchesAvailable(this.tabledata.folderConf.maxSearchesAvailable);
+    folderInfo.setMaxThreads(this.tabledata.folderConf.maxThreads);
+    const folder = folderInfo.getOrCreateFolderUnderDocsFolder(this.parentFolderInfo);
+    info.backup();
+    this.tabledata.rewrite(info);
 
-    const store = this.get_mail_list_x(targetedEmail, op, arg_store);
-    targetedEmail.setNth(this.folderConf.nth);
-    targetedEmail.lastDateTime = store.get('last_date_time');
-    this.tabledata.rewrite(targetedEmail);
+    const store = this.get_mail_list_x(info, op, arg_store);
+    info.setNth(this.folderConf.nth);
+    info.lastDateTime = store.get('last_date_time');
+    this.tabledata.rewrite(info);
   }
-  get_mail_list_x(targetedEmail, op, arg_store = null){
-    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail)
-    return this.get_mail_list(targetedEmail, op, queryInfo, arg_store)
+  getMailListAll(op, arg_store = null){
+    YKLiba.Log.setLogLevel(YKLiba.Log.DEBUG())
+    CONFIG.setNoop(false)
+    const keyList = this.tabledata.keys()
+
+    const [startIndex, limit] = makeIndexes2(keyList)
+
+    let numOfItems = 0
+    let key
+    for(let i=0; i < limit; i++){
+      key = keyList[i]
+      this.getMailList(key, op, arg_store)
+
+      numOfItems = numOfItems + 1
+      if( numOfItems >= this.tabledata.folderConf.maxItems){
+        break
+      }
+    }
+    // Logger.log("=======================")
+    this.tabledata.update();
+  }
+  get_mail_list_x(folderInfo, op, arg_store = null){
+    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(folderInfo)
+    return this.get_mail_list(folderInfo, op, queryInfo, arg_store)
   }
 
-  get_mail_list(targetedEmail, op, queryInfo, arg_store=null){
+  get_mail_list(folderInfo, op, queryInfo, arg_store=null){
     if( queryInfo.maxThreads <= 0 ){
       throw Error(`ueryInfo.maxThreads=${queryInfo.maxThreads}`)
     }
     const store = Store.get_valid_store( base_name, arg_store );
 
-    store.set("name", targetedEmail.name );
-    store.set("condition", targetedEmail.condition );
-    store.set("id", targetedEmail.id );
-    store.set("url", targetedEmail.url );
-    store.set("last_date_time", targetedEmail.lastDateTime );
-    store.set("lastDate", targetedEmail.lastDate );
-    store.set("folder", targetedEmail.folder );
+    store.set("name", folderInfo.name );
+    store.set("condition", folderInfo.condition );
+    store.set("id", folderInfo.id );
+    store.set("url", folderInfo.url );
+    store.set("last_date_time", folderInfo.lastDateTime );
+    store.set("lastDate", folderInfo.lastDate );
+    store.set("folder", folderInfo.folder );
 
-    this.get_mail_list_base(store, targetedEmail, op, queryInfo)
+    this.get_mail_list_base(store, folderInfo, op, queryInfo)
 
     return store;
   }
 
-  makePairLabelAndQueryInfo(targetedEmail){
-    const pairLabel = new PairLabel(targetedEmail.name)
-    if(targetedEmail.maxThreads < 0 ){
-      throw Error(`info.maxThreads=${targetedEmail.maxThreads}`)
+  makePairLabelAndQueryInfo(info){
+    const pairLabel = new PairLabel(info.name)
+    if(info.maxThreads < 0 ){
+      throw Error(`info.maxThreads=${info.maxThreads}`)
     }
-    const queryInfo = new QueryInfo(targetedEmail.condition, pairLabel, targetedEmail.maxThreads, targetedEmail.maxSearchesAvailable)
+    const queryInfo = new QueryInfo(info.condition, pairLabel, info.maxThreads, info.maxSearchesAvailable)
     return [pairLabel, queryInfo]
   }
 
-  get_mail_list_base(store, targetedEmail, op, queryInfo){
+  get_mail_list_base(store, info, op, queryInfo){
     // Logger.log(JSON.stringify(queryInfo).slice(0, 100))
 
     let start = queryInfo.start
@@ -167,11 +188,11 @@ class Gmail{
     const limit = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT') - 1;
     let threadAndMessagedataArray
 
-    const [newLastDateTime_1, within1, remain1] = GmailSearch.SearchWithTargetLabel(queryInfo, store, targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
+    const [newLastDateTime_1, within1, remain1] = GmailSearch.SearchWithTargetLabel(queryInfo, store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
     // Logger.log(`gmail|get_mail_list_base|queryInfo=${ JSON.stringify(queryInfo)}`)
     // Logger.log(`gmail|get_mail_list_base|within1=${ JSON.stringify(within1).slice(0, 200)}`)
     if( within1.msgCount > 0 ){
-      messageDataList = Dataregister.registerData(within1, targetedEmail.name, op, limit, lastDate)
+      messageDataList = Dataregister.registerData(within1, info.name, op, limit, lastDate)
       if(  messageDataList.length > 0 ){
         saveData(store, messageDataList)
       }
@@ -187,12 +208,12 @@ class Gmail{
     }
 
     /***********************************/
-    const [newLastDateTime_2, within2, remain2] = GmailSearch.SearchWithFrom(queryInfo, store, targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
+    const [newLastDateTime_2, within2, remain2] = GmailSearch.SearchWithFrom(queryInfo, store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
     if( within2.msgCount > 0 ){
-      Logger.log(`get_mail_list_base info.name=${targetedEmail.name}`)
+      Logger.log(`get_mail_list_base info.name=${info.name}`)
       Logger.log(`within2=${JSON.stringify(within2)}`)
 
-      const messageDataList = Dataregister.registerData(within2, targetedEmail.name, op, limit, lastDate)
+      const messageDataList = Dataregister.registerData(within2, info.name, op, limit, lastDate)
       if(  messageDataList.length > 0 ){
         saveData(store, messageDataList)
       }
@@ -216,6 +237,18 @@ class Gmail{
       // Logger.log(`#################============== 2 lastDateTime=${store.get('last_date_time')}`)
     }
   }
+}
+
+function testa(){
+  const testdata = Util.makeTabledata()
+  const gmail = new Gmail(testdata)
+  Logger.log(`gamil startIndex=${gmail["startIndex"]}`)
+  Logger.log(`gamil limit=${gmail.limit}`)
+  gmail.removeLabelAll()
+  Logger.log(`====`)
+  const op = YKLiba.Arrayx.addUnderRow()
+  gmail.getMailListAll(op)
+  Logger.log(`====`)
 }
 
 ///////////////////////////////

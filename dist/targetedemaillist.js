@@ -4,7 +4,7 @@ class TargetedEmailList {
 
     this.parentFolderInfo = null;
     this.folderConf = null;
-    this.TargetedEmailAssoc = {};
+    this.targetedEmailAssoc = {};
 
     for(let i=0; i<values.length; i++){
       item = values[i]
@@ -20,12 +20,13 @@ class TargetedEmailList {
           break;
         case "folder":
           Logger.log(`i=${i} item.name=${item[1]}`);
-          this.TargetedEmailAssoc[item[1]] = new TargetedEmail(i, item);
+          this.targetedEmailAssoc[item[1]] = new TargetedEmail(i, item);
+          Logger.log(`TargetedEmailList i=${i} item[1]=${item[1]}`)
           break;
         default:
           break;
       }
     }
-    Logger.log( Object.keys(this.TargetedEmailAssoc) )
+    Logger.log( `keys=${ Object.keys(this.targetedEmailAssoc) }` )
   }
 }

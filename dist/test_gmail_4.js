@@ -51,16 +51,21 @@ function xtestb(gmail, key, numOfItems = 0){
   gmail.tabledata.update();
 
   numOfItems = numOfItems + 1
-  if( numOfItems >= folderConf.maxItems){
-    return
-  }
+
+  return numOfItems
 }
 function xtesta(gmail, numOfItems){
   Logger.log(`xtesta gmail.limit=${gmail.limit}`)
   for(let i=0; i < gmail.limit; i++){
     key = gmail.keyList[i]
     Logger.log(`key=${key}`)
-    xtestb(gmail, key, numOfItems)
+    numOfItems = xtestb(gmail, key, numOfItems)
+    const folderConf = gmail.folderConf;
+
+    if( numOfItems >= gmail.folderConf.maxItems){
+      Logger.log(`xtesta break numOfItems=${numOfItems} gmail.folderConf.maxItems=${gmail.folderConf.maxItems}`)
+      break;
+    }
   }
   Logger.log(`xtesta END`)
 }

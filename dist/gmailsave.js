@@ -1,14 +1,14 @@
 class GmailSave {
   static saveData(store, messageDataList ){
-    // Logger.log(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
+    YKLiba.Log.debug(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
     if( typeof(messageDataList) !== "undefined" ){
-      // Logger.log(`gmailsave|saveData|messageDataList= 1`)
+      YKLiba.Log.debug(`GmailSave.saveData 1`)
       const folder = store.get('folder')
       this.outputSupplementaryFileFromArray(messageDataList, folder)
     }
     else{
-      // throw Error(`SearchWithBase 3`)
-      // Logger.log(`#### 2 messagedata=${JSON.stringify(messageDataList).slice(0,100) }`)
+      throw Error(`GmailSave.saveData 3`)
+      YKLiba.Log.debug(`#### 2 messagedata=${JSON.stringify(messageDataList).slice(0,100) }`)
     }
     // throw Error(`under saveData 3`)
   

@@ -4,10 +4,10 @@
 			"path": "."
 		},
 		{
-			"path": "../YKLiba"
+			"path": "../YKLibb"
 		},
 		{
-			"path": "../YKLibb"
+			"path": "../YKLiba_4"
 		}
 	],
 	"settings": {}

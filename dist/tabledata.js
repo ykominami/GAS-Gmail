@@ -16,8 +16,9 @@ class Tabledata {
   getTargetedEmail(key){
     return this.targetedEmailAssoc[key];
   }
-  rewrite(item){
-    // Logger.log(`------------------rewrite`)
+  rewrite(targetedEmail){
+    const item = targetedEmail
+    // YKLiba.Log.debug(`------------------rewrite`)
     if( !item.old_id ){
       this.values[item.index][item.index_id] = item.id;
     }
@@ -26,7 +27,7 @@ class Tabledata {
     }
     if( !item.oldLastDateTime ){
       this.values[item.index][item.indexLastDateTime] = item.lastDateTime;
-      // Logger.log(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
+      // YKLiba.Log.debug(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
     }
     if( item.old_nth != item.nth){
       this.values[item.index][item.index_nth] = item.nth;
@@ -39,7 +40,7 @@ class Tabledata {
     }
   }
   update(){
-    // Logger.log(`Tabledata.update=${ [this.header, ...this.values] }`)
+    // YKLiba.Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
     this.dataRange.setValues( [this.header, ...this.values] );
   }
 }

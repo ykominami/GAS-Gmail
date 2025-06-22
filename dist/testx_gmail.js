@@ -6,7 +6,7 @@ function get_mail_list_from_Hotwire_Club(arg_store = null){
   const op = YKLiba.Config.addUnderRow()
   const testdata = Util.makeTabledata()
   const gmail = new Gmail(testdata)
-  Logger.log(`basename=${basename}`)
+  YKLiba.Log.debug(`basename=${basename}`)
   return gmail.getMailList(basename, op, arg_store)
   // return gmail.get_mail_list_x(basename, op, arg_store)
 }
@@ -71,4 +71,12 @@ function testx_gmail_HW(){
   const basename = Store.hotwireWeekly()
   const gmail = new Gmail(basename)
   gmail.main()
+}
+
+function testx_gmail(){
+  const url = "https://www.google.com/url?q=https://system.reins.jp/cja/CJA_030.html?id%3D240510001099&sa=D&sntz=1&usg=AOvVaw01aDMgXy-gM-w_p4wYx5U"
+  const filename = YKLiba.Url.getFilenameFromUrl(url)
+  const decodedUrl = decodeURIComponent(url);
+  const basename = YKLiba.Url.getBasename(decodedUrl)
+  YKLiba.Log.debug(`basename=${basename}`)
 }

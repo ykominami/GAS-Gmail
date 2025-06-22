@@ -19,14 +19,17 @@ class TargetedEmailList {
           }
           break;
         case "folder":
-          Logger.log(`i=${i} item.name=${item[1]}`);
-          this.targetedEmailAssoc[item[1]] = new TargetedEmail(i, item);
-          Logger.log(`TargetedEmailList i=${i} item[1]=${item[1]}`)
+          // YKLiba.Log.debug(`i=${i} item.name=${item[1]}`);
+          if(item[1]){
+            // YKLiba.Log.debug(`TargetedEmailList i=${i} item[1]=${item[1]}`)
+            let targetedEmail = new TargetedEmail(i, item);
+            this.targetedEmailAssoc[item[1]] = targetedEmail;
+          }
           break;
         default:
           break;
       }
     }
-    Logger.log( `keys=${ Object.keys(this.targetedEmailAssoc) }` )
+    // YKLiba.Log.debug( `keys=${ Object.keys(this.targetedEmailAssoc) }` )
   }
 }

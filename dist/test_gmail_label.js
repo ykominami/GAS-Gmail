@@ -27,11 +27,11 @@ class TestGmailLabel {
     const query = `from : me after:2024/12/1 before:2024/12/3`
     const tamda = GmailSearch.getThreadsAndMessagedataArray(query, start, max)
     tamda.forEach( function(item, idx) {
-      Logger.log(`tamda idx=${idx} item.constructor=${ item.constructor }`)
-      Logger.log(`tamda item=${ JSON.stringify(item)}`)
-      Logger.log(`tamda item.ar()=${ JSON.stringify(item.ar()) }` )
+      YKLiba.Log.debug(`tamda idx=${idx} item.constructor=${ item.constructor }`)
+      YKLiba.Log.debug(`tamda item=${ JSON.stringify(item)}`)
+      YKLiba.Log.debug(`tamda item.ar()=${ JSON.stringify(item.ar()) }` )
     })
-    Logger.log(`tamda.constructor=${tamda.constructor}`)
+    YKLiba.Log.debug(`tamda.constructor=${tamda.constructor}`)
     // YKLiba.Log.debug(`testcase| tamda.thread=${tamda.tx()}`)
     // YKLiba.Log.debug(`testcase| tamda.messagedataArray.length=${tamda.mx().length}`)
 

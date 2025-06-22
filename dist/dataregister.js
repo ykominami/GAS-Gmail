@@ -21,7 +21,9 @@ class Dataregister {
   }
 
   static getDataSheetRange(sheetname){
-    const ss_id = YKLiba.Base.getSsId()
+    const ss_id = CONFIG.configSpreadsheetId
+    // const ss_id = YKLiba.Base.getSsId()
+    Logger.log(`Dataregister.getDataSheetRange ss_id=${ss_id}`)
     let [ss, sheet] = YKLiba.Base.getSpreadsheet(ss_id, sheetname)
     if(sheet === null){
       sheet = ss.insertSheet(sheetname)
@@ -29,7 +31,7 @@ class Dataregister {
     const [values, dataRange] = YKLibb.Gssx.getValuesFromSheet(sheet);
     let range = dataRange;
     let row, col, height, width
-    [row, col, height, width] = Tableop.showRange(range)
+    [row, col, height, width] = Tableop.getRangeShape(range)
     if( !height ){
       if( !width ){
         // Logger.log(`getDataSheetRange 0 1`)
@@ -53,7 +55,7 @@ class Dataregister {
       //   range = dataRange.offset(0, 0, height, width);
       // }
     }
-    // showRange(range)
+    // [row, col, height, width] = Tableop.getRangeShape(range)
     return range
   }
 
@@ -93,7 +95,8 @@ class Dataregister {
 
     if(height2 > 0 && width2 > 0){
       const range3 = YKLiba.Code.transformRange2(range2, height2, width2)
-      Tableop.showRange(range3)
+      [row, col, height, width] = Tableop.getRangeShape(range3)
+      Logger.log(`range3 row=${row} col=${col} height=${height} width=${width}`)
       Logger.log(`dataArray.length=${dataArray.length}`)
       Logger.log(`dataArray[0].length=${dataArray[0].length}`)
       try{
@@ -150,5 +153,18 @@ class Dataregister {
     } )
   }
 }
+function testbSub(sheetname){
+  let range = Dataregister.getDataSheetRange(sheetname)
+  Tableop.showRangeShape(range)
+  Logger.log(`range=${JSON.stringify(range)}`)
+  Logger.log(`range=${range}`)
 
+}
+function testb(){
+  let sheetname = CONFIG.idsSheetName
+  testbSub(sheetname)  
+
+  sheetname = "Hotwire Weekly"
+  testbSub(sheetname)  
+}
 

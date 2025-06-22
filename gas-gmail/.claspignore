@@ -1,3 +1,5 @@
 !appscript.json
 !*.js
+.gitignore
+.git
 

@@ -23,7 +23,7 @@ class Dataregister {
   static getDataSheetRange(sheetname){
     const ss_id = CONFIG.configSpreadsheetId
     // const ss_id = YKLiba.Base.getSsId()
-    Logger.log(`Dataregister.getDataSheetRange ss_id=${ss_id}`)
+    YKLiba.Log.debug(`Dataregister.getDataSheetRange ss_id=${ss_id}`)
     let [ss, sheet] = YKLiba.Base.getSpreadsheet(ss_id, sheetname)
     if(sheet === null){
       sheet = ss.insertSheet(sheetname)
@@ -156,8 +156,8 @@ class Dataregister {
 function testbSub(sheetname){
   let range = Dataregister.getDataSheetRange(sheetname)
   Tableop.showRangeShape(range)
-  Logger.log(`range=${JSON.stringify(range)}`)
-  Logger.log(`range=${range}`)
+  YKLiba.Log.debug(`range=${JSON.stringify(range)}`)
+  YKLiba.Log.debug(`range=${range}`)
 
 }
 function testb(){

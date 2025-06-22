@@ -6,17 +6,9 @@ class Tableop {
     const width = range.getNumColumns()
     return [row, col, height, width]
   }
-<<<<<<< Updated upstream
-  static showRangeShape(range){
-    const [row, col, height, width] = Tableop.getRangeShape(range)
-    Logger.log(`################# showRange row=${row} col=${col} height=${height} width=${width}`)
-  }
-||||||| Stash base
-=======
   static showRangeShape(range){
     let row, col, height, width
     ;[row, col, height, width] = YKLiba.Range.getRangeShape(range)
     YKLiba.Log.debug(`################# showRange row=${row} col=${col} height=${height} width=${width}`)
   }
->>>>>>> Stashed changes
 }

@@ -22,7 +22,7 @@ class Config {
     this.noop = value
   }
   getConfig(){
-    YKLiba.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
+    YKLiblog.log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
     return YKLibb.setupSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName);
   }
   getConfigInfo2(){
@@ -39,7 +39,7 @@ class Config {
 function testdatef(){
   const date = new Date();
   const str = YKLiba.formatDateTimeManual(date);
-  YKLiba.Log.debug(str);
+  YKLiblog.log.debug(str);
 }
 
 CONFIG = new Config("noop")

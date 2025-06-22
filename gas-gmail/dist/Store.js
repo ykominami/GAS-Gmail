@@ -50,7 +50,7 @@ class Store {
   }
   static setIndex(value){
     Store.index_x = value
-    YKLiba.Log.debug(`set_index Store.index_x=${Store.index_x}`)
+    YKLiblog.Log.debug(`set_index Store.index_x=${Store.index_x}`)
   }
   static set(key, value){
     YKLiba.Store.set(Store.index, key, value)
@@ -60,26 +60,26 @@ class Store {
     return YKLiba.Store.keys(index)
   }
   static getValidStore(base_name, arg_store=null){
-    YKLiba.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
+    YKLiblog.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
     let store;
     if( arg_store === null ){
-      YKLiba.Log.debug(`get_valid_store 1`)
+      YKLiblog.Log.debug(`get_valid_store 1`)
       const store_index = Store.init()
       const idx = Store.index();
       // const store_index = Store.storeIndex()
       store = new Store(base_name, idx, store_index)
       // YKLiba.Store.add_level_2(store_index, base_name, {})
-      YKLiba.Log.debug("get_valid_store T")
-      YKLiba.Log.debug(store)
+      YKLiblog.Log.debug("get_valid_store T")
+      YKLiblog.Log.debug(store)
     }
     else{
       store = arg_store
-      YKLiba.Log.debug("get_valid_store F")
+      YKLiblog.Log.debug("get_valid_store F")
     }
     return store
   }
   constructor(base_name, idx, store_index){
-    YKLiba.Log.debug(`Store constructor base_name=${base_name}`)
+    YKLiblog.Log.debug(`Store constructor base_name=${base_name}`)
     this.base_name = base_name
     this.idx = idx
     this.store_index = store_index
@@ -97,21 +97,21 @@ class Store {
 }
 
 function get_valid_store(base_name, arg_store=null){
-  YKLiba.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
+  YKLiblog.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
   let store;
   if( arg_store === null ){
-    YKLiba.Log.debug(`get_valid_store 1`)
+    YKLiblog.Log.debug(`get_valid_store 1`)
     const store_index = Store.init()
     const idx = Store.index();
     // const store_index = Store.storeIndex()
     store = new Store(base_name, idx, store_index)
     // YKLiba.Store.add_level_2(store_index, base_name, {})
-    YKLiba.Log.debug("get_valid_store T")
-    YKLiba.Log.debug(store)
+    YKLiblog.Log.debug("get_valid_store T")
+    YKLiblog.Log.debug(store)
   }
   else{
     store = arg_store
-    YKLiba.Log.debug("get_valid_store F")
+    YKLiblog.Log.debug("get_valid_store F")
   }
   return store
 }

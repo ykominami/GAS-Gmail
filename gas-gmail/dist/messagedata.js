@@ -9,7 +9,7 @@ class Messagedata{
         date = msg.getDate()
       }
       catch(error){
-        YKLiba.Log.unknown(error)
+        YKLiblog.Log.unknown(error)
         return null
       }
     }
@@ -58,7 +58,7 @@ class Messagedata{
 
   getDataAsArray(){
     this.dataArray = [this.truncated.id, this.truncated.from, this.truncated.subject, this.truncated.date, this.truncated.plainBody]
-    YKLiba.Log.debug(`Messagedata.getDataAsArray dataArray.length=${this.dataArray.length} this.dataArray[0]=${this.dataArray[0]} this.dataArray[2]=${this.dataArray[2]}`)
+    YKLiblog.Log.debug(`Messagedata.getDataAsArray dataArray.length=${this.dataArray.length} this.dataArray[0]=${this.dataArray[0]} this.dataArray[2]=${this.dataArray[2]}`)
     return this.dataArray
   }
 }

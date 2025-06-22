@@ -8,7 +8,7 @@ class Gmail{
 
     this.op = YKLiba.Config.addUnderRow()
     const keyList = tabledata.keys()
-    YKLiba.Log.debug(`## keyList=${keyList}`)
+    YKLiblog.Log.debug(`## keyList=${keyList}`)
     this.keyList = keyList
     if( makeindexFlag == 0){
       const [startIndex, limit] = this.makeIndexes(keyList)
@@ -37,12 +37,12 @@ class Gmail{
     // const endIndex = keyList.length
     const endIndex = startIndex + 3
 
-    // YKLiba.Log.debug(`endIndex=${endIndex}|`)
-    // YKLiba.Log.debug(`tabledata.folderConf.maxItems=${tabledata.folderConf.maxItems}|`)
-    // YKLiba.Log.debug(`keyList.length=${keyList.length}|`)
+    // YKLiblog.Log.debug(`endIndex=${endIndex}|`)
+    // YKLiblog.Log.debug(`tabledata.folderConf.maxItems=${tabledata.folderConf.maxItems}|`)
+    // YKLiblog.Log.debug(`keyList.length=${keyList.length}|`)
     // const [_max, limit] =  getMaxAndMin([endIndex, tabledata.folderConf.maxItems , keyList.length])
     const array0 = [endIndex, keyList.length]
-    YKLiba.Log.debug(`array0=${array0}`)
+    YKLiblog.Log.debug(`array0=${array0}`)
     const [_max, limit] =  YKLiba.Arrayx.getMaxAndMin(array0)
 
     return [startIndex, limit]
@@ -56,7 +56,7 @@ class Gmail{
   removeLabelFromEmails(labelName, label) {
     // ラベルが存在しない場合は処理を終了
     if (!label) {
-      YKLiba.Log.debug("指定されたラベルが見つかりませんでした: " + labelName);
+      YKLiblog.Log.debug("指定されたラベルが見つかりませんでした: " + labelName);
       return;
     }
 
@@ -68,34 +68,34 @@ class Gmail{
       threads[i].removeLabel(label);
     }
 
-    YKLiba.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
+    YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
   }
   removeLavel(key){
-    YKLiba.Log.debug(`key=${key}`)
+    YKLiblog.Log.debug(`key=${key}`)
     const targetedEmail = this.tabledata.getTargetedEmail(key);
     const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
     removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
     removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
-    YKLiba.Log.debug(pairLabel)
-    YKLiba.Log.debug(queryInfo)
+    YKLiblog.Log.debug(pairLabel)
+    YKLiblog.Log.debug(queryInfo)
   }
   removeLabelAll(){
     CONFIG.setNoop(false)
 
     // let numOfItems = 0
-    // YKLiba.Log.debug(`=A`)
-    // YKLiba.Log.debug(`this.startIndex=${this.startIndex}`)
-    // YKLiba.Log.debug(`this.limit=${this.limit}`)
+    // YKLiblog.Log.debug(`=A`)
+    // YKLiblog.Log.debug(`this.startIndex=${this.startIndex}`)
+    // YKLiblog.Log.debug(`this.limit=${this.limit}`)
     for(let i=0; i < this.limit; i++){
-      YKLiba.Log.debug(`i=${i}`)
+      YKLiblog.Log.debug(`i=${i}`)
 
       const key = this.keyList[i]
       this.removeLavel(key)
     }
-    // YKLiba.Log.debug(`END i=${i}`)
+    // YKLiblog.Log.debug(`END i=${i}`)
   }
   getMailList(key, op, arg_store){
-    YKLiba.Log.debug(`key=${key}`)
+    YKLiblog.Log.debug(`key=${key}`)
     const targetedEmail = this.tabledata.getTargetedEmail(key);
 
     targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);

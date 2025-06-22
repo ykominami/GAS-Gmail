@@ -9,6 +9,6 @@ class Tableop {
   static showRangeShape(range){
     let row, col, height, width
     ;[row, col, height, width] = YKLiba.Range.getRangeShape(range)
-    YKLiba.Log.debug(`################# showRange row=${row} col=${col} height=${height} width=${width}`)
+    YKLiblog.Log.debug(`################# showRange row=${row} col=${col} height=${height} width=${width}`)
   }
 }

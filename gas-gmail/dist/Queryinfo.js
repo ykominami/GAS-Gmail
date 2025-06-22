@@ -55,13 +55,13 @@ class QueryInfo {
     let count=0
     const messages = []
     const retPairLabel = YKLiba.isValidObject(this.pairLabel)
-    YKLiba.Log.debug(`QueryInfo retPairLabel=${retPairLabel}`)
+    YKLiblog.Log.debug(`QueryInfo retPairLabel=${retPairLabel}`)
     ret = retPairLabel[0]
     if( ret ){
       const retPairLabelAndTargetLabel = YKLiba.isValidObject(this.pairLabel.targetLabel)
       if( !retPairLabelAndTargetLabel[0] ){
         const message = `QueryInfo  this.pairLabel.targetLabel ${retPairLabelAndTargetLabel[1]}`
-        YKLiba.Log.debug(message)
+        YKLiblog.Log.debug(message)
         messages.push(message)
         count++
       }
@@ -69,20 +69,20 @@ class QueryInfo {
       if( !retPairLabelAndEndLabel[0] ){
         message =`QueryInfo this.pairLabel.endtLabel ${retPairLabelAndEndLabel[1]}`
         messages.push(message)
-        YKLiba.Log.debug(message)
+        YKLiblog.Log.debug(message)
         count++
       }
     }
     else{
       message = `QueryInfo this.pairLable1 ${retPairLabel[1]}`
-      YKLiba.Log.debug(message)
+      YKLiblog.Log.debug(message)
         messages.push(message)
       count++
     }
     const retQueries = YKLiba.isValidObject(this.queries)
     const retQueries0 = YKLiba.isValidObject(this.queries[0])
     const retQueries1 = YKLiba.isValidObject(this.queries[1])
-    YKLiba.Log.debug(`QueryInfo.isValid count=${count}`)
+    YKLiblog.Log.debug(`QueryInfo.isValid count=${count}`)
     if(count > 0){
       result = false
       throw Error('Invalid QueryInfo ${messages}')

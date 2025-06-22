@@ -1,14 +1,14 @@
 class Store {
-  static THE_HOTWIRE_CLUB(){
+  static theHotwireClub(){
     return "The Hotwire Club"
   }
-  static FRONTEND_FOCUS(){
+  static frontendFocus(){
     return 'Frontend Focus'
   }
-  static HOTWIRE_WEEKLY(){
+  static hotwireWeekly(){
     return 'Hotwire Weekly'
   }
-  static TEST_NAME(){
+  static testName(){
     return "0-AA-TEST_NAME"
   }
   
@@ -20,35 +20,35 @@ class Store {
     if(index === 0){
       YKLiba.Store.init()
       const store_index = YKLiba.Store.add({})
-      Store.set_store_index(store_index)
+      Store.setStoreIndex(store_index)
     }
     const index2 = index + 1
-    Store.set_index(index2)
+    Store.setIndex(index2)
 
     return index2
   }
-  static store_index(){
-    return Store.get_store_index()
+  static storeIndex(){
+    return Store.getStoreIndex()
   }
-  static set_store_index(value){
+  static setStoreIndex(value){
     Store.store_index_x = value
   }
-  static get_store_index(){
+  static getStoreIndex(){
     return Store.store_index_x
   }
   static index(){
-    return Store.get_index()
+    return Store.getIndex()
   }
-  static get_index(){
+  static getIndex(){
     if( typeof(Store.index_x) === "undefined" ){
-      Store.set_index(-1)
+      Store.setIndex(-1)
     }
     let index = Store.index_x
     index += 1
-    Store.set_index(index)
+    Store.setIndex(index)
     return index
   }
-  static set_index(value){
+  static setIndex(value){
     Store.index_x = value
     YKLiba.Log.debug(`set_index Store.index_x=${Store.index_x}`)
   }
@@ -59,14 +59,14 @@ class Store {
     // return YKLiba.Store.get(Store.index, key)
     return YKLiba.Store.keys(index)
   }
-  static get_valid_store(base_name, arg_store=null){
+  static getValidStore(base_name, arg_store=null){
     YKLiba.Log.debug(`get_valid_store arg_store=${arg_store} base_name=${base_name}`)
     let store;
     if( arg_store === null ){
       YKLiba.Log.debug(`get_valid_store 1`)
       const store_index = Store.init()
       const idx = Store.index();
-      // const store_index = Store.store_index()
+      // const store_index = Store.storeIndex()
       store = new Store(base_name, idx, store_index)
       // YKLiba.Store.add_level_2(store_index, base_name, {})
       YKLiba.Log.debug("get_valid_store T")
@@ -103,7 +103,7 @@ function get_valid_store(base_name, arg_store=null){
     YKLiba.Log.debug(`get_valid_store 1`)
     const store_index = Store.init()
     const idx = Store.index();
-    // const store_index = Store.store_index()
+    // const store_index = Store.storeIndex()
     store = new Store(base_name, idx, store_index)
     // YKLiba.Store.add_level_2(store_index, base_name, {})
     YKLiba.Log.debug("get_valid_store T")

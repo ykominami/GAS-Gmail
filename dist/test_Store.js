@@ -19,12 +19,12 @@ function gety(){
   let index
   let store_index
   index = Store.init()
-  store_index = Store.store_index()
+  store_index = Store.storeIndex()
   const storeA = new Store("A", index, store_index)
   YKLiba.Log.debug(`storeA.index=${storeA.index}`)
   YKLiba.Log.debug(`storeA.store_index=${storeA.store_index}`)
   index = Store.init()
-  store_index = Store.store_index()
+  store_index = Store.storeIndex()
   const storeB = new Store("B", index, store_index)
   YKLiba.Log.debug(`storeB.idx=${storeB.idx}`)
   YKLiba.Log.debug(`storeB.store_index=${storeB.store_index}`)

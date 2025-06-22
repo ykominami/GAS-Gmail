@@ -8,7 +8,7 @@ function execute_Test_gmail3_ForTestGas(){
 
 class Test_Gmail3 {
   test_register_data_rewrite_HW_a(){
-    const basename = Store.TEST_NAME()
+    const basename = Store.testName()
     const store = get_valid_store(basename, null)
     const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
     const [ss, sheet] = YKLiba.get_spreadsheet(ssId, basename)
@@ -31,7 +31,7 @@ class Test_Gmail3 {
     tester.assertEquals(actual, expected)
   }
   test_register_data_rewrite_HW_b(){
-    const basename = Store.TEST_NAME()
+    const basename = Store.testName()
     const store = get_valid_store(basename, null)
     const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
     const [ss, sheet] = YKLiba.get_spreadsheet(ssId, basename)
@@ -56,7 +56,7 @@ class Test_Gmail3 {
 
   }
   test_register_data_aur_HW_a(){
-    const basename = Store.TEST_NAME()
+    const basename = Store.testName()
     const store = get_valid_store(basename, null)
     const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
     const [ss, sheet] = YKLiba.get_spreadsheet(ssId, basename)
@@ -85,7 +85,7 @@ class Test_Gmail3 {
     tester.assertEquals(actual, expected)
   }
   test_register_data_aur_HW_b(){
-    const basename = Store.HOTWIRE_WEEKLY()
+    const basename = Store.hotwireWeekly()
     const store = get_valid_store(basename, null)
     const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
     const [ss, sheet] = YKLiba.get_spreadsheet(ssId, basename)

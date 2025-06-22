@@ -17,13 +17,13 @@ function execute_Test_gmail_label_3_ForTestGas(){
   let failureFuncs = tester.executeTestGas(Test_Gmail_Label_3);
 }
 
-class Test_Gmail_Label {
+class TestGmailLabel {
   // 
   test_label(){
     // YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
     let start = 0
     let max = 5
-    const base_name = Store.TEST_NAME()
+    const base_name = Store.testName()
     const query = `from : me after:2024/12/1 before:2024/12/3`
     const tamda = GmailSearch.getThreadsAndMessagedataArray(query, start, max)
     tamda.forEach( function(item, idx) {
@@ -64,7 +64,7 @@ class Test_Gmail_Label {
     let start = 0
     let max = 5
     let last_date = null
-    const base_name = Store.TEST_NAME()
+    const base_name = Store.testName()
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
 
     const targetLabel = pairLabel.targetLabel
@@ -81,7 +81,7 @@ class Test_Gmail_Label {
     let start = 0
     let max = 5
     let last_date = null
-    const base_name = Store.TEST_NAME()
+    const base_name = Store.testName()
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
 
     const targetLabel = pairLabel.targetLabel
@@ -101,7 +101,7 @@ class Test_Gmail_Label {
     let start = 0
     let max = 5
     let last_date = null
-    const base_name = Store.TEST_NAME()
+    const base_name = Store.testName()
     const [pairLabel, queryInfo, store] = setup_for_test_gmail(base_name)
   
     const targetLabel = pairLabel.targetLabel
@@ -113,21 +113,62 @@ class Test_Gmail_Label {
     const expected = 0
     tester.assertEquals(actual, expected)
   }
+  test_get_labels(){
+    const pairLabel = new PairLabel("test")
+    const actual = pairLabel.labels.length
+    tester.assert(actual > 0, "labels.length > 0")
+  }
+  test_get_threads_A(){
+    const base_name = Store.testName()
+    const pairLabel = new PairLabel(base_name)
+    const threads = pairLabel.targetLabel.getThreads()
+    tester.assertEquals(threads.length, 0)
+  }
+  test_label_A(){
+    const base_name = Store.testName()
+    const pairLabel = new PairLabel(base_name)
+    const threads = pairLabel.get_threads_A()
+    tester.assertEquals(threads.length, 0)
+  }
+  test_label_B(){
+    const base_name = Store.testName()
+    const pairLabel = new PairLabel(base_name)
+    const threads = pairLabel.get_threads_B()
+  }
+  test_label_C(){
+    const base_name = Store.testName()
+    const pairLabel = new PairLabel(base_name)
+    const threads = pairLabel.get_threads_C()
+  }
+  test_paired_label(){
+    let basename
+    basename = Store.frontendFocus()
+    const pairLabel = new PairLabel(basename)
+    pairLabel.do_label()
+
+    basename = Store.theHotwireClub()
+    const pairLabel2 = new PairLabel(basename)
+    pairLabel2.do_label()
+
+    basename = Store.hotwireWeekly()
+    const pairLabel3 = new PairLabel(basename)
+    pairLabel3.do_label()
+  }
 }
 class Test_Gmail_Label_2 {
 }
 function test_remove_labes_FF(){
-  const basename = Store.FRONTEND_FOCUS()
+  const basename = Store.frontendFocus()
   remove_labels(basename)
 }
 
 function test_remove_labes_THC(){
-  const basename = Store.THE_HOTWIRE_CLUB()
+  const basename = Store.theHotwireClub()
   remove_labels(basename)
 }
 
 function test_remove_labes_HW(){
-  const basename = Store.HOTWIRE_WEEKLY()
+  const basename = Store.hotwireWeekly()
   remove_labels(basename)
 }
 

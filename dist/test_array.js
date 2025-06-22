@@ -1,7 +1,7 @@
 function test_aur_get_mail_list_from_Hotwire_Club(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.THE_HOTWIRE_CLUB()
+  const basename = Store.theHotwireClub()
   const op = YKLiba.configADD_UNDER_ROW()
   test_get_mail_list(op, basename)
 }
@@ -9,7 +9,7 @@ function test_aur_get_mail_list_from_Hotwire_Club(arg_store = null){
 function test_rewrite_get_mail_list_from_Hotwire_Club(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.THE_HOTWIRE_CLUB()
+  const basename = Store.theHotwireClub()
   const op = YKLiba.configREWRITE()
   test_get_mail_list(op, basename)
 }
@@ -17,7 +17,7 @@ function test_rewrite_get_mail_list_from_Hotwire_Club(arg_store = null){
 function test_aur_get_mail_list_from_Frontend_Focus(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.FRONTEND_FOCUS()
+  const basename = Store.frontendFocus()
   const op = YKLiba.configADD_UNDER_ROW()
   test_get_mail_list(op, basename)
 }
@@ -25,7 +25,7 @@ function test_aur_get_mail_list_from_Frontend_Focus(arg_store = null){
 function test_rewrite_get_mail_list_from_Frontend_Focus(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.FRONTEND_FOCUS()
+  const basename = Store.frontendFocus()
   const op = YKLiba.configREWRITE()
   test_get_mail_list(op, basename)
 }
@@ -33,7 +33,7 @@ function test_rewrite_get_mail_list_from_Frontend_Focus(arg_store = null){
 function test_acr_get_mail_list_from_hotwire_weekly(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.HOTWIRE_WEEKLY()
+  const basename = Store.hotwireWeekly()
   const op = YKLiba.configADD_UNDER_ROW()
   test_get_mail_list(op, basename)
 }
@@ -41,7 +41,7 @@ function test_acr_get_mail_list_from_hotwire_weekly(arg_store = null){
 function test_rewrite_get_mail_list_from_hotwire_weekly(arg_store = null){
   YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
 
-  const basename = Store.HOTWIRE_WEEKLY()
+  const basename = Store.hotwireWeekly()
   const op = YKLiba.configREWRITE()
   test_get_mail_lis(op, basename)
 }

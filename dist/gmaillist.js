@@ -38,7 +38,7 @@ class GmailList{
   }
 
   getMailListBase(store, op, queryInfo){
-    // Logger.log(JSON.stringify(queryInfo).slice(0, 100))
+    // YKLiba.Log.debug(JSON.stringify(queryInfo).slice(0, 100))
 
     let start = queryInfo.start
     let maxThreads = queryInfo.maxThreads
@@ -60,13 +60,13 @@ class GmailList{
       lastDate = new Date(lastDateTime);
       lastDateTime = lastDate.getTime();
     }
-    // Logger.log(`##=== gmail|get_mail_list_base|lastDate=${lastDate}`)
+    // YKLiba.Log.debug(`##=== gmail|get_mail_list_base|lastDate=${lastDate}`)
     const limit = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT') - 1;
     let threadAndMessagedataArray
 
     const [newLastDateTime_1, within1, remain1] = GmailSearch.SearchWithTargetLabel(queryInfo, store, this.targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
-    // Logger.log(`gmail|get_mail_list_base|queryInfo=${ JSON.stringify(queryInfo)}`)
-    // Logger.log(`gmail|get_mail_list_base|within1=${ JSON.stringify(within1).slice(0, 200)}`)
+    // YKLiba.Log.debug(`gmail|get_mail_list_base|queryInfo=${ JSON.stringify(queryInfo)}`)
+    // YKLiba.Log.debug(`gmail|get_mail_list_base|within1=${ JSON.stringify(within1).slice(0, 200)}`)
     if( within1.msgCount > 0 ){
       messageDataList = Dataregister.registerData(within1, this.targetedEmail.name, op, limit, lastDate)
       if(  messageDataList.length > 0 ){
@@ -86,8 +86,8 @@ class GmailList{
     /***********************************/
     const [newLastDateTime_2, within2, remain2] = GmailSearch.SearchWithFrom(queryInfo, store, this.targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
     if( within2.msgCount > 0 ){
-      Logger.log(`get_mail_list_base info.name=${this.targetedEmail.name}`)
-      Logger.log(`within2=${JSON.stringify(within2)}`)
+      YKLiba.Log.debug(`get_mail_list_base info.name=${this.targetedEmail.name}`)
+      YKLiba.Log.debug(`within2=${JSON.stringify(within2)}`)
 
       const messageDataList = Dataregister.registerData(within2, this.targetedEmail.name, op, limit, lastDate)
       if(  messageDataList.length > 0 ){
@@ -103,14 +103,14 @@ class GmailList{
     }
   
     const array = [newLastDateTime_1, newLastDateTime_2, lastDateTime]
-    // Logger.log(`GAS-Gmail|gmail|get_mail_list_base array=${array}`)
+    // YKLiba.Log.debug(`GAS-Gmail|gmail|get_mail_list_base array=${array}`)
     const [latestDateTime, earlistDate] = YKLiba.Arrayx.getMaxAndMin(array)
     store.set('new_last_date_time', latestDateTime)
-    // Logger.log(`#################============== 0 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
+    // YKLiba.Log.debug(`#################============== 0 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
     if( YKLiba.Utils.isAfterDate(lastDateTime, latestDateTime) ){
-      // Logger.log(`#################============== 1 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
+      // YKLiba.Log.debug(`#################============== 1 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
       store.set('last_date_time', latestDateTime)
-      // Logger.log(`#################============== 2 lastDateTime=${store.get('last_date_time')}`)
+      // YKLiba.Log.debug(`#################============== 2 lastDateTime=${store.get('last_date_time')}`)
     }
   }
 

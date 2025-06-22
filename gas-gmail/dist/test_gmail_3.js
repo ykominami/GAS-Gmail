@@ -24,7 +24,7 @@ class Test_Gmail3 {
     const lastRow = sheet.getLastRow()
     const lastColumn = sheet.getLastColumn()
 
-    YKLiba.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
+    YKLiblog.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
 
     const actual = (values.length === 2 && values[0].length === 5)
     const expected = true
@@ -48,7 +48,7 @@ class Test_Gmail3 {
     const lastRow = sheet.getLastRow()
     const lastColumn = sheet.getLastColumn()
 
-    YKLiba.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
+    YKLiblog.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
 
     const actual = (values.length === 1 && values[0].length === 5)
     const expected = true
@@ -66,7 +66,7 @@ class Test_Gmail3 {
     // const sheet = YKLiba.get_sheet(basename)
     const lastRow = sheet.getLastRow()
     const lastColumn = sheet.getLastColumn()
-    YKLiba.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
+    YKLiblog.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
 
     test_register_data_1_aur(store, basename)
     test_register_data_2_aur(store, basename)
@@ -75,10 +75,10 @@ class Test_Gmail3 {
     const range = sheet.getDataRange();
     const values = range.getValues()
 
-    YKLiba.Log.debug(`values.length=${values.length}`)
+    YKLiblog.Log.debug(`values.length=${values.length}`)
     const lastRow_2 = sheet.getLastRow()
     const lastColumn_2 = sheet.getLastColumn()
-    YKLiba.Log.debug(`lastRow_2=${lastRow_2} lastColumn_2=${lastColumn_2}`)
+    YKLiblog.Log.debug(`lastRow_2=${lastRow_2} lastColumn_2=${lastColumn_2}`)
 
     const actual = (values.length === 4 && values[0].length === 5)
     const expected = true
@@ -95,7 +95,7 @@ class Test_Gmail3 {
     //const sheet = YKLiba.get_sheet(basename)
     const lastRow = sheet.getLastRow()
     const lastColumn = sheet.getLastColumn()
-    YKLiba.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
+    YKLiblog.Log.debug(`lastRow=${lastRow} lastColumn=${lastColumn}`)
 
     test_register_data_3_aur(store, basename)
     test_register_data_2_aur(store, basename)
@@ -104,10 +104,10 @@ class Test_Gmail3 {
     const range = sheet.getDataRange();
     const values = range.getValues()
 
-    YKLiba.Log.debug(`values.length=${values.length}`)
+    YKLiblog.Log.debug(`values.length=${values.length}`)
     const lastRow_2 = sheet.getLastRow()
     const lastColumn_2 = sheet.getLastColumn()
-    YKLiba.Log.debug(`lastRow_2=${lastRow_2} lastColumn_2=${lastColumn_2}`)
+    YKLiblog.Log.debug(`lastRow_2=${lastRow_2} lastColumn_2=${lastColumn_2}`)
 
     const actual = (values.length === 4 && values[0].length === 5)
     const expected = true

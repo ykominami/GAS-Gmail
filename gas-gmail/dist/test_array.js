@@ -1,5 +1,5 @@
 function test_aur_get_mail_list_from_Hotwire_Club(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.theHotwireClub()
   const op = YKLiba.configADD_UNDER_ROW()
@@ -7,7 +7,7 @@ function test_aur_get_mail_list_from_Hotwire_Club(arg_store = null){
 }
 
 function test_rewrite_get_mail_list_from_Hotwire_Club(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.theHotwireClub()
   const op = YKLiba.configREWRITE()
@@ -15,7 +15,7 @@ function test_rewrite_get_mail_list_from_Hotwire_Club(arg_store = null){
 }
 
 function test_aur_get_mail_list_from_Frontend_Focus(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.frontendFocus()
   const op = YKLiba.configADD_UNDER_ROW()
@@ -23,7 +23,7 @@ function test_aur_get_mail_list_from_Frontend_Focus(arg_store = null){
 }
 
 function test_rewrite_get_mail_list_from_Frontend_Focus(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.frontendFocus()
   const op = YKLiba.configREWRITE()
@@ -31,7 +31,7 @@ function test_rewrite_get_mail_list_from_Frontend_Focus(arg_store = null){
 }
 
 function test_acr_get_mail_list_from_hotwire_weekly(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.hotwireWeekly()
   const op = YKLiba.configADD_UNDER_ROW()
@@ -39,7 +39,7 @@ function test_acr_get_mail_list_from_hotwire_weekly(arg_store = null){
 }
 
 function test_rewrite_get_mail_list_from_hotwire_weekly(arg_store = null){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   const basename = Store.hotwireWeekly()
   const op = YKLiba.configREWRITE()
@@ -87,7 +87,7 @@ class Test_gmaila {
     tester.assertEquals(actual, expected)
   }
   test_ab_0(){
-    YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+    YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
     const a=test_data_array()
     const ary = a.flat()
 
@@ -96,7 +96,7 @@ class Test_gmaila {
     tester.assertEqualsArrayItems (actual, expected)
   }
   test_ab_1(){
-    YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+    YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
     let ary
     const a=[[
       [1,2],[3,4],[5,6]
@@ -111,24 +111,24 @@ class Test_gmaila {
     tester.assertEqualsArrayItems (actual, expected)
   }
   test_ab_2(){
-    YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+    YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
     let ary
     ary = test_flat_2(a)
-    YKLiba.Log.debug(ary)
+    YKLiblog.Log.debug(ary)
   }
   test_ab_3(){
-    YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+    YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
     let ary
     ary = test_flat_3(a)
-    YKLiba.Log.debug(ary)
+    YKLiblog.Log.debug(ary)
   }
 }
 function test_gl2(msgs, new_last_date){
   const x = msgs.filter( msg => {
       return isAfterDate(new_last_date, msg.getDate()) 
   } )
-  YKLiba.Log.debug(`#############`)
-  YKLiba.Log.debug(x)
+  YKLiblog.Log.debug(`#############`)
+  YKLiblog.Log.debug(x)
   return x
 }
 function make_test_data_of_msg( date ){
@@ -144,7 +144,7 @@ function make_test_data_of_msg( date ){
   return msg
 }
 function test_x(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
   let msg1,msg2, msg3
   const ndate = new Date()
   msg1 = make_test_data_of_msg( ndate )
@@ -157,7 +157,7 @@ function test_x(){
   let last_date = null
   const [[filtered_msgs, rawcontents], new_last_date] = get_latest_date_and_valid_messages_from_message_array(msgs, last_date)
   // let new_last_date = get_lastest_date_and_register_messages_from_message_array(msgs, last_date)
-  YKLiba.Log.debug(`new_last_date=${new_last_date}`)
+  YKLiblog.Log.debug(`new_last_date=${new_last_date}`)
 }
 
 function test_gl3(msgs, new_last_date){

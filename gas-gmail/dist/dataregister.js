@@ -1,7 +1,7 @@
 class Dataregister {
   static registerData(within, name, op, limit, lastDate){
     if( (typeof(within.array) === "undefined") || within.array.length <= 0 ){
-      // YKLiba.Log.debug(`gmailregster|registerDate| 0 return`)
+      // YKLiblog.Log.debug(`gmailregster|registerDate| 0 return`)
       // throw Error(`registerData`)
       return
     }
@@ -22,8 +22,8 @@ class Dataregister {
 
   static getDataSheetRange(sheetname){
     const ss_id = CONFIG.configSpreadsheetId
-    // const ss_id = YKLiba.Base.getSsId()
-    YKLiba.Log.debug(`Dataregister.getDataSheetRange ss_id=${ss_id}`)
+    // const ss_id = YKLiblog.Base.getSsId()
+    YKLiblog.Log.debug(`Dataregister.getDataSheetRange ss_id=${ss_id}`)
     let [ss, sheet] = YKLiba.Base.getSpreadsheet(ss_id, sheetname)
     if(sheet === null){
       sheet = ss.insertSheet(sheetname)
@@ -34,22 +34,22 @@ class Dataregister {
     [row, col, height, width] = Tableop.getRangeShape(range)
     if( !height ){
       if( !width ){
-        // YKLiba.Log.debug(`getDataSheetRange 0 1`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 1`)
         range = sheet.getRange(row, col, 1, 1);
       }
       else{
-        // YKLiba.Log.debug(`getDataSheetRange 0 2`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 2`)
         range = dataRange.offset(row, col, 1, width);
       }
     }
     else{
       if( !width ){
-        // YKLiba.Log.debug(`getDataSheetRange 0 3`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 3`)
         range = dataRange.offset(row, col, height, 1);
 
       }
       else{
-        // YKLiba.Log.debug(`getDataSheetRange 0 4`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 4`)
       }
       // else{
       //   range = dataRange.offset(0, 0, height, width);
@@ -68,16 +68,16 @@ class Dataregister {
       range2 = range;
       range2.deleteCells(SpreadsheetApp.Dimension.ROWS);
       rangeShape = YKLiba.Range.getRangeShape(range)
-      YKLiba.Log.debug(`1`)
+      YKLiblog.Log.debug(`1`)
     }
     else{
       // YKLiba.Config.addUnderRow
       // 既存のrangeの最後のROWの直下から追加する
       rangeShape = YKLiba.Range.getRangeShape(range)
       range2 = range.offset(rangeShape.h, 0, rangeShape.h + rangeShape.h, rangeShape.w)
-      YKLiba.Log.debug(`2`)
+      YKLiblog.Log.debug(`2`)
     }
-    YKLiba.Log.debug(`rangeShape=${JSON.stringify(rangeShape)}` )
+    YKLiblog.Log.debug(`rangeShape=${JSON.stringify(rangeShape)}` )
 
     let height2 = dataArray.length
     if( !height2 ){
@@ -91,28 +91,28 @@ class Dataregister {
       width2 = dataArray[0].length
     }
 
-    // YKLiba.Log.debug(`register_data height2=${height2} width2=${width2}`)
+    // YKLiblog.Log.debug(`register_data height2=${height2} width2=${width2}`)
 
     if(height2 > 0 && width2 > 0){
       const range3 = YKLiba.Code.transformRange2(range2, height2, width2)
       [row, col, height, width] = Tableop.getRangeShape(range3)
-      YKLiba.Log.debug(`range3 row=${row} col=${col} height=${height} width=${width}`)
-      YKLiba.Log.debug(`dataArray.length=${dataArray.length}`)
-      YKLiba.Log.debug(`dataArray[0].length=${dataArray[0].length}`)
+      YKLiblog.Log.debug(`range3 row=${row} col=${col} height=${height} width=${width}`)
+      YKLiblog.Log.debug(`dataArray.length=${dataArray.length}`)
+      YKLiblog.Log.debug(`dataArray[0].length=${dataArray[0].length}`)
       try{
         range3.setValues( dataArray );
       }
       catch(e){
         // エラーが発生した場合、このブロックのコードが実行されます。
         // 'e' は発生したエラーオブジェクトです。
-        YKLiba.Log.debug("エラーが発生しました: " + e.message); // エラーメッセージを出力
+        YKLiblog.Log.debug("エラーが発生しました: " + e.message); // エラーメッセージを出力
         // または、エラーの詳細をログに出力
-        YKLiba.Log.debug("エラー名: " + e.name);
-        YKLiba.Log.debug("スタックトレース: " + e.stack);
+        YKLiblog.Log.debug("エラー名: " + e.name);
+        YKLiblog.Log.debug("スタックトレース: " + e.stack);
       } finally {
         // try ブロックが正常に完了したか、catch ブロックが実行されたかに関わらず、
         // 常にこのブロックのコードが実行されます。（オプション）
-        YKLiba.Log.debug("処理が完了しました。");
+        YKLiblog.Log.debug("処理が完了しました。");
       }
     }
   }
@@ -156,8 +156,8 @@ class Dataregister {
 function testbSub(sheetname){
   let range = Dataregister.getDataSheetRange(sheetname)
   Tableop.showRangeShape(range)
-  YKLiba.Log.debug(`range=${JSON.stringify(range)}`)
-  YKLiba.Log.debug(`range=${range}`)
+  YKLiblog.Log.debug(`range=${JSON.stringify(range)}`)
+  YKLiblog.Log.debug(`range=${range}`)
 
 }
 function testb(){

@@ -20,20 +20,20 @@ function execute_Test_gmail_label_3_ForTestGas(){
 class TestGmailLabel {
   // 
   test_label(){
-    // YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+    // YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
     let start = 0
     let max = 5
     const base_name = Store.testName()
     const query = `from : me after:2024/12/1 before:2024/12/3`
     const tamda = GmailSearch.getThreadsAndMessagedataArray(query, start, max)
     tamda.forEach( function(item, idx) {
-      YKLiba.Log.debug(`tamda idx=${idx} item.constructor=${ item.constructor }`)
-      YKLiba.Log.debug(`tamda item=${ JSON.stringify(item)}`)
-      YKLiba.Log.debug(`tamda item.ar()=${ JSON.stringify(item.ar()) }` )
+      YKLiblog.Log.debug(`tamda idx=${idx} item.constructor=${ item.constructor }`)
+      YKLiblog.Log.debug(`tamda item=${ JSON.stringify(item)}`)
+      YKLiblog.Log.debug(`tamda item.ar()=${ JSON.stringify(item.ar()) }` )
     })
-    YKLiba.Log.debug(`tamda.constructor=${tamda.constructor}`)
-    // YKLiba.Log.debug(`testcase| tamda.thread=${tamda.tx()}`)
-    // YKLiba.Log.debug(`testcase| tamda.messagedataArray.length=${tamda.mx().length}`)
+    YKLiblog.Log.debug(`tamda.constructor=${tamda.constructor}`)
+    // YKLiblog.Log.debug(`testcase| tamda.thread=${tamda.tx()}`)
+    // YKLiblog.Log.debug(`testcase| tamda.messagedataArray.length=${tamda.mx().length}`)
 
     const pairLabel = new PairLabel(base_name)
     let targetLabel = pairLabel.targetLabel
@@ -42,7 +42,7 @@ class TestGmailLabel {
       const messages = item.getMessages()
       return messages
     })
-    YKLiba.Log.debug(`threads_2.length=${threads_2.length}`)
+    YKLiblog.Log.debug(`threads_2.length=${threads_2.length}`)
 
     targetLabel.removeFromThreads(threads_2)
     const txs = tamda.filter((item) => {
@@ -51,11 +51,11 @@ class TestGmailLabel {
     targetLabel.addToThreads(txs)
 
     const threads_3 = targetLabel.getThreads()
-    YKLiba.Log.debug(`threads_3.length=${threads_3.length}`)
+    YKLiblog.Log.debug(`threads_3.length=${threads_3.length}`)
     const msgs_3 = threads_3.filter( (item, index) => {
       return item.getMessages()      
     })
-    YKLiba.Log.debug(`msgs_3.length=${msgs_3.length}`)
+    YKLiblog.Log.debug(`msgs_3.length=${msgs_3.length}`)
     const actual = threads_3.length
     const expected = max
     tester.assertEquals(actual, expected)
@@ -173,7 +173,7 @@ function test_remove_labes_HW(){
 }
 
 function test_remove_labels(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
 
   test_remove_labes_FF()
   test_remove_labes_THC()

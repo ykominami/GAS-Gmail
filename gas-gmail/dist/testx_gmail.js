@@ -6,13 +6,13 @@ function get_mail_list_from_Hotwire_Club(arg_store = null){
   const op = YKLiba.Config.addUnderRow()
   const testdata = Util.makeTabledata()
   const gmail = new Gmail(testdata)
-  YKLiba.Log.debug(`basename=${basename}`)
+  YKLiblog.Log.debug(`basename=${basename}`)
   return gmail.getMailList(basename, op, arg_store)
   // return gmail.get_mail_list_x(basename, op, arg_store)
 }
 
 function get_mail_list_from_Frontend_Focus(arg_store = null){
-  YKLiba.Log.setLogLevel(YKLiba.Log.DEBUG())
+  YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
   const basename = Store.frontendFocus()
   // remove_labels(basename)
   const op = YKLiba.Config.addUnderRow()
@@ -55,19 +55,19 @@ function clear_sheet(sheetname){
 }
 
 function testx_gmail_THC(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
   const basename = Store.theHotwireClub()
   const gmail = new Gmail(basename)
   gmail.main()
 }
 function testx_gmail_FF(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
   const basename = Store.frontendFocus()
   const gmail = new Gmail(basename)
   gmail.main()
 }
 function testx_gmail_HW(){
-  YKLiba.Log.set_log_level(YKLiba.Log.DEBUG())
+  YKLiblog.Log.set_log_level(YKLiblog.Log.DEBUG())
   const basename = Store.hotwireWeekly()
   const gmail = new Gmail(basename)
   gmail.main()
@@ -78,5 +78,5 @@ function testx_gmail(){
   const filename = YKLiba.Url.getFilenameFromUrl(url)
   const decodedUrl = decodeURIComponent(url);
   const basename = YKLiba.Url.getBasename(decodedUrl)
-  YKLiba.Log.debug(`basename=${basename}`)
+  YKLiblog.Log.debug(`basename=${basename}`)
 }

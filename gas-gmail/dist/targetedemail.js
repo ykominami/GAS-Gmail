@@ -15,7 +15,7 @@ class TargetedEmail {
       this.lastDateTime = new Date(0).getTime();
     }
     this.lastDate = new Date( this.lastDateTime )
-    // YKLiba.Log.debug(`TargetedEmail|index=${index} name=${this.name} lastDate=${this.lastDate}`)
+    // YKLiblog.Log.debug(`TargetedEmail|index=${index} name=${this.name} lastDate=${this.lastDate}`)
     this.nth = item[6]
     this.index_nth = 6
     this.count = item[7]
@@ -57,9 +57,9 @@ class TargetedEmail {
   }
   getOrCreateFolderUnderDocsFolder(parentFolderInfo){
     let folderId = parentFolderInfo.getFolderId()
-    YKLiba.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder folderId=${folderId} this.name=${this.name}`)
+    YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder folderId=${folderId} this.name=${this.name}`)
     this.folder = YKLiba.Folder.getOrCreateFolderById(folderId, this.name)
-    // YKLiba.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
+    // YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
     return this.folder
   }
   backup(){
@@ -67,33 +67,33 @@ class TargetedEmail {
     if( !this.id ){
       this.id = this.folder.getId();
     }// 
-    // YKLiba.Log.debug(`TargetedEmail.backup this.id=${this.id}`)
+    // YKLiblog.Log.debug(`TargetedEmail.backup this.id=${this.id}`)
     this.url = this.old_url;
     if( !this.url ){
       this.url = this.folder.getUrl();
     }
-    // YKLiba.Log.debug(`TargetedEmail.backup this.url=${this.url}`)
+    // YKLiblog.Log.debug(`TargetedEmail.backup this.url=${this.url}`)
     const date = new Date();
     const formattedDate = Utilities.formatDate(date, "JST", "yyyyMMdd");
     const filename = `${this.name}_${formattedDate}.json`
     const path_array = ["log", "GAS-Gmail", filename]
     for(let i in path_array){
-      YKLiba.Log.debug(path_array[i]);
+      YKLiblog.Log.debug(path_array[i]);
     }
     const path = path_array.join( YKLiba.File.separator() );
-    // YKLiba.Log.debug(`${path_array.join('|')}`);
+    // YKLiblog.Log.debug(`${path_array.join('|')}`);
     // const path = YKLiba.File.join(["log", "GAS-Gmail", filename])
     YKLiba.File.save(path, text)
   }
 }
 function xtestA(path_array){
   for(let i=0; i<path_array.length; i++){
-    YKLiba.Log.debug(path_array[i]);   
+    YKLiblog.Log.debug(path_array[i]);   
   }
 }
 function xtest(){
   let path_array = "0>0-LOG>Docs".split('>');
-  YKLiba.Log.debug(`${path_array.join('|')}`);
+  YKLiblog.Log.debug(`${path_array.join('|')}`);
   xtestA( [...path_array, "A", "B"] );
   // xtestA(path_array);
   // YKLibb.getFolderByPath([ path_array, targetFolderName])

@@ -1,19 +1,19 @@
 class Util {
   static makeTabledata2(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigInfo2()
-    Log.debug(`Util makeTabledata2 values=${values}`)
+    YKLiblog.Log.debug(`Util makeTabledata2 values=${values}`)
     const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
     return tabledata
   }
   static makeTabledata(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfig()
-    Log.debug(`Util makeTabledata values=${values}`)
+    YKLiblog.Log.debug(`Util makeTabledata values=${values}`)
     const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
     return tabledata
   }
   static makeIdTabledata(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigIds()
-    Log.debug(`Util makeIdTabledata values=${values}`)
+    YKLiblog.Log.debug(`Util makeIdTabledata values=${values}`)
     const idtabledata = new IdTabledata(spradsheet, worksheet, header, values, dataRange);
     return idtabledata
   }
@@ -27,7 +27,7 @@ class Util {
   static getDataSheetRange(sheetname){
     const ss_id = CONFIG.configSpreadsheetId
     // const ss_id = YKLiblog.Base.getSsId()
-    Log.debug(`Dataregister getDataSheetRange ss_id=${ss_id}`)
+    YKLiblog.Log.debug(`Dataregister getDataSheetRange ss_id=${ss_id}`)
     let [ss, sheet] = YKLiba.Base.getSpreadsheet(ss_id, sheetname)
     if(sheet === null){
       sheet = ss.insertSheet(sheetname)
@@ -70,7 +70,7 @@ class Util {
    */
   static calculateSetAndArrayDifference(done, arrayObj) {
     const x2 = [...arrayObj]
-    Log.debug(`x2=${x2}`)
+    YKLiblog.Log.debug(`x2=${x2}`)
 
     const arrayAsSet = new Set(arrayObj);
 
@@ -91,7 +91,7 @@ function test_util(){
   let key
   const idtabledata = Util.makeIdTabledata()
   const keys = idtabledata.keys()
-  Log.debug(`keys=${ keys }`)
+  YKLiblog.Log.debug(`keys=${ keys }`)
   key = keys[0]
   test_util_b(idtabledata, key)
   
@@ -100,15 +100,15 @@ function test_util(){
   
 }
 function test_util_b(idtabledata, key){
-  Log.debug(key)
+  YKLiblog.Log.debug(key)
   const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
   const ret = typeof(targetedEmailIds)
   if( ret !== "undefined" ){
-    Log.debug(`done=${ [...targetedEmailIds.done] }`)
+    YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
   }
 }
 function test_util_c(idtabledata, key){
-  Log.debug(key)
+  YKLiblog.Log.debug(key)
   const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
-  Log.debug(`done=${ [...targetedEmailIds.done] }`)
+  YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
 }

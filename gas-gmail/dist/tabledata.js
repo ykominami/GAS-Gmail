@@ -9,9 +9,9 @@ class Tabledata {
     this.parentFolderInfo = targetedEmailList.parentFolderInfo;
     this.backupFolderInfo = targetedEmailList.backupFolderInfo;
     this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
-    Log.debug(`Tabledata constructor targetedEmailList.folderConf=${targetedEmailList.folderConf}`)
+    YKLiblog.Log.debug(`Tabledata constructor targetedEmailList.folderConf=${targetedEmailList.folderConf}`)
     this.folderConf = targetedEmailList.folderConf;
-    Log.debug(`Tabledata constructor this.folderConf=${this.folderConf}`)
+    YKLiblog.Log.debug(`Tabledata constructor this.folderConf=${this.folderConf}`)
     this.targetedEmailList = targetedEmailList;
   }
   keys(){

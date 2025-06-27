@@ -85,7 +85,8 @@ class Test_Gmail3 {
     tester.assertEquals(actual, expected)
   }
   test_register_data_aur_HW_b(){
-    const basename = Store.hotwireWeekly()
+    // const basename = Store.hotwireWeekly()
+    const basename = "testa"
     const store = get_valid_store(basename, null)
     const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
     const [ss, sheet] = YKLiba.get_spreadsheet(ssId, basename)
@@ -161,7 +162,8 @@ function test_register_data_x_aur_b(base_name){
 // 済
 function test_register_data_1_aur(store, sheetname){
   let result = []
-  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 
 // 済
@@ -169,7 +171,8 @@ function test_register_data_2_aur(store, sheetname){
   let result = []
   const msgdata = test_make_msgdata()
   result.push(msgdata)
-  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 
 // 済
@@ -180,20 +183,23 @@ function test_register_data_3_aur(store, sheetname){
 
   const msgdata2 = test_make_msgdata_2()
   result.push(msgdata2)
-  Dataregister.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configADD_UNDER_ROW(), result, sheetname)
 }
 //////////////// rewrite
 // 済
 function test_register_data_1_rewrite(store, sheetname){
   let result = []
-  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }
 // 済
 function test_register_data_2_rewrite(store, sheetname){
   let result = []
   const msgdata = test_make_msgdata()
   result.push(msgdata)
-  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }
 // 済
 function test_register_data_3_rewrite(store, sheetname){
@@ -203,5 +209,6 @@ function test_register_data_3_rewrite(store, sheetname){
 
   const msgdata2 = test_make_msgdata_2()
   result.push(msgdata2)
-  Dataregister.registerData(store, YKLiba.configREWRITE(), result, sheetname)
+  const reg = new Dataregister()
+  reg.registerData(store, YKLiba.configREWRITE(), result, sheetname)
 }

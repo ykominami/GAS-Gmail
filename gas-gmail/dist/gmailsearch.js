@@ -1,31 +1,52 @@
 class GmailSearch {
-  static SearchWithTargetLabel(queryInfo, store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit){
+  constructor(targetedEmailIds){
+    this.targetedEmailIds = targetedEmailIds
+  }
+  SearchWithTargetLabel(queryInfo, targetedEmail, start, maxThreads, maxSearchesAvailable){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
-    return GmailSearch.SearchWithBase(queryInfo.pairLabel, queryInfo.getQuery0(), store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
+    return this.SearchWithBase(queryInfo.getQuery0(), targetedEmail, start, maxThreads, maxSearchesAvailable)
   }
-  static SearchWithFrom(queryInfo, store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit){
+  SearchWithFrom(queryInfo, targetedEmail,  start, maxThreads, maxSearchesAvailable){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
-    return GmailSearch.SearchWithBase(queryInfo.pairLabel, queryInfo.getQuery1(), store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
+    return this.SearchWithBase(queryInfo.getQuery1(), targetedEmail, start, maxThreads, maxSearchesAvailable)
   }
-  static SearchWithBase(pairLabel, query, store, info, op, start, maxThreads, maxSearchesAvailable, lastDate, limit){
+  SearchWithBase(query, targetedEmail, start, maxThreads, maxSearchesAvailable){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
 
-    const [within, remain] = GmailSearch.getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable)
-    info.setCount( within.msgCount )
-    // YKLiblog.Log.debug(`SearchWithBase query=${JSON.stringify(query)} within=${ JSON.stringify(within).slice(0, 100) }`)
+    const [within, remain] = this.getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable)
+    targetedEmail.setCount( within.msgCount )
 
     const newLastDateTime = within.lastDate.getTime()
 
     return [newLastDateTime, within, remain]
   }
+  determinStatus(msgsStatus, currentValue, accumulator){
+    // thread = currentValue.thread
+    const messagedataArray = currentValue.messagedataArray
+
+    const maxSearchesAvailable = accumulator[0].maxSearchesAvailable;
+    const maxThreads = accumulator[0].maxThreads;        
+
+    if( msgsStatus ){
+      if( (messagedataArray.length > maxSearchesAvailable) || maxThreads <= 0 ){
+        msgsStatus = false
+      }
+    }
+    return msgsStatus
+  }
   //  const firstQuery = queryInfo.getQuery0()
-  static getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable){
+  getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable){
+    // Google Apps Scriptの実行事件の制限を考慮し、検索結果をスプレッドシートに記録する際に、記録するスレッド数またはメッセージ数で、記録処理を打ち切るか否か決める
+    // このメソッドの借地の配列の0番目の要素が、処理済みのスレッド、メッセージが格納される。
+    // 1番目の要素には、検索されたが、このメソッドでは未処理のスレッド、メッセージが格納される。
+    // また、検索結果に、すでに記録済みのメッセージが存在した場合、記録処理またはオリジナル版データ保存処理はしない。
+    // ただし、スレッドに関するメタデータの計算の対象には含める。
     YKLiblog.Log.debug(`################## query=${query}`)
     const initialValue = [
       new Messagearray(),
@@ -39,53 +60,44 @@ class GmailSearch {
     if( maxThreads <= 0){
       throw Error(`maxTreads=${maxTreads}`)
     }
-    const threads = GmailSearch.get_mail_list_with_query(query, start, maxThreads)
+    // queryによる検索結果をスレッドの配列として取得
+    const threads = this.getMailListWithQuery(query, start, maxThreads)
 
     if( threads !== null ){
+      // 検索結果(threadの配列全体)に含まれるメッセージ全体に関するメタデータを取得する
+
+      // １個のthreadと、threadから取得した全メッセージに関連するメタデータ
+      // ThreadAndMessagedataarrayのインスタンスの配列
+      // をつくる
+      // 1個のメッセージから、対応する1個のMessagedataクラスのインスタンスを生成する
+      // 1個のthreadと（スレッドの属する全メッセージに対応する)Messagedataの配列を持つ、1個のThreadAndMessagedataarrayを作成する
       const threadAndMessagedataarrayList = threads.map( (thread) => {
-        YKLiblog.Log.debug(`GmailSearch.getThreadsAndMessagedataArray thread=${JSON.stringify(thread)} thread=${thread}`)
+        YKLiblog.Log.debug(`this.getThreadsAndMessagedataArray thread=${JSON.stringify(thread)} thread=${thread}`)
         const messages = thread.getMessages()
-        const messagedataArray = messages.map( (message) =>  new Messagedata(message, message.getDate()) )
+        const messagedataArray = messages.map( (message) =>  {
+          // 記録済みメッセージであるか否かを判定
+          const recorede = this.targetedEmailIds.done.includes(message.getId())
+          new Messagedata(message, message.getDate(), recorede )
+        } )
         return new ThreadAndMessagedataarray(thread, messagedataArray)
       } )
 
-      let maxSearchesAvailable;
-      let maxThreads;
       let msgsStatus = true
+      // 順次ThreadAndMessagedataarrayの単位で、検索結果を記録していく。検索対象IDごとに、Google Spreadsheetのワークシートを用意し、1メッセージ1行で記録する。
+      // また切り詰めが発生した場合は、オリジナルのMessagedataの内容をGoogle Docsファイルに、1メッセージ1ファイルで本損する。
+      // ただし、記録する前に、記録後の総スレッド数または、総メッセージ数が指定された制限を超える場合は、記録せずに、1番目要素に追加していく
       const resultArray = threadAndMessagedataarrayList.reduce( (accumulator, currentValue) => {
         YKLiblog.Log.debug(`getThreadsAndMessagedataArray　currentValue.constructor=${currentValue.constructor}`)
-        // const thread = currentValue.thread()
-        const thread = currentValue.thread
-        const messagedataArray = currentValue.messagedataArray
-
-        maxSearchesAvailable = accumulator[0].maxSearchesAvailable;
-        maxThreads = accumulator[0].maxThreads;
-        // YKLiblog.Log.debug(`gmailsearch|getThreadsAndMessagedataArray|threads.length=${threads.length} maxSearchesAvailable=${maxSearchesAvailable} maxThreads=${maxThreads}`)
+        msgsStatus = this.determinStatus(msgsStatus, currentValue, accumulator)
 
         if( msgsStatus ){
-          if( (messagedataArray.length > maxSearchesAvailable) || maxThreads <= 0 ){
-            msgsStatus = false
-          }
-        }
-        // YKLiblog.Log.debug(`gmailsearch|getThreadsAndMessagedataArray|msgsStatus=${msgsStatus} messagedataArray.length=${messagedataArray.length} maxSearchesAvailable=${maxSearchesAvailable} maxThreads=${maxThreads}`)
-        if( msgsStatus ){
-          accumulator[0].array.push(currentValue)
-          accumulator[0].msgCount += messagedataArray.length
-          accumulator[0].threadCount += 1
-          accumulator[0].lastDate = thread.getLastMessageDate()
-          accumulator[0].maxSearchesAvailable -= messagedataArray.length 
-          accumulator[0].maxThreads -= 1
+          accumulator[0].addValidMessagedataarray(currentValue)
         }
         else{
-          accumulator[1].array.push(currentValue)
-          accumulator[1].msgCount += messagedataArray.length
-          accumulator[1].threadCount += thread.length
-          accumulator[1].lastDate = thread.getLastMessageDate()
+          accumulator[1].addInvalidMessagedataarray(currentValue)
         }
         return accumulator
       }, initialValue )
-      // YKLiblog.Log.debug(`gmailsearch|getThreadsAndMessagedataArray| 1 0 resultArray=${ JSON.stringify(resultArray[0]).slice(0, 2000) }`)
-      // YKLiblog.Log.debug(`gmailsearch|getThreadsAndMessagedataArray| 1 1 resultArray=${ JSON.stringify(resultArray[1]).slice(0, 2000) }`)
       return resultArray
     }
     else{
@@ -93,23 +105,23 @@ class GmailSearch {
       return initialValue
     }
   }
-  static get_mail_list_with_query(query, start, maxThreads){
+  getMailListWithQuery(query, start, maxThreads){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}` )
     }
     YKLiblog.Log.debug(`### get_mail_list_with_query 0 query=${query} start=${start} maxThreads)=${maxThreads}`)
-    const [ret, threads] = GmailSearch.gmail_search(query, start, maxThreads)
+    const [ret, threads] = this.gmailSearch(query, start, maxThreads)
     if( ret ){
-      // YKLiblog.Log.debug(`##### gmailsearch|get_mail_list_with_query ret=${ret} threads.length=${threads.length}`)
-      YKLiblog.Log.debug(`### get_mail_list_with_query 1 threads.length=${threads.length}`)
+      // YKLiblog.Log.debug(`##### gmailsearch|getMailListWithQuery ret=${ret} threads.length=${threads.length}`)
+      YKLiblog.Log.debug(`### getMailListWithQuery 1 threads.length=${threads.length}`)
       return threads
     }
     else{
-      YKLiblog.Log.debug(`### get_mail_list_with_query 2 threads=null`)
+      YKLiblog.Log.debug(`### getMailListWithQuery 2 threads=null`)
       return null
     }
   }
-  static gmail_search(query, start, maxThreads){
+  gmailSearch(query, start, maxThreads){
     const threads = GmailApp.search(query, start, maxThreads);
     // 取得したスレッドを日付の古い順にソート
     threads.sort(function(a, b) {
@@ -121,58 +133,5 @@ class GmailSearch {
     else{
       return [false, null];
     }
-  }
-  static collectMessagesdataAfterDate( threadAndMessagedataarrayList, new_last_date ){
-    // YKLiblog.Log.debug(`gmailsearch|collectMessagesdataAfterDate|new_last_date=${ JSON.stringify(new_last_date).slice(0, 500)}`)
-    const messageDataList = []
-    threadAndMessagedataarrayList.forEach( threadAndMessagedataarray => {
-        // const thread = threadAndMessagedataarray.thread
-        threadAndMessagedataarray.messagedataArray.forEach( (messagedata) => {
-          messagedata.isAfter = YKLiba.Utils.isAfterDate(new_last_date, messagedata.msg.getDate())
-          messageDataList.push(messagedata)
-        })
-    } )
-    return messageDataList
-  }
-
-  static get_latest_date_and_valid_messages_from_message_array0( threadAndMsgs, new_last_date ){
-    const filteredMessagedataList = collectMessagesdataAfterDate( threadAndMsgs, new_last_date )
-    if(filteredMessagedataList.length === 0){
-      // YKLiblog.Log.debug(`GAS-Gmail|get_latest_date_and_valid_messages_from_message_array| 2-2`)
-      return [[], new_last_date]
-    }
-    const result = filteredThreadAndMessagedataArray
-      .reduce( (accumulator, threadAndMessagedata) => {
-        let date = null
-        let msgdaterawdata = null
-        try{
-          date = msg.getDate()
-          // YKLiblog.Log.debug(`GAS-Gmail|get_latest_date_and_valid_messages_from_message_array| date=${date} 4`)
-          msgdaterawdata = new Msgdaterawdata(msg, date)
-          // msgdata = new Messagedate(msg, date)
-          // rawcontent = new Rawcontent(msg, date)
-        }
-        catch(error){
-          YKLiblog.Log.unknown(error.name)
-          YKLiblog.Log.unknown(error.message)
-          YKLiblog.Log.unknown(error.stack)
-        }
-
-        if(msgdaterawdata !== null){
-          // YKLiblog.Log.debug(`GAS-Gmail|get_latest_date_and_valid_messages_from_message_array| 5`)
-          accumulator[0].push(msgdaterawdata)
-          // accumulator[0][1].push(rawcontent)
-        }
-
-        if( date !== null && (YKLiba.isNullOrWhitespace(accumulator[1]) || YKLiba.Utils.isAfterDate(accumulator[1], date)) ){
-          // YKLiblog.Log.debug(`GAS-Gmail|get_latest_date_and_valid_messages_from_message_array| date=${date} 6`)
-          accumulator[1] = date
-        }
-        return accumulator
-      }, [[], new_last_date] )
-
-    // YKLiblog.Log.debug(`get_latest_date_and_valid_messages_from_message_array msgs.length=${msgs.length}`)
-    // YKLiblog.Log.debug(`result=${ JSON.stringify(result).slice(0, 100) }`)
-    return result
   }
 }

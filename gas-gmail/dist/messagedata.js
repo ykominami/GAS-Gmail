@@ -1,5 +1,5 @@
 class Messagedata{
-  constructor (msg, date_str){
+  constructor (msg, date_str, recorded){
     let date
     if( date_str !== null){
       date = new Date(date_str)
@@ -9,30 +9,34 @@ class Messagedata{
         date = msg.getDate()
       }
       catch(error){
-        YKLiblog.Log.unknown(error)
+        YKLiblog.Log.error(error)
         return null
       }
     }
     this.msg = msg
+    this.recorded = recorded
     this.isAfter = false
     this.isTruncated = false
-    this.truncated = new Messagedatax()
 
-    this.original = new Messagedatax()
-    this.original.id = msg.getId()
-    this.original.from = msg.getFrom()
-    this.original.subject = msg.getSubject()
-    this.original.dateStr = YKLiba.make_date_string(date)
-    this.original.date = date
-    this.original.plainBody = msg.getPlainBody()
+    // クラスMessagedataは、1個のメッセージに関する情報を持つ
+    // メッセージについて、関心のある一部の情報をクラスMessagedataxのインスタンスとして持つ
+    // Messagedataxの持つ情報のうち、文字列として保持するものは、オリジナルのものと、指定バイト数まで切り詰めた文字列の2種類もつ。
+    // オリジナルの情報がすべて指定バイト数以下の文字列であれば、切り詰め版の情報と同一である。
+    // 通常は、切り詰め版の情報を用いる。
+    // 切り詰めが発生した場合、オリジナル版をGoogle Docsのファイルとして保存する
+
+    // クラスMessagedataxは、クラスMessagedataの
+    this.truncated = new Messagedatax(null, null)
+    this.original = new Messagedatax(msg, date)
+
     this.dataArray = null
   }
   truncateString(maxLength) {
     if (typeof maxLength !== 'number'){
-      maxLength = CONFIG.nolimit()
+      maxLength = Config.nolimit()
     } 
     if ( maxLength <= 0) {
-      maxLength = CONFIG.nolimit()
+      maxLength = Config.nolimit()
     }
 
     this.isTruncated = false;
@@ -41,7 +45,7 @@ class Messagedata{
     for(let i=0; i<names.length; i++){
       const name = names[i]
       const str = this.original[name]
-      if( maxLength === CONFIG.nolimit() ){
+      if( maxLength === Config.nolimit() ){
         this.truncated[name] = str;
       }
       else{
@@ -55,7 +59,9 @@ class Messagedata{
       }
     }
   }
-
+  getMessageId(){
+    return this.msg.getId()
+  }
   getDataAsArray(){
     this.dataArray = [this.truncated.id, this.truncated.from, this.truncated.subject, this.truncated.date, this.truncated.plainBody]
     YKLiblog.Log.debug(`Messagedata.getDataAsArray dataArray.length=${this.dataArray.length} this.dataArray[0]=${this.dataArray[0]} this.dataArray[2]=${this.dataArray[2]}`)

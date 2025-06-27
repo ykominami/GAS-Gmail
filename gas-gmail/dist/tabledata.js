@@ -1,12 +1,17 @@
 class Tabledata {
-  constructor(header, values, dataRange){
+  constructor(spradsheet, worksheet, header, values, dataRange){
+    this.spradsheet = spradsheet; 
+    this.worksheet = worksheet; 
     this.header = header;
     this.values = values;
     this.dataRange = dataRange;
     const targetedEmailList = new TargetedEmailList(this.values);
     this.parentFolderInfo = targetedEmailList.parentFolderInfo;
+    this.backupFolderInfo = targetedEmailList.backupFolderInfo;
     this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
+    Log.debug(`Tabledata constructor targetedEmailList.folderConf=${targetedEmailList.folderConf}`)
     this.folderConf = targetedEmailList.folderConf;
+    Log.debug(`Tabledata constructor this.folderConf=${this.folderConf}`)
     this.targetedEmailList = targetedEmailList;
   }
   keys(){
@@ -18,7 +23,7 @@ class Tabledata {
   }
   rewrite(targetedEmail){
     const item = targetedEmail
-    // YKLiblog.Log.debug(`------------------rewrite`)
+    // Log.debug(`------------------rewrite`)
     if( !item.old_id ){
       this.values[item.index][item.index_id] = item.id;
     }
@@ -27,7 +32,7 @@ class Tabledata {
     }
     if( !item.oldLastDateTime ){
       this.values[item.index][item.indexLastDateTime] = item.lastDateTime;
-      // YKLiblog.Log.debug(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
+      // Log.debug(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
     }
     if( item.old_nth != item.nth){
       this.values[item.index][item.index_nth] = item.nth;
@@ -40,7 +45,7 @@ class Tabledata {
     }
   }
   update(){
-    // YKLiblog.Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
+    // Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
     this.dataRange.setValues( [this.header, ...this.values] );
   }
 }

@@ -49,14 +49,6 @@ class Test_Gmail2 {
     tester.assertEquals(actual, expected)
   }
 
-  /*
-  test_isObject_undefined(){
-    const array = undefined
-    const actual = is_valid_object(array)
-    const expected = false
-    tester.assertEquals(actual, expected)
-  }
-  */
 }
 function test_get_mail_threads(){
   base_name = Store.theHotwireClub()

@@ -1,17 +1,35 @@
 class GmailList{
-  constructor(targetedEmail, tabledata){
+  constructor(targetedEmail, idtabledata, limitx){
     this.targetedEmail = targetedEmail;
-    this.tabledata = tabledata;
+    this.idtabledata = idtabledata;
+    YKLiblog.Log.debug(`GmailList constructor idtabledata=${idtabledata}`)
+    const key = targetedEmail.name
+    const targetedEmailIds = idtabledata.targetedEmailIdsList.getTargetedEmailIdsByKey(key)
+    this.targetedEmailIds = targetedEmailIds
+    YKLiblog.Log.debug(`GmailList constructor idtabledata.targetedEmailIdsList=${idtabledata.targetedEmailIdsList}`)
+
+    this.emailSearch = new GmailSearch( targetedEmailIds )
+    this.limitx = limitx;
+    this.register = new Dataregister();
+  }
+
+  makePairLabelAndQueryInfo(){
+    const pairLabel = new PairLabel(this.targetedEmail.name)
+    if(this.targetedEmail.maxThreads < 0 ){
+      throw Error(`info.maxThreads=${this.targetedEmail.maxThreads}`)
+    }
+    const queryInfo = new QueryInfo(this.targetedEmail.condition, pairLabel, this.targetedEmail.maxThreads, this.targetedEmail.maxSearchesAvailable)
+    return [pairLabel, queryInfo]
   }
 
   getMailListX(op, arg_store = null){
-    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(this.targetedEmail)
+    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo()
     return this.getMailList(op, queryInfo, arg_store)
   }
 
   getMailList(op, queryInfo, arg_store=null){
     if( queryInfo.maxThreads <= 0 ){
-      throw Error(`ueryInfo.maxThreads=${queryInfo.maxThreads}`)
+      throw Error(`queryInfo.maxThreads=${queryInfo.maxThreads}`)
     }
     const store = Store.getValidStore( this.targetedEmail.name, arg_store );
 
@@ -27,18 +45,111 @@ class GmailList{
 
     return store;
   }
-
-  makePairLabelAndQueryInfo(){
-    const pairLabel = new PairLabel(this.targetedEmail.name)
-    if(this.targetedEmail.maxThreads < 0 ){
-      throw Error(`info.maxThreads=${this.targetedEmail.maxThreads}`)
+  getMailListBaseSub1(queryInfo, store){
+    let start = queryInfo.start
+    let maxThreads = queryInfo.maxThreads
+    if( maxThreads <= 0 ){
+      throw Error(`maxThreads=${maxThreads}`)
     }
-    const queryInfo = new QueryInfo(this.targetedEmail.condition, pairLabel, this.targetedEmail.maxThreads, this.targetedEmail.maxSearchesAvailable)
-    return [pairLabel, queryInfo]
+    let maxSearchesAvailable = queryInfo.maxSearchesAvailable
+    let lastDateTime = store.get('last_date_time')
+    let lastDate = new Date(lastDateTime)
+    YKLiblog.Log.debug(`lastDateTime=${lastDateTime}`)
+    if( YKLiba.Utils.isUndefined(lastDateTime) ){
+      lastDate = new Date(0);
+      lastDateTime = lastDate.getTime();
+    }
+    else{
+      lastDate = new Date(lastDateTime);
+      lastDateTime = lastDate.getTime();
+    }
+    return [start, maxThreads, lastDate, lastDateTime, maxSearchesAvailable]
+  }
+  getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op){
+    // within1はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
+    // 以後within1のみを処理対象とする
+    const [newLastDateTime1, within1, remain1] = this.emailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
+    if( within1.msgCount > 0 ){
+      [recordedMessageIds, messageDataList] = this.register.registerData(within1, this.targetedEmail.name, op, this.limitx, lastDate)
+      // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
+      if(recordedMessageIds.length > 0){
+        this.targetedEmail.addToDone(recordedMessageIds)
+        this.idtabledata.rewrite(this.targetedEmail)
+        this.idtabledata.updateRow(this.targetedEmail)
+      }
+      // 切り詰めメッセージが1個以上であれば、Google Docsファイルとして保存する
+      if(  messageDataList.length > 0 ){
+        GmailSave.saveData(store, messageDataList)
+      }
+      // throw Error(`under saveData`)
+    }
+    if( typeof(within1.threads) !== "undefined" && within1.threads.length > 0 ){
+      within1.array.map( threadAndMsgs => {
+        const thread = threadAndMsgs[0]
+        queryInfo.pairLabel.targetLabel.addToThreads(thread)
+        queryInfo.pairLabel.endLabel.addToThreads(thread)
+      })
+    }
+    return [newLastDateTime1]
+  }
+  getMailListBaseSub3(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op){
+    /***********************************/
+    // within2はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
+    // 以後within2のみを処理対象とする
+    const [newLastDateTime2, within2, remain2] = this.emailSearch.SearchWithFrom(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
+    if( within2.msgCount > 0 ){
+      [recordedMessageIds2, messageDataList2] = this.register.registerData(within2, this.targetedEmail.name, op, this.limitx, lastDate)
+      // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
+      if(recordedMessageIds2.length > 0){
+        this.targetedEmail.addToDone(recordedMessageIds2)
+        this.idtabledata.rewrite(this.targetedEmail)
+        this.idtabledata.updateRow(this.targetedEmail)
+      }
+      // 切り詰めたメッセージが1個以上であれば、Google Docsファイルとして保存する
+      if(  messageDataList2.length > 0 ){
+        GmailSave.saveData(store, messageDataList2)
+      }
+      // throw Error(`under saveData`)
+    }
+    if( typeof(within2.threads) !== "undefined" && within2.threads.length > 0){
+      within2.array.map( threadAndMsgs => {
+        const thread = threadAndMsgs[0]
+        queryInfo.pairLabel.endLabel.addToThreads(thread)
+      })
+    }
+    return [newLastDateTime2]  
+  }
+  getMailListBaseSub4(newLastDateTime1, newLastDateTime2, lastDateTime, store){
+    const array = [newLastDateTime1, newLastDateTime2, lastDateTime]
+    const [latestDateTime, earlistDate] = YKLiba.Arrayx.getMaxAndMin(array)
+    store.set('new_last_date_time', latestDateTime)
+    if( YKLiba.Utils.isAfterDate(lastDateTime, latestDateTime) ){
+      store.set('last_date_time', latestDateTime)
+    }
   }
 
   getMailListBase(store, op, queryInfo){
+    const [start, maxThreads, lastDate, lastDateTime, maxSearchesAvailable] = this.getMailListBaseSub1(queryInfo, store)
+    const [newLastDateTime1] = this.getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op)
+    const [newLastDateTime2] = this.getMailListBaseSub3(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op)
+    this.getMailListBaseSub4(newLastDateTime1, newLastDateTime2, lastDateTime, store)
+  }
+  getMailListBase00(store, op, queryInfo){
     // YKLiblog.Log.debug(JSON.stringify(queryInfo).slice(0, 100))
+    let messageDataList
+    let recordedMessageIds
+    let messageDataList2
+    let recordedMessageIds2
+    /////////////////
+
+  }
+
+  getMailListBase0(store, op, queryInfo){
+    // YKLiblog.Log.debug(JSON.stringify(queryInfo).slice(0, 100))
+    let messageDataList
+    let recordedMessageIds
+    let messageDataList2
+    let recordedMessageIds2
 
     let start = queryInfo.start
     let maxThreads = queryInfo.maxThreads
@@ -47,12 +158,11 @@ class GmailList{
     }
 
     let maxSearchesAvailable = queryInfo.maxSearchesAvailable
-
     let lastDateTime = store.get('last_date_time')
     let lastDate = new Date(lastDateTime)
     // let lastDateTime = lastDate.getTime()
     YKLiblog.Log.debug(`lastDateTime=${lastDateTime}`)
-    if( YKLiba.is_undefined(lastDateTime) ){
+    if( YKLiba.Utils.isUndefined(lastDateTime) ){
       lastDate = new Date(0);
       lastDateTime = lastDate.getTime();
     }
@@ -60,65 +170,66 @@ class GmailList{
       lastDate = new Date(lastDateTime);
       lastDateTime = lastDate.getTime();
     }
-    // YKLiblog.Log.debug(`##=== gmail|get_mail_list_base|lastDate=${lastDate}`)
-    const limit = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT') - 1;
-    let threadAndMessagedataArray
 
-    const [newLastDateTime_1, within1, remain1] = GmailSearch.SearchWithTargetLabel(queryInfo, store, this.targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
-    // YKLiblog.Log.debug(`gmail|get_mail_list_base|queryInfo=${ JSON.stringify(queryInfo)}`)
-    // YKLiblog.Log.debug(`gmail|get_mail_list_base|within1=${ JSON.stringify(within1).slice(0, 200)}`)
+    // within1はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
+    // 以後within1のみを処理対象とする
+    const [newLastDateTime1, within1, remain1] = this.emailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
     if( within1.msgCount > 0 ){
-      messageDataList = Dataregister.registerData(within1, this.targetedEmail.name, op, limit, lastDate)
+      [recordedMessageIds, messageDataList] = this.register.registerData(within1, this.targetedEmail.name, op, this.limitx, lastDate)
+      // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
+      if(recordedMessageIds.length > 0){
+        this.targetedEmail.addToDone(recordedMessageIds)
+        this.idtabledata.rewrite(this.targetedEmail)
+        this.idtabledata.updateRow(this.targetedEmail)
+      }
+      // 切り詰めメッセージが1個以上であれば、Google Docsファイルとして保存する
       if(  messageDataList.length > 0 ){
         GmailSave.saveData(store, messageDataList)
       }
       // throw Error(`under saveData`)
     }
-    
     if( typeof(within1.threads) !== "undefined" && within1.threads.length > 0 ){
       within1.array.map( threadAndMsgs => {
         const thread = threadAndMsgs[0]
-        queryInfo.pariLabel.targetLabel.addToThreads(thread)
-        queryInfo.pariLabel.endLabel.addToThreads(thread)
+        queryInfo.pairLabel.targetLabel.addToThreads(thread)
+        queryInfo.pairLabel.endLabel.addToThreads(thread)
       })
     }
 
     /***********************************/
-    const [newLastDateTime_2, within2, remain2] = GmailSearch.SearchWithFrom(queryInfo, store, this.targetedEmail, op, start, maxThreads, maxSearchesAvailable, lastDate, limit)
+    // within2はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
+    // 以後within2のみを処理対象とする
+    const [newLastDateTime2, within2, remain2] = this.emailSearch.SearchWithFrom(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
     if( within2.msgCount > 0 ){
-      YKLiblog.Log.debug(`get_mail_list_base info.name=${this.targetedEmail.name}`)
-      YKLiblog.Log.debug(`within2=${JSON.stringify(within2)}`)
-
-      const messageDataList = Dataregister.registerData(within2, this.targetedEmail.name, op, limit, lastDate)
-      if(  messageDataList.length > 0 ){
-        GmailSave.saveData(store, messageDataList)
+      [recordedMessageIds2, messageDataList2] = this.register.registerData(within2, this.targetedEmail.name, op, this.limitx, lastDate)
+      // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
+      if(recordedMessageIds2.length > 0){
+        this.targetedEmail.addToDone(recordedMessageIds2)
+        this.idtabledata.rewrite(this.targetedEmail)
+        this.idtabledata.updateRow(this.targetedEmail)
+      }
+      // 切り詰めたメッセージが1個以上であれば、Google Docsファイルとして保存する
+      if(  messageDataList2.length > 0 ){
+        GmailSave.saveData(store, messageDataList2)
       }
       // throw Error(`under saveData`)
     }
     if( typeof(within2.threads) !== "undefined" && within2.threads.length > 0){
       within2.array.map( threadAndMsgs => {
         const thread = threadAndMsgs[0]
-        queryInfo.pariLabel.endLabel.addToThreads(thread)
+        queryInfo.pairLabel.endLabel.addToThreads(thread)
       })
     }
   
-    const array = [newLastDateTime_1, newLastDateTime_2, lastDateTime]
+    const array = [newLastDateTime1, newLastDateTime2, lastDateTime]
     // YKLiblog.Log.debug(`GAS-Gmail|gmail|get_mail_list_base array=${array}`)
     const [latestDateTime, earlistDate] = YKLiba.Arrayx.getMaxAndMin(array)
     store.set('new_last_date_time', latestDateTime)
     // YKLiblog.Log.debug(`#################============== 0 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
-    if( YKLiblog.Utils.isAfterDate(lastDateTime, latestDateTime) ){
+    if( YKLiba.Utils.isAfterDate(lastDateTime, latestDateTime) ){
       // YKLiblog.Log.debug(`#################============== 1 lastDateTime=${lastDateTime} latestDateTime=${latestDateTime}`)
       store.set('last_date_time', latestDateTime)
       // YKLiblog.Log.debug(`#################============== 2 lastDateTime=${store.get('last_date_time')}`)
-    }
-  }
-
-  get_maillist(arg_store){
-    const store = Store.getValidStore( this.targetedEmail.name, arg_store );
-    let records = store.get(this.targetedEmail.name)
-    if( records === null ){
-      // ... existing code ...
     }
   }
 }

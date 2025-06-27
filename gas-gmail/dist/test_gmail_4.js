@@ -14,7 +14,7 @@ function xtestb(gmail, key, numOfItems = 0){
   }
   else{
     YKLiblog.Log.debug(`xtestb key=${key} 2`)
-    return
+    // return
   }
   YKLiblog.Log.debug(`xtestb key=${key} 3`)
 
@@ -71,7 +71,12 @@ function xtesta(gmail, numOfItems){
 }
 
 function xtestx(){
-  YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
+  // YKLiblog.Log.setLogLevel(YKLiblog.Log.UNKNOWN())
+  // YKLiblog.Log.setLogLevel(YKLiblog.Log.FAULT())
+  // YKLiblog.Log.setLogLevel(YKLiblog.Log.ERROR())
+  // YKLiblog.Log.setLogLevel(YKLiblog.Log.WARN())
+  // YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
+   YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
 
   // const tabledata = Util.makeTabledata()
   const tabledata = Util.makeTabledata2()

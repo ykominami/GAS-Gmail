@@ -8,7 +8,7 @@ class Tableop {
   }
   static showRangeShape(range){
     let row, col, height, width
-    ;[row, col, height, width] = YKLiba.Range.getRangeShape(range)
+    ;[row, col, height, width] = Tableop.getRangeShape(range)
     YKLiblog.Log.debug(`################# showRange row=${row} col=${col} height=${height} width=${width}`)
   }
 }

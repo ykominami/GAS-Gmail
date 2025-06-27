@@ -1,28 +1,33 @@
 function __A(){}
 
 class Gmail{
-  constructor(tabledata, makeindexFlag = 0){
+  constructor(limitx, tabledata, idtabledata, makeindexFlag = 0){
+    YKLiblog.Log.debug(`Gmail constructor limitx=${limitx}`)
     this.parentFolderInfo = tabledata.parentFolderInfo
+    this.backupFolderInfo = tabledata.backupFolderInfo
+
     this.folderConf = tabledata.folderConf
+    YKLiblog.Log.debug(`Gmail constructor this.folderConf=${this.folderConf}}`)
     this.tabledata = tabledata
+    this.idtabledata = idtabledata
 
     this.op = YKLiba.Config.addUnderRow()
     const keyList = tabledata.keys()
     YKLiblog.Log.debug(`## keyList=${keyList}`)
     this.keyList = keyList
-    if( makeindexFlag == 0){
+    if( makeindexFlag == 0 ){
       const [startIndex, limit] = this.makeIndexes(keyList)
       this.startIndex = startIndex
-      this.limit = limit
+      this.limitx = limitx
     }
     else{
       // const [startIndex, limit] = this.makeIndexes3(keyList, 29)
       const [startIndex, limit] = this.makeIndexes3(keyList)
       this.startIndex = startIndex
-      this.limit = limit
+      this.limitx = limitx
     }
+    YKLiblog.Log.debug(`Gmail constructor this.limit=${this.limitx}`)
   }
-  
   makeIndexes(keyList){
     const startIndex = 10
     const endIndex = keyList.length
@@ -70,17 +75,34 @@ class Gmail{
 
     YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
   }
+  getMailList(key, op, arg_store){
+    YKLiblog.Log.debug(`key=${key}`)
+    const targetedEmail = this.tabledata.getTargetedEmail(key);
+
+    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
+    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
+    const folder = targetedEmail.getOrCreateFolderUnderDocsFolder(this.parentFolderInfo);
+    targetedEmail.backup();
+    this.tabledata.rewrite(targetedEmail);
+
+    YKLiblog.Log.debug(`Gmail getMailList this.idtabledata=${this.idtabledata}`)
+    const gmailList = new GmailList(targetedEmail, this.idtabledata, this.limit)
+    const store = gmailList.getMailListX(op, arg_store);
+    targetedEmail.setNth(this.folderConf.nth);
+    targetedEmail.lastDateTime = store.get('last_date_time');
+    this.tabledata.rewrite(targetedEmail);
+  }
   removeLavel(key){
     YKLiblog.Log.debug(`key=${key}`)
     const targetedEmail = this.tabledata.getTargetedEmail(key);
     const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
-    removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
-    removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
+    this.removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
+    this.removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
     YKLiblog.Log.debug(pairLabel)
     YKLiblog.Log.debug(queryInfo)
   }
   removeLabelAll(){
-    CONFIG.setNoop(false)
+    YKLiba.Config.setNoop(false)
 
     // let numOfItems = 0
     // YKLiblog.Log.debug(`=A`)
@@ -93,22 +115,6 @@ class Gmail{
       this.removeLavel(key)
     }
     // YKLiblog.Log.debug(`END i=${i}`)
-  }
-  getMailList(key, op, arg_store){
-    YKLiblog.Log.debug(`key=${key}`)
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
-
-    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
-    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
-    const folder = targetedEmail.getOrCreateFolderUnderDocsFolder(this.parentFolderInfo);
-    targetedEmail.backup();
-    this.tabledata.rewrite(targetedEmail);
-
-    const gmailList = new GmailList(targetedEmail, this.tabledata)
-    const store = gmailList.get_mail_list_x(targetedEmail, op, arg_store);
-    targetedEmail.setNth(this.folderConf.nth);
-    targetedEmail.lastDateTime = store.get('last_date_time');
-    this.tabledata.rewrite(targetedEmail);
   }
 }
 

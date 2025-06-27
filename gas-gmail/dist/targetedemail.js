@@ -1,11 +1,14 @@
 class TargetedEmail {
-  constructor(index, item){
+  constructor(index, item, parentFolderInfo, backupFolderInfo){
+    YKLiblog.Log.debug(`parentFolderInfo=${parentFolderInfo}`)
     this.index = index
-    this.name = item[1]
+    const name = item[1]
+    this.name = name
     this.index_name = 1
     this.condition = item[2]
     this.index_condition = 2
-    this.id = item[3]
+    const id = item[3]
+    this.id = id
     this.index_id = 3
     this.url = item[4]
     this.index_url = 4
@@ -26,7 +29,6 @@ class TargetedEmail {
     this.maxSearchesAvailable = null
     this.maxThreads = 0
 
-    this.folder = null;
     this.old_id = this.id;
     this.old_url = this.url;
 
@@ -34,6 +36,29 @@ class TargetedEmail {
     this.old_nth = this.nth;
     this.old_count = this.count;
     this.old_count2 = this.count2;
+
+    this.parentFolderInfo = parentFolderInfo;
+    this.folder = null;
+    if( parentFolderInfo !== null ){
+     this.folder = this.getOrCreateFolderUnderDocsFolder(parentFolderInfo, id, name)
+    }
+ 
+    this.backupFileId = null;
+    this.extInfo = null;
+    this.backupFolderInfo = backupFolderInfo;
+  }
+  getOrCreateBackupfile(backupFolderInfo){
+    const formattedDate = backupFolderInfo.extInfo.formattedDate
+    const filename = `${this.name}_${formattedDate}.json`
+    const doc = YKLibb.Googleapi.getOrCreateGoogleDocsUnderFolder(backupFolderInfo.id, filename)
+    return doc;
+  }
+  getOrCreateFolderUnderDocsFolder(parentFolderInfo, xid, xname){
+    YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder parentFolderInfo.id=${parentFolderInfo.id} parentFolderInfo.name=${parentFolderInfo.name}`)
+    const yklibbFolderInfo = new YKLibb.FolderInfo(parentFolderInfo.name, parentFolderInfo.id)
+    const folder = YKLibb.Googleapi.getOrCreateFolderUnderDocsFolder(yklibbFolderInfo, xid, xname)
+    // YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
+    return folder
   }
   overWriteLastData(other){
     this.lastDateTime = other.lastDateTime
@@ -55,12 +80,34 @@ class TargetedEmail {
   setCount2(value){
     this.count2 = value
   }
-  getOrCreateFolderUnderDocsFolder(parentFolderInfo){
-    let folderId = parentFolderInfo.getFolderId()
-    YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder folderId=${folderId} this.name=${this.name}`)
-    this.folder = YKLiba.Folder.getOrCreateFolderById(folderId, this.name)
-    // YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
-    return this.folder
+  asJson(){
+    const assoc = {
+      index: this.index,
+      name: this.name,
+      index_name: this.index_name,
+      condition: this.condition,
+      index_condition: this.index_condition,
+      id: this.id,
+      index_id: this.index_id,
+      url: this.url,
+      index_url: this.index_url,
+      lastDateTime: this.lastDateTime,
+      indexLastDateTime: this.indexLastDateTime,
+      lastDateTime: this.lastDateTime,
+      lastDate: this.lastDate,
+      nth: this.nth,
+      index_nth: this.index_nth,
+      count: this.count,
+      index_count: this.index_count,
+      count2: this.count2,
+      index_count2: this.index_count2,
+      maxSearchesAvailable: this.maxSearchesAvailable,
+      maxThreads: this.maxThreads,
+      folder: this.folder,
+      backupFile: this.backupFile,
+      extInfo: this.extInfo
+    }
+    return JSON.stringify(assoc);
   }
   backup(){
     this.id = this.old_id;
@@ -73,28 +120,10 @@ class TargetedEmail {
       this.url = this.folder.getUrl();
     }
     // YKLiblog.Log.debug(`TargetedEmail.backup this.url=${this.url}`)
-    const date = new Date();
-    const formattedDate = Utilities.formatDate(date, "JST", "yyyyMMdd");
-    const filename = `${this.name}_${formattedDate}.json`
-    const path_array = ["log", "GAS-Gmail", filename]
-    for(let i in path_array){
-      YKLiblog.Log.debug(path_array[i]);
+    const text = this.asJson();
+    if(this.backupFolderInfo !== null){
+      this.backupFileId = this.getOrCreateBackupfile(this.backupFolderInfo).getId();
+      YKLibb.Googleapi.writeToGoogleDocs(this.backupFileId, text);
     }
-    const path = path_array.join( YKLiba.File.separator() );
-    // YKLiblog.Log.debug(`${path_array.join('|')}`);
-    // const path = YKLiba.File.join(["log", "GAS-Gmail", filename])
-    YKLiba.File.save(path, text)
   }
-}
-function xtestA(path_array){
-  for(let i=0; i<path_array.length; i++){
-    YKLiblog.Log.debug(path_array[i]);   
-  }
-}
-function xtest(){
-  let path_array = "0>0-LOG>Docs".split('>');
-  YKLiblog.Log.debug(`${path_array.join('|')}`);
-  xtestA( [...path_array, "A", "B"] );
-  // xtestA(path_array);
-  // YKLibb.getFolderByPath([ path_array, targetFolderName])
 }

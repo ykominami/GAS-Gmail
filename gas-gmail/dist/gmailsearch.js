@@ -6,13 +6,15 @@ class GmailSearch {
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
-    return this.SearchWithBase(queryInfo.getQuery0(), targetedEmail, start, maxThreads, maxSearchesAvailable)
+    const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery0(), targetedEmail, start, maxThreads, maxSearchesAvailable)
+    return [newLastDateTime, within, remain]
   }
   SearchWithFrom(queryInfo, targetedEmail,  start, maxThreads, maxSearchesAvailable){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
-    return this.SearchWithBase(queryInfo.getQuery1(), targetedEmail, start, maxThreads, maxSearchesAvailable)
+    const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery1(), targetedEmail, start, maxThreads, maxSearchesAvailable)
+    return [newLastDateTime, within, remain]
   }
   SearchWithBase(query, targetedEmail, start, maxThreads, maxSearchesAvailable){
     if( maxThreads <= 0){
@@ -47,10 +49,10 @@ class GmailSearch {
     // 1番目の要素には、検索されたが、このメソッドでは未処理のスレッド、メッセージが格納される。
     // また、検索結果に、すでに記録済みのメッセージが存在した場合、記録処理またはオリジナル版データ保存処理はしない。
     // ただし、スレッドに関するメタデータの計算の対象には含める。
-    YKLiblog.Log.debug(`################## query=${query}`)
+    YKLiblog.Log.debug(`################## query=${query} maxSearchesAvailable=${maxSearchesAvailable}`)
     const initialValue = [
-      new Messagearray(),
-      new Messagearray(),
+      new Messagearray(maxSearchesAvailable),
+      new Messagearray(maxSearchesAvailable),
     ]
     initialValue[0].maxSearchesAvailable = maxSearchesAvailable
     initialValue[0].maxThreads = maxThreads
@@ -64,6 +66,7 @@ class GmailSearch {
     const threads = this.getMailListWithQuery(query, start, maxThreads)
 
     if( threads !== null ){
+      YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray threads !== null`)
       // 検索結果(threadの配列全体)に含まれるメッセージ全体に関するメタデータを取得する
 
       // １個のthreadと、threadから取得した全メッセージに関連するメタデータ
@@ -72,12 +75,12 @@ class GmailSearch {
       // 1個のメッセージから、対応する1個のMessagedataクラスのインスタンスを生成する
       // 1個のthreadと（スレッドの属する全メッセージに対応する)Messagedataの配列を持つ、1個のThreadAndMessagedataarrayを作成する
       const threadAndMessagedataarrayList = threads.map( (thread) => {
-        YKLiblog.Log.debug(`this.getThreadsAndMessagedataArray thread=${JSON.stringify(thread)} thread=${thread}`)
+        YKLiblog.Log.debug(`this.getThreadsAndMessagedataArray thread.getMessageCount()=${thread.getMessageCount()}`)
         const messages = thread.getMessages()
         const messagedataArray = messages.map( (message) =>  {
           // 記録済みメッセージであるか否かを判定
-          const recorede = this.targetedEmailIds.done.includes(message.getId())
-          new Messagedata(message, message.getDate(), recorede )
+          const recorded = this.targetedEmailIds.doneHas(message.getId())
+          new Messagedata(message, message.getDate(), recorded )
         } )
         return new ThreadAndMessagedataarray(thread, messagedataArray)
       } )
@@ -87,7 +90,6 @@ class GmailSearch {
       // また切り詰めが発生した場合は、オリジナルのMessagedataの内容をGoogle Docsファイルに、1メッセージ1ファイルで本損する。
       // ただし、記録する前に、記録後の総スレッド数または、総メッセージ数が指定された制限を超える場合は、記録せずに、1番目要素に追加していく
       const resultArray = threadAndMessagedataarrayList.reduce( (accumulator, currentValue) => {
-        YKLiblog.Log.debug(`getThreadsAndMessagedataArray　currentValue.constructor=${currentValue.constructor}`)
         msgsStatus = this.determinStatus(msgsStatus, currentValue, accumulator)
 
         if( msgsStatus ){
@@ -98,10 +100,17 @@ class GmailSearch {
         }
         return accumulator
       }, initialValue )
+      YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray 1`)
+      resultArray[0].debug
+      resultArray[1].debug
+
       return resultArray
     }
     else{
-      // YKLiblog.Log.debug(`gmailsearch|getThreadsAndMessagedataArray| 2 initialValue=${ JSON.stringify(initialValue).slice(0, 500) }`)
+      YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray 2`)
+      initialValue[0].debug
+      initialValue[1].debug
+
       return initialValue
     }
   }

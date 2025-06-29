@@ -6,7 +6,7 @@ class ThreadAndMessagedataarray {
   }
   collectMessagesdataAfterDate(new_last_date){
     return this.messagedataArray.filter( (messagedata) => 
-      YKLiba.Utils.isAfterDate(new_last_date, messagedata.msg.getDate())
+      messagedata.isAfter = YKLiba.Utils.isAfterDate(new_last_date, messagedata.msg.getDate())
     )
   }
 }

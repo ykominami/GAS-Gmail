@@ -25,9 +25,9 @@ class Config {
     this.noop = value
   }
   getConfigIds(){
-    YKLiblog.Log.debug(`configSpreadsheetId=${this.configSpreadsheetId} | idsSheetName=${this.idsSheetName}`)
-    // const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(this.configSpreadsheetId, this.idsSheetName);
-    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configSpreadsheetId, this.idsSheetName)
+    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configSpreadsheetId} | idsSheetName=${this.idsSheetName}`)
+    // const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(this.configInfoSpreadsheetId, this.idsSheetName);
+    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.idsSheetName)
     const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
     return [spreadsheet, worksheet, header, values, dataRange]
   }
@@ -39,7 +39,7 @@ class Config {
   }
   getConfigInfo2(){
     YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfo2SheetName=${this.configInfo2SheetName}`)
-    // [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(spreadsheetId, sheetName);
+    // [header, values, dataRange] = YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
     const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.configInfo2SheetName)
     const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
     return [spreadsheet, worksheet, header, values, dataRange]

@@ -14,9 +14,9 @@ class Top {
     this.setup()
   }
   setup(){
-    const tabledata = Util.makeTabledata2()
+    const tabledata = UtilGmail.makeTabledata2()
     this.tabledata = tabledata
-    const idtabledata = Util.makeIdTabledata()
+    const idtabledata = UtilGmail.makeIdTabledata()
     const keys = tabledata.keys()
     idtabledata.adjust(keys)
     this.idtabledata = idtabledata
@@ -26,16 +26,16 @@ class Top {
     this.gmail = gmail
     this.numOfItems = 0
 
-    YKLiblog.Log.debug(`Top constructor this.limitx=${this.limitx}`)
-    // const tabledata = Util.makeTabledata()
+    YKLiblog.Log.debug(`Top setup this.limitx=${this.limitx}`)
   }
   start(){
-    YKLiblog.Log.debug(`Top constructor gmail.limitx=${this.gmail.limitx}`)
-    YKLiblog.Log.debug(`Top constructor this.gmail.limit=${this.gmail.limit}`)
+    YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
 
+    const startInitIndex = 1
     const keys = this.gmail.getKeys()
-    const keya = [keys[0]]
-    const [startIndex, limitx] = UtilGmail.makeIndex(keya, 0) // 0 または 0以外
+    const keya = [keys[1]]
+    const [startIndex, limitx] = UtilGmail.makeIndex(startInitIndex, 1, 0) // 0 または 0以外
+    // const [startIndex, limitx] = UtilGmail.makeIndex(startInitIndex, 1, 1) // 0 または 0以外
     this.gmail.setStartIndex(startIndex)
 
     // this.gmail.limitx = limitx
@@ -98,7 +98,7 @@ class Top {
     YKLiblog.Log.debug(`Top processOneTargetedEmail gmail.idtabledata=${gmail.idtabledata}`)
     YKLiblog.Log.debug(`Top processOneTargetedEmail gmail.idtabledata.targetedEmailIdsList=${gmail.idtabledata.targetedEmailIdsList}`)
 
-    const gmailList = new GmailList(targetedEmail, gmail.tabledata, gmail.idtabledata);
+    const gmailList = new GmailList(targetedEmail, gmail.idtabledata, this.limitx);
     const store = gmailList.getMailListX(gmail.op);
     targetedEmail.setNth(folderConf.nth);
     targetedEmail.lastDateTime = store.get('last_date_time');

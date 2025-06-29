@@ -1,8 +1,29 @@
+function test_gmail_ids_and_x(){
+  YKLiblog.Log.initLogDebug()
+
+  const tabledata = UtilGmail.makeTabledata2()
+  const idtabledata = UtilGmail.makeIdTabledata()
+
+  const keys0 = tabledata.keys()
+  idtabledata.adjust(keys0)
+
+  const keys = idtabledata.keys()
+  keys.map( key => {
+    const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
+    targetedEmailIds.addToDone([10,20, 30])
+    // YKLiblog.Log.debug([...targetedEmailIds.done])
+    idtabledata.rewrite(targetedEmailIds)
+  })
+  idtabledata.update()
+
+}
+
 function test_gmail_ids(){
   YKLiblog.Log.initLogDebug()
 
   const basename = "_ids"
-  const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
+  // const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
+  const ssId = CONFIG.configSpreadsheetId;
   const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(ssId, basename);
 
   YKLiblog.Log.debug( `header=${header}` )
@@ -21,18 +42,12 @@ function test_gmail_ids(){
   })
   idtabledata.update()
 }
-function test_set(){
-  const done = new Set([1,2,3])
-  done.add(4)
-  done.add(1)
-  done.add(...[1,5,6])
-  YKLiblog.Log.debug( [...done] )
-}
 function test_gmail_hw() {
   // const basename = Store.hotwireWeekly()
   const basename = "Hotwire Weekly"
   const store = get_valid_store(basename, null)
-  const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
+  const ssId = CONFIG.configSpreadsheetId;
+  // const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
   const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(ssId, basename);
   const r = YKLiba.Range.getValidRange()
 
@@ -43,7 +58,8 @@ function test_gmail_hw() {
 function test_gmail_x() {
   // const basename = Store.hotwireWeekly()
   const basename = "Hotwire Weekly"
-  const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
+  // const ssId = "1Mz4pqoclYFPSmbNlpf_g18CUNTcxt68KkKFVTNEJGg4";
+  const ssId = CONFIG.configSpreadsheetId;
   const [ss, sheet] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename);
 
   const basenameDest = "testa"
@@ -70,9 +86,6 @@ function test_gmail_x() {
 
   const range4 = rDest.offset(0,0, height, rs.w)
   const range5 = sheetDest.getRange(1,1, height, rs.w)
-
-  // const rDs=YKLiba.Range.getRangeShape(range4)
-  // Logger.log( JSON.stringify(rDs) );
 
   range5.setValues(ary3)
 }

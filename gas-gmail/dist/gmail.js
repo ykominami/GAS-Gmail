@@ -10,47 +10,33 @@ class Gmail{
     YKLiblog.Log.debug(`Gmail constructor this.folderConf=${this.folderConf}}`)
     this.tabledata = tabledata
     this.idtabledata = idtabledata
-
+    this.startIndex = 0
+    this.limitx = 0
     this.op = YKLiba.Config.addUnderRow()
-    const keyList = tabledata.keys()
-    YKLiblog.Log.debug(`## keyList=${keyList}`)
-    this.keyList = keyList
-    if( makeindexFlag == 0 ){
-      const [startIndex, limit] = this.makeIndexes(keyList)
-      this.startIndex = startIndex
-      this.limitx = limitx
-    }
-    else{
-      // const [startIndex, limit] = this.makeIndexes3(keyList, 29)
-      const [startIndex, limit] = this.makeIndexes3(keyList)
-      this.startIndex = startIndex
-      this.limitx = limitx
-    }
-    YKLiblog.Log.debug(`Gmail constructor this.limit=${this.limitx}`)
   }
-  makeIndexes(keyList){
-    const startIndex = 10
-    const endIndex = keyList.length
-    const array0 = [endIndex, keyList.length]
-    const [_max, limit] =  YKLiba.Arrayx.getMaxAndMin(array0)
-
-    return [startIndex, limit]
+  getStartIndex(){
+    return this.startIndex
   }
-  makeIndexes3(keyList, startIndex=11){
-    // const startIndex = 0
-    // const startIndex = 11
-    // const endIndex = keyList.length
-    const endIndex = startIndex + 3
-
-    // YKLiblog.Log.debug(`endIndex=${endIndex}|`)
-    // YKLiblog.Log.debug(`tabledata.folderConf.maxItems=${tabledata.folderConf.maxItems}|`)
-    // YKLiblog.Log.debug(`keyList.length=${keyList.length}|`)
-    // const [_max, limit] =  getMaxAndMin([endIndex, tabledata.folderConf.maxItems , keyList.length])
-    const array0 = [endIndex, keyList.length]
-    YKLiblog.Log.debug(`array0=${array0}`)
-    const [_max, limit] =  YKLiba.Arrayx.getMaxAndMin(array0)
-
-    return [startIndex, limit]
+  setStartIndex(startIndex){
+    this.startIndex = startIndex
+  }
+  setLimitx(limitx){
+    this.limitx = limitx
+  }
+  getLimitx(){
+    return this.limitx
+  }
+  getLimitedAccessRange(){
+    const keys = this.getKeys()
+    const keysLength = keys.length
+    const [max, min] = YKLiba.Arrayx.getMaxAndMin( [keysLength, this.getLimitx()] )
+    return [this.getStartIndex(), min]
+  }
+  getByKey(key){
+    return this.tabledata.getTargetedEmail(key)
+  }
+  getKeys(){
+    return this.tabledata.keys()
   }
 
   /**
@@ -86,6 +72,7 @@ class Gmail{
     this.tabledata.rewrite(targetedEmail);
 
     YKLiblog.Log.debug(`Gmail getMailList this.idtabledata=${this.idtabledata}`)
+    YKLiblog.Log.debug(`Gmail getMailList this.idtabledata.targetedEmailIdsList=${this.idtabledata.targetedEmailIdsList}`)
     const gmailList = new GmailList(targetedEmail, this.idtabledata, this.limit)
     const store = gmailList.getMailListX(op, arg_store);
     targetedEmail.setNth(this.folderConf.nth);
@@ -96,22 +83,20 @@ class Gmail{
     YKLiblog.Log.debug(`key=${key}`)
     const targetedEmail = this.tabledata.getTargetedEmail(key);
     const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
-    this.removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
-    this.removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
+    removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel)
+    removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel)
     YKLiblog.Log.debug(pairLabel)
     YKLiblog.Log.debug(queryInfo)
   }
   removeLabelAll(){
-    YKLiba.Config.setNoop(false)
+    CONFIG.setNoop(false)
 
-    // let numOfItems = 0
-    // YKLiblog.Log.debug(`=A`)
-    // YKLiblog.Log.debug(`this.startIndex=${this.startIndex}`)
-    // YKLiblog.Log.debug(`this.limit=${this.limit}`)
-    for(let i=0; i < this.limit; i++){
+    const keys = this.getKeys()
+    const [max, min] = YKLiba.Arrayx.getMaxAndMin([keys.length, this.limitx])
+    for(let i=0; i < min; i++){
       YKLiblog.Log.debug(`i=${i}`)
 
-      const key = this.keyList[i]
+      const key = keys[i]
       this.removeLavel(key)
     }
     // YKLiblog.Log.debug(`END i=${i}`)

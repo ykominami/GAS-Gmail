@@ -4,7 +4,7 @@ function get_mail_list_from_Hotwire_Club(arg_store = null){
   const basename = Store.theHotwireClub()
   // remove_labels(basename)
   const op = YKLiba.Config.addUnderRow()
-  const testdata = Util.makeTabledata()
+  const testdata = UtilGmail.makeTabledata()
   const gmail = new Gmail(testdata)
   YKLiblog.Log.debug(`basename=${basename}`)
   return gmail.getMailList(basename, op, arg_store)
@@ -17,16 +17,15 @@ function get_mail_list_from_Frontend_Focus(arg_store = null){
   // remove_labels(basename)
   const op = YKLiba.Config.addUnderRow()
   // const op = YKLiba.Config.REWRITE()
-  const testdata = Util.makeTabledata()
+  const testdata = UtilGmail.makeTabledata()
   const gmail = new Gmail(testdata)
   return gmail.getMailList(basename, op, arg_store)
-  // return gmail.get_mail_list_x(basename, op, arg_store)
 }
 
 // Hotwire Weekly
 function get_mail_list_from_hotwire_weekly(arg_store = null){
   const basename = Store.hotwireWeekly()
-  const testdata = Util.makeTabledata()
+  const testdata = UtilGmail.makeTabledata()
   const gmail = new Gmail(testdata)
   const op = YKLiba.Confg.addUnderRow()
   return gmail.getMailList(basename, op, arg_store)

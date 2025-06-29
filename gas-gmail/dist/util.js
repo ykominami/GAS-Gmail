@@ -1,22 +1,4 @@
 class Util {
-  static makeTabledata2(){
-    const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigInfo2()
-    YKLiblog.Log.debug(`Util makeTabledata2 values=${values}`)
-    const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
-    return tabledata
-  }
-  static makeTabledata(){
-    const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfig()
-    YKLiblog.Log.debug(`Util makeTabledata values=${values}`)
-    const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
-    return tabledata
-  }
-  static makeIdTabledata(){
-    const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigIds()
-    YKLiblog.Log.debug(`Util makeIdTabledata values=${values}`)
-    const idtabledata = new IdTabledata(spradsheet, worksheet, header, values, dataRange);
-    return idtabledata
-  }
   static isWhiteSpaceString(str){
     return (typeof(str) === "string" && str.trim() === '')
   }
@@ -35,31 +17,31 @@ class Util {
     const [values, dataRange] = YKLibb.Gssx.getValuesFromSheet(sheet);
     let range = dataRange;
     let row, col, height, width
-    [row, col, height, width] = YKLiba.Range.getRangeShape(range)
+    [row, col, height, width] = Tableop.getRangeShape(range)
     if( !height ){
       if( !width ){
-        // Log.debug(`getDataSheetRange 0 1`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 1`)
         range = sheet.getRange(row, col, 1, 1);
       }
       else{
-        // Log.debug(`getDataSheetRange 0 2`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 2`)
         range = dataRange.offset(row, col, 1, width);
       }
     }
     else{
       if( !width ){
-        // Log.debug(`getDataSheetRange 0 3`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 3`)
         range = dataRange.offset(row, col, height, 1);
 
       }
       else{
-        // Log.debug(`getDataSheetRange 0 4`)
+        // YKLiblog.Log.debug(`getDataSheetRange 0 4`)
       }
       // else{
       //   range = dataRange.offset(0, 0, height, width);
       // }
     }
-    // [row, col, height, width] = YKLiba.Range.getRangeShape(range)
+    // [row, col, height, width] = Tableop.getRangeShape(range)
     return range
   }
   /**
@@ -85,30 +67,4 @@ class Util {
     
     return [setOnly, arrayOnly, symmetric,];
   }
-}
-
-function test_util(){
-  let key
-  const idtabledata = Util.makeIdTabledata()
-  const keys = idtabledata.keys()
-  YKLiblog.Log.debug(`keys=${ keys }`)
-  key = keys[0]
-  test_util_b(idtabledata, key)
-  
-  key = "xyz"
-  test_util_b(idtabledata, key)
-  
-}
-function test_util_b(idtabledata, key){
-  YKLiblog.Log.debug(key)
-  const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
-  const ret = typeof(targetedEmailIds)
-  if( ret !== "undefined" ){
-    YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
-  }
-}
-function test_util_c(idtabledata, key){
-  YKLiblog.Log.debug(key)
-  const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
-  YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
 }

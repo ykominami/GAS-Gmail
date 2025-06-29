@@ -27,6 +27,6 @@ class GmailSave {
     const rawcontent = messageData.original.plainBody
   
     YKLiblog.Log.debug(`===============folder=${folder.getUrl()} filename=${filename} rawcontent.length=${rawcontent.length}`)
-    YKLibb.Googleapi.outputFileUnderFolder(folder, filename, rawcontent)
+    YKLibb.Googleapi.outputFileUnderFolder(folder, fileName, rawcontent)
   }
 }

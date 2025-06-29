@@ -9,7 +9,7 @@ class Messagedata{
         date = msg.getDate()
       }
       catch(error){
-        YKLiblog.Log.error(error)
+        YKLiblog.Log.unknown(error)
         return null
       }
     }
@@ -33,10 +33,10 @@ class Messagedata{
   }
   truncateString(maxLength) {
     if (typeof maxLength !== 'number'){
-      maxLength = Config.nolimit()
+      maxLength = CONFIG.nolimit()
     } 
     if ( maxLength <= 0) {
-      maxLength = Config.nolimit()
+      maxLength = CONFIG.nolimit()
     }
 
     this.isTruncated = false;
@@ -45,7 +45,7 @@ class Messagedata{
     for(let i=0; i<names.length; i++){
       const name = names[i]
       const str = this.original[name]
-      if( maxLength === Config.nolimit() ){
+      if( maxLength === CONFIG.nolimit() ){
         this.truncated[name] = str;
       }
       else{

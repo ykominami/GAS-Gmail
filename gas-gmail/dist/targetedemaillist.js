@@ -18,12 +18,12 @@ class TargetedEmailList {
       switch(item[0]){
         case "parent_folder":
         YKLiblog.Log.debug("TargetedEmailList constructor parent_folder")
-          parentFolderInfo = new TargetedEmail(i, item, null, null);
+          parentFolderInfo = new TargetedEmail(i, item, null, null, null);
           this.parentFolderInfo = parentFolderInfo;
           break;
         case "backup_folder":
           YKLiblog.Log.debug("TargetedEmailList constructor backup_folder")
-          backupFolderInfo = new TargetedEmail(i, item, null, null);
+          backupFolderInfo = new TargetedEmail(i, item, null, null, null);
           this.backupFolderInfo = backupFolderInfo;
           const date = new Date();
           const formattedDate = Utilities.formatDate(date, "JST", "yyyyMMdd");
@@ -40,7 +40,7 @@ class TargetedEmailList {
           // YKLiblog.Log.debug(`i=${i} item.name=${item[1]}`);
           if(item[1]){
             // YKLiblog.Log.debug(`TargetedEmailList i=${i} item[1]=${item[1]}`)
-            let targetedEmail = new TargetedEmail(i, item, parentFolderInfo, backupFolderInfo);
+            let targetedEmail = new TargetedEmail(i, item, parentFolderInfo, backupFolderInfo, folderConf);
 
             this.targetedEmailAssoc[item[1]] = targetedEmail;
           }

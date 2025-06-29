@@ -23,7 +23,7 @@ class Tabledata {
   }
   rewrite(targetedEmail){
     const item = targetedEmail
-    // Log.debug(`------------------rewrite`)
+    // YKLiblog.Log.debug(`------------------rewrite`)
     if( !item.old_id ){
       this.values[item.index][item.index_id] = item.id;
     }
@@ -32,7 +32,7 @@ class Tabledata {
     }
     if( !item.oldLastDateTime ){
       this.values[item.index][item.indexLastDateTime] = item.lastDateTime;
-      // Log.debug(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
+      // YKLiblog.Log.debug(`item.index=${item.index}|item.indexLastDateTime=${item.indexLastDateTime}|${this.values[item.index][item.indexLastDateTime]}`)
     }
     if( item.old_nth != item.nth){
       this.values[item.index][item.index_nth] = item.nth;
@@ -45,7 +45,7 @@ class Tabledata {
     }
   }
   update(){
-    // Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
+    // YKLiblog.Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
     this.dataRange.setValues( [this.header, ...this.values] );
   }
 }

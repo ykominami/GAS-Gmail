@@ -14,7 +14,7 @@ class Messagedatax{
       this.plainBody = msg.getPlainBody()
     }
     if( date !== null){
-      this.dateStr = YKLiba.Utils.makeDateString(date)
+      this.dateStr = YKLiba.make_date_string(date)
       this.date = date
     }
   }

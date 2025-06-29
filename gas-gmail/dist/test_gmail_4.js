@@ -78,8 +78,8 @@ function xtestx(){
   // YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
    YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
 
-  // const tabledata = Util.makeTabledata()
-  const tabledata = Util.makeTabledata2()
+  // const tabledata = UtilGmail.makeTabledata()
+  const tabledata = UtilGmail.makeTabledata2()
   const makeindexFlag = 3
   // YKLiblog.Log.debug(`tabledata=${JSON.stringify(tabledata.values)}`)
   const gmail = new Gmail(tabledata, makeindexFlag)

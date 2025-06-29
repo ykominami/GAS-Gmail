@@ -1,6 +1,6 @@
 class TargetedEmail {
-  constructor(index, item, parentFolderInfo, backupFolderInfo){
-    YKLiblog.Log.debug(`parentFolderInfo=${parentFolderInfo}`)
+  constructor(index, item, parentFolderInfo, backupFolderInfo, folderConf){
+    YKLiblog.Log.debug(`TargetedEmail constructor index=${index} parentFolderInfo=${parentFolderInfo}`)
     this.index = index
     const name = item[1]
     this.name = name
@@ -19,15 +19,20 @@ class TargetedEmail {
     }
     this.lastDate = new Date( this.lastDateTime )
     // YKLiblog.Log.debug(`TargetedEmail|index=${index} name=${this.name} lastDate=${this.lastDate}`)
-    this.nth = item[6]
+    this.nth = parseInt(item[6])
     this.index_nth = 6
-    this.count = item[7]
+    this.count = parseInt(item[7])
     this.index_count = 7
-    this.count2 = item[8]
+    this.count2 = parseInt(item[8])
     this.index_count2 = 8
     //
-    this.maxSearchesAvailable = null
-    this.maxThreads = 0
+    if( folderConf !== null){
+      this.folderConf = folderConf
+      this.maxSearchesAvailable = folderConf.maxSearchesAvailable
+      YKLiblog.Log.debug(`TargetedEmail constructor typeof(this.maxSearchesAvailable) =${ typeof(this.maxSearchesAvailable) }`)
+      this.maxThreads = folderConf.maxThreads
+      this.maxItem = folderConf.maxItem
+    }
 
     this.old_id = this.id;
     this.old_url = this.url;
@@ -40,7 +45,8 @@ class TargetedEmail {
     this.parentFolderInfo = parentFolderInfo;
     this.folder = null;
     if( parentFolderInfo !== null ){
-     this.folder = this.getOrCreateFolderUnderDocsFolder(parentFolderInfo, id, name)
+      this.folder = this.getOrCreateFolderUnderDocsFolder(parentFolderInfo, id, name)
+      YKLiblog.Log.debug(`TargetedEmail constructor this.folder=${this.folder}`)
     }
  
     this.backupFileId = null;
@@ -55,7 +61,7 @@ class TargetedEmail {
   }
   getOrCreateFolderUnderDocsFolder(parentFolderInfo, xid, xname){
     YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder parentFolderInfo.id=${parentFolderInfo.id} parentFolderInfo.name=${parentFolderInfo.name}`)
-    const yklibbFolderInfo = new YKLibb.FolderInfo(parentFolderInfo.name, parentFolderInfo.id)
+    const yklibbFolderInfo = new YKLibb.FolderInfo(parentFolderInfo.folder, parentFolderInfo.id)
     const folder = YKLibb.Googleapi.getOrCreateFolderUnderDocsFolder(yklibbFolderInfo, xid, xname)
     // YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
     return folder

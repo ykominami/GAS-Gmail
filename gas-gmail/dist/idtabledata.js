@@ -8,7 +8,7 @@ class IdTabledata {
     // worksheetの四辺から連続した空白行、空白列を取り除いた長方形領域の第2行以降の行に含まれるセルの値の2次元配列
     this.values = values;
     this.dataRange = dataRange;
-    this.dataRangeShape = Tableop.getRangeShape(this.dataRange)
+    this.dataRangeShape = YKLiba.Range.getRangeShape(this.dataRange)
 
     const targetedEmailIdsList = new TargetedEmailIdsList(values);
     this.targetedEmailIdsList = targetedEmailIdsList;
@@ -30,18 +30,24 @@ class IdTabledata {
     return this.targetedEmailIdsList.getTargetedEmailIdsByIndex(index);
   }
   adjust(additionalKeys){
+    YKLiblog.Log.debug(`IdTabledata adjust S`)
     const existingKeys = this.targetedEmailIdsList.keys()
     const existingKeySet = new Set(existingKeys)
     const nonExistingKeys = additionalKeys.filter(el => !existingKeySet.has(el));
+    YKLiblog.Log.debug(`IdTabledata adjust 1 nonExistingKeys=${nonExistingKeys}`)
+    const [height, width] = this.targetedEmailIdsList.getHeightAndWidth()
+
     if( nonExistingKeys.length > 0 ){
+      YKLiblog.Log.debug(`IdTabledata adjust 2`)
       for( let i=0; i < nonExistingKeys.length; i++){
-        const index = (this.dataRangeShape[2] - 1) + i
-        const key = nonExistingKeys[index]
+        const key = nonExistingKeys[i]
+        const index = (height + 1) + i
+        YKLiblog.Log.debug(`IdTabledata adjust 4 index=${index} key=${key}`)
         this.targetedEmailIdsList.addTargetedIds(index, [key])
       }
       this.update()
     }
-    YKLiblog.Log.debug(`IdTabledata adjust`)
+    YKLiblog.Log.debug(`IdTabledata adjust E`)
   }
 
   rewrite(targetedEmailIds){
@@ -50,48 +56,55 @@ class IdTabledata {
   }
   update(){
     // 
-    const [targetHeight, targetWidth] = this.targetedEmailIdsList.getHeightAndWidth()
-    YKLiblog.Log.debug(`IdTabledata update targetHeight=${targetHeight} targetWidth=${targetWidth}`)
-    const dataRangeShape = Tableop.getRangeShape(this.dataRange)
-
-    const[maxHeight, minHeight] = YKLiba.Arrayx.getMaxAndMin([dataRangeShape[2], targetHeight])
-    const[maxWidth, minWidth] = YKLiba.Arrayx.getMaxAndMin([dataRangeShape[3], targetWidth])
+    const [height, width] = this.targetedEmailIdsList.getHeightAndWidth()
+    YKLiblog.Log.debug( `IdTabledata update height=${height} width=${width}` )
+    const dataRangeShape = YKLiba.Range.getRangeShape(this.dataRange)
 
     // 左端の列セルを除いた領域(書き替え前、書換え後のうち、大きい方の高さ、幅をもつ)をクリア
-    const valuesRange = this.worksheet.getRange(dataRangeShape[0] + 1, dataRangeShape[1] + 1, maxHeight, maxWidth)
-    valuesRange.clear()
-    const valuesRangeShape = Tableop.getRangeShape(valuesRange)
+    if(width > 0){
+      const idsRange = this.worksheet.getRange(dataRangeShape.r + 1, dataRangeShape.c + 1, height, width)
+      idsRange.clear()
+    }
+ 
+    const rowsRange = this.worksheet.getRange(dataRangeShape.r + 1, dataRangeShape.c, height + 1, width + 1)
+    const rowsRangeShape = YKLiba.Range.getRangeShape(rowsRange)
     
-    YKLiblog.Log.debug( `IdTabledata update valuesRangeShape=${ JSON.stringify(valuesRangeShape) }` )
-    const values = valuesRange.getValues()
-    for(let h = 0; h < maxHeight; h++){
-      const w = values[h].length
-      const srcValues = this.targetedEmailIdsList.getValueArray(h, maxWidth)
+    YKLiblog.Log.debug( `IdTabledata update rowsRangeShape=${ JSON.stringify(rowsRangeShape) }` )
+    const rows = rowsRange.getValues()
+    const w = rows[0].length
+    for(let h = 0; h < rowsRangeShape.h; h++){
+      // 検索結果を記録したrowの場合は、そのデータのみを含む配列を返す
+      // 検索結果を記録したrowでない場合は、そのrowの幅分の空白の配列を返す
+      const srcValues = this.targetedEmailIdsList.getRowArray(h, width)
+      // const srcValues = this.targetedEmailIdsList.getValueArray(h, width)
       const srcWidth = srcValues.length
-      const[maxW, minW] = YKLiba.Arrayx.getMaxAndMin([w, srcWidth])
+      const[_maxW, minW] = YKLiba.Arrayx.getMaxAndMin([w, srcWidth])
 
       for(let i = 0; i < minW; i++){
-        values[h][i] = srcValues[i]
+        rows[h][i] = srcValues[i]
       }
-      YKLiblog.Log.debug( `IdTabledata update values[${h}]=${values[h]} }` )
+      YKLiblog.Log.debug( `IdTabledata update rows[${h}]=${rows[h]} }` )
     }
-    YKLiblog.Log.debug( `IdTabledata update values=${values} }` )
-    valuesRange.setValues(  values )
+    YKLiblog.Log.debug( `IdTabledata update rows=${ JSON.stringify(rows) } }` )
+    rowsRange.setValues(  rows )
   }
   updateRow(targetedEmailIds){
     // 
     const srcValues = targetedEmailIds.getDoneAsArray()
     const width = srcValues.length
+    if( width === 0 ){
+      return
+    }
     YKLiblog.Log.debug(`IdTabledata updateRow width=${width}`)
-    const dataRangeShape = Tableop.getRangeShape(this.dataRange)
-    const [maxWidth, minWidth] = YKLiba.Arrayx.getMaxAndMin([dataRangeShape[3], width])
+    const dataRangeShape = YKLiba.Range.getRangeShape(this.dataRange)
+    const [maxWidth, minWidth] = YKLiba.Arrayx.getMaxAndMin([dataRangeShape.w, width])
     // 左端の列セルを除いたtargetedEmailIdsの領域(書き込み前、書き込み後で、幅が長い方を指定する)をクリア
-    const targetRange = this.worksheet.getRange(dataRangeShape[0] + 1 + targetedEmailIds.index, dataRangeShape[1] + 1, 1, maxWidth)
+    const targetRange = this.worksheet.getRange(dataRangeShape.r + 1 + targetedEmailIds.index, dataRangeShape.c + 1, 1, maxWidth)
     targetRange.clear()
 
-    const targetValues = targetRange.getValues()
+    targetValues = targetRange.getValues()
     for(let i = 0; i < width; i++){
-      targetValues[0][i] = srcValues[i]
+      targetValues[i] = srcValues[i]
     }
     YKLiblog.Log.debug( `IdTabledata update targetValues=${targetValues} }` )
     targetRange.setValues(  targetValues )

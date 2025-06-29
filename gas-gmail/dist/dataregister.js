@@ -3,13 +3,14 @@ class Dataregister {
     // this.unrecordedMessageIds = []
   }
   registerData(within, name, op, limit, lastDate){
+    YKLiblog.Log.debug(`Dataregister registerData `)
     // 引数withinは、クラスMessageArrayのインスタンス
     // 引数lastDateより、後ろの日時を持つメッセージを処理対象とする
     // within.arrayはクラスThreadAndMessagedataarrayのインスタンスの配列
     if( (typeof(within.array) === "undefined") || within.array.length <= 0 ){
       // YKLiblog.Log.debug(`gmailregster|registerDate| 0 return`)
-      // throw Error(`registerData`)
-      return
+      throw Error(`registerData`)
+      // return
     }
     // 前回処理した日時(lastDate以)降のメッセージを取り出す
     const nestedArray =  within.array.map( item => item.collectMessagesdataAfterDate( lastDate ) )
@@ -18,11 +19,11 @@ class Dataregister {
     // const messageDataList = truncateStringArray(filteredMessagearrayList, limit)
     // 未記録メッセージのみを取り出す
     const unrecordedList = filteredMessagearrayList.filter( item => !item.recorded )
-    const unrecordedMessageIds = unrecordedList.map( item => item.id || item.messageId || item.getId() )
+    const unrecordedMessageIds = unrecordedList.map( itme => item.getMessageId() )
     // 未記録メッセージに対し切り詰め処理を行う
-    const messageDataList = unrecordedList.map( item => this.truncateStringArray([item], limit)[0] )
+    const messageDataList = unrecordedList.map( item => item.truncateString(limit) )
     // 未記録メッセージを、1メッセージを表す配列の配列を取り出す
-    const dataArray = messageDataList.map( messageData => messageData.data || messageData.toArray() || [messageData.id, messageData.from, messageData.subject, messageData.dateStr, messageData.plainBody] )
+    const dataArray = messageDataList.map( messageData => messageData.getDataAsArray() )
     // Google Spreadsheetsのワークシートに追記する
     this.registerDataArray( dataArray, name, op )
     //記録したので、以降では記録済みメッセージのIDとして扱う。
@@ -32,20 +33,22 @@ class Dataregister {
   }
 
   registerDataArray(dataArray, sheetname, op){
+    YKLiblog.Log.debug(`Dataregister registerDataArray sheetname=${sheetname} `)
+
     const range = this.getDataSheetRange(sheetname)
 
     let range2;
     let rangeShape;
-    if( op === "rewrite" || op === YKLiba.Config.REWRITE ){
+    if( op === YKLiba.Config.rewrite() ){
       range2 = range;
       range2.deleteCells(SpreadsheetApp.Dimension.ROWS);
-      rangeShape = this.getRangeShape(range)
+      rangeShape = YKLiba.Range.getRangeShape(range)
       YKLiblog.Log.debug(`1`)
     }
     else{
       // YKLiba.Config.addUnderRow
       // 既存のrangeの最後のROWの直下から追加する
-      rangeShape = this.getRangeShape(range)
+      rangeShape = YKLiba.Range.getRangeShape(range)
       range2 = range.offset(rangeShape.h, 0, rangeShape.h + rangeShape.h, rangeShape.w)
       YKLiblog.Log.debug(`2`)
     }
@@ -66,8 +69,8 @@ class Dataregister {
     // YKLiblog.Log.debug(`register_data height2=${height2} width2=${width2}`)
 
     if(height2 > 0 && width2 > 0){
-      const range3 = this.transformRange(range2, height2, width2)
-      const [row, col, height, width] = this.getRangeShape(range3)
+      const range3 = YKLiba.Code.transformRange2(range2, height2, width2)
+      [row, col, height, width] = Tableop.getRangeShape(range3)
       YKLiblog.Log.debug(`range3 row=${row} col=${col} height=${height} width=${width}`)
       YKLiblog.Log.debug(`dataArray.length=${dataArray.length}`)
       YKLiblog.Log.debug(`dataArray[0].length=${dataArray[0].length}`)
@@ -89,32 +92,6 @@ class Dataregister {
     }
   }
 
-  // ヘルパーメソッドを追加
-  getDataSheetRange(sheetname) {
-    // スプレッドシートからシートを取得する処理
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = spreadsheet.getSheetByName(sheetname);
-    if (!sheet) {
-      throw new Error(`Sheet "${sheetname}" not found`);
-    }
-    return sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn());
-  }
-
-  getRangeShape(range) {
-    // レンジの形状を取得する処理
-    return {
-      h: range.getHeight(),
-      w: range.getWidth(),
-      row: range.getRow(),
-      col: range.getColumn()
-    };
-  }
-
-  transformRange(range, height, width) {
-    // レンジを指定されたサイズに変換する処理
-    return range.getSheet().getRange(range.getRow(), range.getColumn(), height, width);
-  }
-
   /**
    * オブジェクトの配列に対して、オブジェクトのプロパティを指定長で切り取る関数
    *
@@ -129,17 +106,16 @@ class Dataregister {
     if (typeof maxLength !== 'number'){
       return [[]];
     } 
-    if ( maxLength <= 0 && maxLength !== -1 ) { // Config.nolimit()の代わりに-1を使用
+    if ( maxLength <= 0 && maxLength !== Config.nolimit()) {
       return [[]];
     }
 
     return messagedataList.map((item) => {
       item.isTruncated = false;
-      item.truncated = item.truncated || {};
 
       const names = ["id", "from", "subject", "dateStr", "plainBody"]
       names.forEach( (name) => {
-        const str = item.original ? item.original[name] : item[name];
+        str = item.original[name]
         if (typeof str === 'string' && str.length > maxLength) {
           item.isTruncated = true;
           item.truncated[name] = str.substring(0, maxLength);
@@ -152,19 +128,15 @@ class Dataregister {
     } )
   }
 }
-
 function testbSub(sheetname){
-  const dataregister = new Dataregister();
-  let range = dataregister.getDataSheetRange(sheetname)
-  // Tableop.showRangeShape(range)の代わりに独自のログ出力
-  const rangeShape = dataregister.getRangeShape(range);
-  YKLiblog.Log.debug(`Range shape: ${JSON.stringify(rangeShape)}`);
+  let range = Dataregister.getDataSheetRange(sheetname)
+  Tableop.showRangeShape(range)
   YKLiblog.Log.debug(`range=${JSON.stringify(range)}`)
   YKLiblog.Log.debug(`range=${range}`)
-}
 
+}
 function testb(){
-  let sheetname = "idsSheetName" // CONFIG.idsSheetNameの代わりに直接文字列を使用
+  let sheetname = CONFIG.idsSheetName
   testbSub(sheetname)  
 
   sheetname = "Hotwire Weekly"

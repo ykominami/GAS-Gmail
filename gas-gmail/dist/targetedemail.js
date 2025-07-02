@@ -1,70 +1,76 @@
 class TargetedEmail {
-  constructor(index, item, parentFolderInfo, backupFolderInfo, folderConf){
-    YKLiblog.Log.debug(`TargetedEmail constructor index=${index} parentFolderInfo=${parentFolderInfo}`)
+  constructor(index, item, backupRootFolderInfo, folderConf, spradsheet){
+    YKLiblog.Log.debug(`TargetedEmail constructor index=${index} backupRootFolderInfo=${backupRootFolderInfo}`)
+    this.spradsheet = spradsheet
+
     this.index = index
     const name = item[1]
     this.name = name
     this.index_name = 1
     this.condition = item[2]
     this.index_condition = 2
-    const id = item[3]
-    this.id = id
-    this.index_id = 3
-    this.url = item[4]
-    this.index_url = 4
+    const backupFolderId = item[3]
+    this.backupFolderId = backupFolderId
+    this.index_backupFolderId = 3
+    this.backupFolderUrl = item[4]
+    this.index_backupFolderUrl = 4
     this.lastDateTime = new Date( item[5] ).getTime()
     this.indexLastDateTime = 5
     if( !this.lastDateTime ){
       this.lastDateTime = new Date(0).getTime();
     }
     this.lastDate = new Date( this.lastDateTime )
-    // YKLiblog.Log.debug(`TargetedEmail|index=${index} name=${this.name} lastDate=${this.lastDate}`)
+    // YKLiblog.Log.debug(`TargetedEmail|index=${index} name=${this.getName()} lastDate=${this.lastDate}`)
     this.nth = parseInt(item[6])
     this.index_nth = 6
     this.count = parseInt(item[7])
     this.index_count = 7
     this.count2 = parseInt(item[8])
     this.index_count2 = 8
-    //
-    if( folderConf !== null){
-      this.folderConf = folderConf
-      this.maxSearchesAvailable = folderConf.maxSearchesAvailable
-      YKLiblog.Log.debug(`TargetedEmail constructor typeof(this.maxSearchesAvailable) =${ typeof(this.maxSearchesAvailable) }`)
-      this.maxThreads = folderConf.maxThreads
-      this.maxItem = folderConf.maxItem
+ 
+    this.backupRootFolderInfo = backupRootFolderInfo;
+    YKLiblog.Log.debug(`TargetedEmail constructor backupRootFolderInfo=${backupRootFolderInfo}`)
+    this.backupRootFolderInfo = backupRootFolderInfo
+    if( !this.backupFolderId ){
+      const yklibbFolderInfo = new YKLibb.FolderInfo(backupRootFolderInfo.getPath(), backupRootFolderInfo.getFolderId() )
+      this.backupFolder = YKLibb.Googleapi.getOrCreateFolderUnderSpecifiedFolder(yklibbFolderInfo, this.getFolderId(), this.getName())
+      if( this.backupFolder !== null ){
+        this.backupFolderId = this.backupFolder.getId()
+      }
     }
+    else{
+      this.backupFolder = DriveApp.getFolderById(this.backupFolderId)
+    }
+    YKLiblog.Log.debug(`TargetedEmail constructor this.backupFolder=${this.backupFolder}`)
 
-    this.old_id = this.id;
-    this.old_url = this.url;
+    this.backupFolder.x
 
-    this.oldLastDateTime = this.lastDateTime;
+    this.folderConf = folderConf
+    this.maxSearchesAvailable = folderConf.maxSearchesAvailable
+    YKLiblog.Log.debug(`TargetedEmail constructor typeof(this.maxSearchesAvailable) =${ typeof(this.maxSearchesAvailable) }`)
+    this.maxThreads = folderConf.maxThreads
+    this.maxItem = folderConf.maxItem
+
+    this.old_backupFolderId = this.backupFolderId;
+    this.old_backupFolderUrl = this.backupFolderUrl;
+
+    this.old_LastDateTime = this.lastDateTime;
     this.old_nth = this.nth;
     this.old_count = this.count;
     this.old_count2 = this.count2;
-
-    this.parentFolderInfo = parentFolderInfo;
-    this.folder = null;
-    if( parentFolderInfo !== null ){
-      this.folder = this.getOrCreateFolderUnderDocsFolder(parentFolderInfo, id, name)
-      YKLiblog.Log.debug(`TargetedEmail constructor this.folder=${this.folder}`)
-    }
- 
-    this.backupFileId = null;
-    this.extInfo = null;
-    this.backupFolderInfo = backupFolderInfo;
   }
-  getOrCreateBackupfile(backupFolderInfo){
-    const formattedDate = backupFolderInfo.extInfo.formattedDate
-    const filename = `${this.name}_${formattedDate}.json`
-    const doc = YKLibb.Googleapi.getOrCreateGoogleDocsUnderFolder(backupFolderInfo.id, filename)
+  getBackupFolder(){
+    return this.backupFolder
+  }
+  getFolderId(){
+    return this.folderId;
+  }
+  getOrCreateBackupfile(){
+    Logger.log(`this.backupRootFolderInfo.constructor.name=${this.backupRootFolderInfo.constructor.name}`)
+    const formattedDate = this.backupRootFolderInfo.geFormattedDate()
+    const filename = `${this.getName()}_${formattedDate}.json`
+    const doc = YKLibb.Googleapi.getOrCreateGoogleDocsUnderFolder(this.backupRootFolderInfo.getFolderId(), filename)
     return doc;
-  }
-  getOrCreateFolderUnderDocsFolder(parentFolderInfo, xid, xname){
-    YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder parentFolderInfo.id=${parentFolderInfo.id} parentFolderInfo.name=${parentFolderInfo.name}`)
-    const yklibbFolderInfo = new YKLibb.FolderInfo(parentFolderInfo.folder, parentFolderInfo.id)
-    const folder = YKLibb.Googleapi.getOrCreateFolderUnderDocsFolder(yklibbFolderInfo, xid, xname)
-    // YKLiblog.Log.debug(`GAS-Gmail|TargetedEmail getOrCreateFolderUnderDocsFolder this.folder=${this.folder}`)
-    return folder
   }
   overWriteLastData(other){
     this.lastDateTime = other.lastDateTime
@@ -86,20 +92,23 @@ class TargetedEmail {
   setCount2(value){
     this.count2 = value
   }
+  setLastDateTime(value) {
+    this.lastDateTime = value;
+    this.lastDate = new Date(value);
+  }
   asJson(){
     const assoc = {
       index: this.index,
-      name: this.name,
+      name: this.getName(),
       index_name: this.index_name,
       condition: this.condition,
       index_condition: this.index_condition,
-      id: this.id,
-      index_id: this.index_id,
-      url: this.url,
-      index_url: this.index_url,
+      backupFolderId: this.backupFolderId,
+      index_backupFolderId: this.index_backupFolderId,
+      backupFolderUrl: this.backupFolderUrl,
+      index_backupFolderUrl: this.index_backupFolderUrl,
       lastDateTime: this.lastDateTime,
       indexLastDateTime: this.indexLastDateTime,
-      lastDateTime: this.lastDateTime,
       lastDate: this.lastDate,
       nth: this.nth,
       index_nth: this.index_nth,
@@ -109,27 +118,47 @@ class TargetedEmail {
       index_count2: this.index_count2,
       maxSearchesAvailable: this.maxSearchesAvailable,
       maxThreads: this.maxThreads,
-      folder: this.folder,
-      backupFile: this.backupFile,
-      extInfo: this.extInfo
+      backupFolder: this.backupFolder,
     }
     return JSON.stringify(assoc);
   }
   backup(){
-    this.id = this.old_id;
-    if( !this.id ){
-      this.id = this.folder.getId();
+    this.backupFolderId = this.old_backupFolderId;
+    if( !this.backupFolderId ){
+      this.backupFolderId = this.backupFolder.getId();
     }// 
-    // YKLiblog.Log.debug(`TargetedEmail.backup this.id=${this.id}`)
-    this.url = this.old_url;
-    if( !this.url ){
-      this.url = this.folder.getUrl();
+    // YKLiblog.Log.debug(`TargetedEmail.backup this.folderId=${this.folderId}`)
+    this.backupFolderUrl = this.old_backupFolderUrl;
+    if( !this.backupFolderUrl ){
+      this.backupFolderUrl = this.backupFolder.getUrl();
     }
     // YKLiblog.Log.debug(`TargetedEmail.backup this.url=${this.url}`)
     const text = this.asJson();
-    if(this.backupFolderInfo !== null){
-      this.backupFileId = this.getOrCreateBackupfile(this.backupFolderInfo).getId();
+    if(this.backupRootFolderInfo !== null){
+      this.backupFileId = this.getOrCreateBackupfile().getId();
       YKLibb.Googleapi.writeToGoogleDocs(this.backupFileId, text);
     }
+  }
+  // Getter methods for key properties
+  getName() {
+    return this.name;
+  }
+  getUrl() {
+    return this.url;
+  }
+  getCondition() {
+    return this.condition;
+  }
+  getLastDate() {
+    return this.lastDate;
+  }
+  getOldNth() {
+    return this.old_nth;
+  }
+  getMaxThreads() {
+    return this.maxThreads;
+  }
+  getMaxSearchesAvailable() {
+    return this.maxSearchesAvailable;
   }
 }

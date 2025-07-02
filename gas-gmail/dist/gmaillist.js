@@ -1,27 +1,31 @@
 class GmailList{
   constructor(targetedEmail, idtabledata, limitx){
+    YKLiblog.Log.debug(`GmailList constructor targetedEmail.getName()=${targetedEmail.getName()} idtabledata=${ JSON.stringify(idtabledata.constructor)}`)
     this.targetedEmail =  targetedEmail;
     this.idtabledata = idtabledata;
-    YKLiblog.Log.debug(`GmailList constructor idtabledata=${ JSON.stringify(idtabledata.constructor) } )`)
-    const key = targetedEmail.name
-    // const targetedEmailIds = idtabledata.targetedEmailIdsList.getTargetedEmailIdsByKey(key)
+    this.targetedEmailIds = this.idtabledata.getTargetedEmailIdsByKey(targetedEmail.getName())
+    const x = this.targetedEmail.getBackupFolder()
+    x.x
+    this.gmailsave = new GmailSave( this.targetedEmail.getBackupFolder() )
+    YKLiblog.Log.debug(`GmailList constructor idtabledata=${ JSON.stringify(idtabledata.constructor)}`)
+    const key = targetedEmail.getName()
     const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
     this.targetedEmailIds = targetedEmailIds
     YKLiblog.Log.debug(`GmailList constructor idtabledata=${idtabledata}`)
     YKLiblog.Log.debug(`GmailList constructor idtabledata.targetedEmailIdsList=${idtabledata.targetedEmailIdsList}`)
 
-    this.emailSearch = new GmailSearch( targetedEmailIds )
+    this.gmailSearch = new GmailSearch( targetedEmailIds )
     this.limitx = limitx;
     this.register = new Dataregister();
   }
 
   makePairLabelAndQueryInfo(){
-    const pairLabel = new PairLabel(this.targetedEmail.name)
-    if(this.targetedEmail.maxThreads < 0 ){
-      throw Error(`info.maxThreads=${this.targetedEmail.maxThreads}`)
+    const pairLabel = new PairLabel(this.targetedEmail.getName())
+    if(this.targetedEmail.getMaxThreads() < 0 ){
+      throw Error(`info.maxThreads=${this.targetedEmail.getMaxThreads()}`)
     }
-    YKLiblog.Log.debug(`GmailList makePairLabelAndQueryInfo typeof(this.targetedEmail.maxSearchesAvailable)=${ typeof(this.targetedEmail.maxSearchesAvailable) }`)
-    const queryInfo = new QueryInfo(this.targetedEmail.condition, pairLabel, this.targetedEmail.maxThreads, this.targetedEmail.maxSearchesAvailable)
+    YKLiblog.Log.debug(`GmailList makePairLabelAndQueryInfo typeof(this.targetedEmail.getMaxSearchesAvailable())=${ typeof(this.targetedEmail.getMaxSearchesAvailable()) }`)
+    const queryInfo = new QueryInfo(this.targetedEmail.getCondition(), pairLabel, this.targetedEmail.getMaxThreads(), this.targetedEmail.getMaxSearchesAvailable())
     return [pairLabel, queryInfo]
   }
 
@@ -34,16 +38,16 @@ class GmailList{
     if( queryInfo.maxThreads <= 0 ){
       throw Error(`ueryInfo.maxThreads=${queryInfo.maxThreads}`)
     }
-    const store = Store.getValidStore( this.targetedEmail.name, arg_store );
-
-    store.set("name", this.targetedEmail.name );
-    store.set("condition", this.targetedEmail.condition );
-    store.set("id", this.targetedEmail.id );
-    store.set("url", this.targetedEmail.url );
+    const store = Store.getValidStore( this.targetedEmail.getName(), arg_store );
+/*
+    store.set("name", this.targetedEmail.getName() );
+    store.set("condition", this.targetedEmail.getCondition() );
+    store.set("id", this.targetedEmail.getId() );
+    store.set("url", this.targetedEmail.getUrl() );
     store.set("last_date_time", this.targetedEmail.lastDateTime );
-    store.set("lastDate", this.targetedEmail.lastDate );
-    store.set("folder", this.targetedEmail.folder );
-
+    store.set("lastDate", this.targetedEmail.getLastDate() );
+    store.set("folder", this.targetedEmail.getBackupFolder() );
+*/
     this.getMailListBase(store, op, queryInfo)
 
     return store;
@@ -71,23 +75,23 @@ class GmailList{
     return [start, maxThreads, lastDate, lastDateTime, maxSearchesAvailable]
   }
   getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op){
-    // within1はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
+    // within1はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearrayである。
     // 以後within1のみを処理対象とする
-    const [newLastDateTime1, within1, remain1] = this.emailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
-    YKLiblog.Log.debug(`GmailList getMailListBaseSub2 this.targetedEmail.name=${this.targetedEmail.name} within1.msgCount=${within1.msgCount} newLastDateTime1=${newLastDateTime1}`)
+    const [newLastDateTime1, within1, remain1] = this.gmailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
+    YKLiblog.Log.debug(`GmailList getMailListBaseSub2 this.targetedEmail.name=${this.targetedEmail.getName()} within1.msgCount=${within1.msgCount} newLastDateTime1=${newLastDateTime1}`)
     if( within1.msgCount > 0 ){
-      [recordedMessageIds, messageDataList] = this.register.registerData(within1, this.targetedEmail.name, op, this.limit, lastDate)
+      [recordedMessageIds, messageDataList] = this.register.registerData(within1, this.targetedEmail.getName(), op, this.limit, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub2 recordedMessageIds.length=${recordedMessageIds.length}`)
-        this.targetedEmail.addToDone(recordedMessageIds)
-        this.idtabledata.rewrite(this.targetedEmail)
-        this.idtabledata.updateRow(this.targetedEmail)
+        this.targetedEmailIds.addToDone(recordedMessageIds)
+        this.idtabledata.rewrite(this.targetedEmailIds)
+        this.idtabledata.updateRow(this.targetedEmailIds)
       }
       // 切り詰めメッセージが1個以上であれば、Google Docsファイルとして保存する
       if(  messageDataList.length > 0 ){
         YKLiblog.Log.debug(`getMailListBaseSub2 messageDataList.length=${messageDataList.length}`)
-        GmailSave.saveData(store, messageDataList)
+        this.gmailsave.saveData(messageDataList)
       }
       // throw Error(`under saveData`)
     }
@@ -105,23 +109,23 @@ class GmailList{
     /***********************************/
     // within2はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
     // 以後within2のみを処理対象とする
-    const [newLastDateTime2, within2, remain2] = this.emailSearch.SearchWithFrom(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
-    YKLiblog.Log.debug(`GmailList getMailListBaseSub3 this.targetedEmail.name=${this.targetedEmail.name} within2.msgCount=${within2.msgCount} newLastDateTime2=${newLastDateTime2}`)
+    const [newLastDateTime2, within2, remain2] = this.gmailSearch.SearchWithFrom(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
+    YKLiblog.Log.debug(`GmailList getMailListBaseSub3 this.targetedEmail.name=${this.targetedEmail.getName()} within2.msgCount=${within2.msgCount} newLastDateTime2=${newLastDateTime2}`)
     
     if( within2.msgCount > 0 ){
       YKLiblog.Log.debug(`GmailList getMailListBaseSub3 within2.msgCount=${within2.msgCount}`)
-      [recordedMessageIds2, messageDataList2] = this.register.registerData(within2, this.targetedEmail.name, op, this.limit, lastDate)
+      const [recordedMessageIds2, messageDataList2] = this.register.registerData(within2, this.targetedEmail, op, this.limit, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds2.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub3 (recoreded IDs) recordedMessageIds2.length=${recordedMessageIds2.length}`)
-        this.targetedEmail.addToDone(recordedMessageIds2)
-        this.idtabledata.rewrite(this.targetedEmail)
-        this.idtabledata.updateRow(this.targetedEmail)
+        this.targetedEmailIds.addToDone(recordedMessageIds2)
+        this.idtabledata.rewrite(this.targetedEmailIds)
+        this.idtabledata.updateRow(this.targetedEmailIds)
       }
       // 切り詰めたメッセージが1個以上であれば、Google Docsファイルとして保存する
       if(  messageDataList2.length > 0 ){
-        YKLiblog.Log.debug(`getMailListBaseSub3 (Google Docs) messageDataList.length=${messageDataList.length}`)
-        GmailSave.saveData(store, messageDataList2)
+        YKLiblog.Log.debug(`getMailListBaseSub3 (Google Docs) messageDataList.length=${messageDataList2.length}`)
+        this.gmailsave.saveData(store, messageDataList2)
       }
       // throw Error(`under saveData`)
     }
@@ -147,8 +151,7 @@ class GmailList{
   getMailListBase(store, op, queryInfo){
     const [start, maxThreads, lastDate, lastDateTime, maxSearchesAvailable] = this.getMailListBaseSub1(queryInfo, store)
     YKLiblog.Log.debug(`GmailList getMailListBaseSub start=${start}, maxThreads=${maxThreads}, lastDate=${lastDate}, lastDateTime=${lastDateTime}, maxSearchesAvailable=${maxSearchesAvailable}`)
-    // const [newLastDateTime1] = this.getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op)
-    // YKLiblog.Log.debug(`GmailList getMailListBaseSub newLastDateTime1=${newLastDateTime1}`)
+    const [newLastDateTime1] = this.getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op)
     const [newLastDateTime2] = this.getMailListBaseSub3(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op)
     YKLiblog.Log.debug(`GmailList getMailListBaseSub newLastDateTime2=${newLastDateTime2}`)
     this.getMailListBaseSub4(newLastDateTime1, newLastDateTime2, lastDateTime, store)

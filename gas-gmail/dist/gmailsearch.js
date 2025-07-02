@@ -79,9 +79,14 @@ class GmailSearch {
         const messages = thread.getMessages()
         const messagedataArray = messages.map( (message) =>  {
           // 記録済みメッセージであるか否かを判定
-          const recorded = this.targetedEmailIds.doneHas(message.getId())
-          new Messagedata(message, message.getDate(), recorded )
+          const messageId = message.getId()
+          const recorded = this.targetedEmailIds.doneHas(messageId)
+          const messagedata = new Messagedata(CONFIG.getHeaders(), message, message.getDate(), recorded )
+          YKLiblog.Log.debug(`GmailSearch getThreadsAndMessagedataArray typeof(messagedata)=${typeof(messagedata)} messageId=${messageId} recorded=${recorded}`)
+
+          return messagedata
         } )
+        messagedataArray.map( (item) => YKLiblog.Log.debug( typeof(item) ) )
         return new ThreadAndMessagedataarray(thread, messagedataArray)
       } )
 

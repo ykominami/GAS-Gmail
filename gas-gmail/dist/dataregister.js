@@ -1,8 +1,7 @@
 class Dataregister {
   constructor(){
-    // this.unrecordedMessageIds = []
   }
-  registerData(within, name, op, limit, lastDate){
+  registerData(within, targetedEmail, op, limit, lastDate){
     YKLiblog.Log.debug(`Dataregister registerData `)
     // 引数withinは、クラスMessageArrayのインスタンス
     // 引数lastDateより、後ろの日時を持つメッセージを処理対象とする
@@ -12,84 +11,89 @@ class Dataregister {
       throw Error(`registerData`)
       // return
     }
+    YKLiblog.Log.debug(`0 registerData lastDate=${lastDate}`)
+
+    YKLiblog.Log.debug(`1-0 registerData within.array.length=${within.array.length}`)
     // 前回処理した日時(lastDate以)降のメッセージを取り出す
     const nestedArray =  within.array.map( item => item.collectMessagesdataAfterDate( lastDate ) )
+    YKLiblog.Log.debug(`1 registerData nestedArray.length=${nestedArray.length}`)
     // ThreadAndMessagedataarray毎のメッセージの配列の配列を、フラットな配列に変換
-    const filteredMessagearrayList =  Array.prototype.flat(nestedArray)
+    const filteredMessagearrayList = nestedArray.flat()
+    YKLiblog.Log.debug(`2 registerData filteredMessagearrayList.length=${filteredMessagearrayList.length}`)
     // const messageDataList = truncateStringArray(filteredMessagearrayList, limit)
     // 未記録メッセージのみを取り出す
-    const unrecordedList = filteredMessagearrayList.filter( item => !item.recorded )
-    const unrecordedMessageIds = unrecordedList.map( itme => item.getMessageId() )
+    const unrecordedList = filteredMessagearrayList.filter( item => {
+        YKLiblog.Log.debug(`2.5 registerData item.msg.getId()=${item.msg.getId()} item.recorded=${item.recorded}`)
+        return !item.recorded 
+      }
+    )
+    YKLiblog.Log.debug(`3 registerData unrecordedList.length=${unrecordedList.length}`)
+    if(unrecordedList.length === 0){
+      return [[], []]
+    }
+    const unrecordedMessageIds = unrecordedList.map( item => item.getMessageId() )
     // 未記録メッセージに対し切り詰め処理を行う
-    const messageDataList = unrecordedList.map( item => item.truncateString(limit) )
-    // 未記録メッセージを、1メッセージを表す配列の配列を取り出す
+    const messageDataList = unrecordedList.map( item => {
+      item.truncateString(limit)
+      return item
+    } )
+    // 未記録メッセージを、1メッセージを表す配列の配列として取り出す（ワークシートに記録するのに適した形式に変換）
     const dataArray = messageDataList.map( messageData => messageData.getDataAsArray() )
+    YKLiblog.Log.debug(`4 registerData dataArray.length=${dataArray.length}`)
     // Google Spreadsheetsのワークシートに追記する
-    this.registerDataArray( dataArray, name, op )
+    this.registerDataArray( dataArray, targetedEmail, op )
     //記録したので、以降では記録済みメッセージのIDとして扱う。
     const recordedMessageIds = unrecordedMessageIds
+    YKLiblog.Log.debug(`5 registerData recordedMessageIds.length=${recordedMessageIds.length}`)
     
     return [recordedMessageIds, messageDataList]
   }
+  addHeaders(sheet){
+    const r = 1
+    const c = 1
+    const h = 1
+    const headers = CONFIG.getHeaders()
+    const range = sheet.getRange(r, c, h, headers.length)
+    range.setValues( headers )
+    return range
+  }
 
-  registerDataArray(dataArray, sheetname, op){
+  registerDataArray(dataArray, targetedEmail, op){
+    const sheetname = targetedEmail.getName()
     YKLiblog.Log.debug(`Dataregister registerDataArray sheetname=${sheetname} `)
 
-    const range = this.getDataSheetRange(sheetname)
+    const [sheet, range] = Util.getDataSheetRange(targetedEmail.spradsheet, sheetname)
+    const rangeShape = YKLiba.Range.getRangeShape(range)
+    YKLiblog.Log.debug(`Dataregister registerDataArray rangeShape.r=${rangeShape.r} rangeShape.c=${rangeShape.c} rangeShape.h=${rangeShape.h} rangeShape.w=${rangeShape.w}`)
 
     let range2;
-    let rangeShape;
+    let range3;
+    let rangeShape2;
+    let h;
+    let c;
     if( op === YKLiba.Config.rewrite() ){
-      range2 = range;
-      range2.deleteCells(SpreadsheetApp.Dimension.ROWS);
-      rangeShape = YKLiba.Range.getRangeShape(range)
+      range.deleteCells(SpreadsheetApp.Dimension.ROWS);
+      range2 = this.addHeaders(sheet)
+      rangeShape2 = YKLiba.Range.getRangeShape(range2)
       YKLiblog.Log.debug(`1`)
     }
     else{
       // YKLiba.Config.addUnderRow
       // 既存のrangeの最後のROWの直下から追加する
-      rangeShape = YKLiba.Range.getRangeShape(range)
-      range2 = range.offset(rangeShape.h, 0, rangeShape.h + rangeShape.h, rangeShape.w)
-      YKLiblog.Log.debug(`2`)
-    }
-    YKLiblog.Log.debug(`rangeShape=${JSON.stringify(rangeShape)}` )
-
-    let height2 = dataArray.length
-    if( !height2 ){
-      height2 = 0
-    }
-    let width2;
-    if (!dataArray[0]){
-      width2 = 0
-    }
-    else{
-      width2 = dataArray[0].length
-    }
-
-    // YKLiblog.Log.debug(`register_data height2=${height2} width2=${width2}`)
-
-    if(height2 > 0 && width2 > 0){
-      const range3 = YKLiba.Code.transformRange2(range2, height2, width2)
-      [row, col, height, width] = Tableop.getRangeShape(range3)
-      YKLiblog.Log.debug(`range3 row=${row} col=${col} height=${height} width=${width}`)
-      YKLiblog.Log.debug(`dataArray.length=${dataArray.length}`)
-      YKLiblog.Log.debug(`dataArray[0].length=${dataArray[0].length}`)
-      try{
-        range3.setValues( dataArray );
+      if( Util.hasValidDataHeaderAndDataRows(range) ){
+        range2 = range
+        rangeShape2 = rangeShape
       }
-      catch(e){
-        // エラーが発生した場合、このブロックのコードが実行されます。
-        // 'e' は発生したエラーオブジェクトです。
-        YKLiblog.Log.debug("エラーが発生しました: " + e.message); // エラーメッセージを出力
-        // または、エラーの詳細をログに出力
-        YKLiblog.Log.debug("エラー名: " + e.name);
-        YKLiblog.Log.debug("スタックトレース: " + e.stack);
-      } finally {
-        // try ブロックが正常に完了したか、catch ブロックが実行されたかに関わらず、
-        // 常にこのブロックのコードが実行されます。（オプション）
-        YKLiblog.Log.debug("処理が完了しました。");
+      else{
+        range.deleteCells(SpreadsheetApp.Dimension.ROWS);
+        range2 = this.addHeaders(sheet)
+        rangeShape2 = YKLiba.Range.getRangeShape(range2)
       }
+      YKLiblog.Log.debug(`2 h=${h} c=${c}`)
     }
+    range3 = sheet.getRange(rangeShape2.r + 1, rangeShape2.c, rangeShape2.r + 1 + dataArray.length, rangeShape2.w )
+    YKLiblog.Log.debug(`rangeShape2=${JSON.stringify(rangeShape2)}` )
+    range3.setValues( dataArray );
   }
 
   /**
@@ -113,7 +117,7 @@ class Dataregister {
     return messagedataList.map((item) => {
       item.isTruncated = false;
 
-      const names = ["id", "from", "subject", "dateStr", "plainBody"]
+      const names = CONFIG.getHeaders()
       names.forEach( (name) => {
         str = item.original[name]
         if (typeof str === 'string' && str.length > maxLength) {
@@ -127,19 +131,5 @@ class Dataregister {
       return item
     } )
   }
-}
-function testbSub(sheetname){
-  let range = Dataregister.getDataSheetRange(sheetname)
-  Tableop.showRangeShape(range)
-  YKLiblog.Log.debug(`range=${JSON.stringify(range)}`)
-  YKLiblog.Log.debug(`range=${range}`)
-
-}
-function testb(){
-  let sheetname = CONFIG.idsSheetName
-  testbSub(sheetname)  
-
-  sheetname = "Hotwire Weekly"
-  testbSub(sheetname)  
 }
 

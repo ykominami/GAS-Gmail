@@ -20,7 +20,7 @@ class IdTabledata {
     YKLiblog.Log.debug(`IdTabledata dump values[0]=${ this.values[0] }`)
     YKLiblog.Log.debug(`IdTabledata dump values[1]=${ this.values[1] }`)
   }
-  keys(){
+  getKeys(){
     return this.targetedEmailIdsList.keys()
   }
   getTargetedEmailIdsByKey(key){
@@ -102,11 +102,30 @@ class IdTabledata {
     const targetRange = this.worksheet.getRange(dataRangeShape.r + 1 + targetedEmailIds.index, dataRangeShape.c + 1, 1, maxWidth)
     targetRange.clear()
 
-    targetValues = targetRange.getValues()
+    const targetRangeShape = YKLiba.getRangeShape(targetRange)
+    YKLiblog.Log.debug( `IdTabledata update targetRangeShape=${ JSON.stringify(targetRangeShape)} }` )
+    YKLiblog.Log.debug( `IdTabledata update width=${ width } }` )
+
+    // const targetValues = targetRange.getValues()
+    const targetValues = Array(targetRangeShape.w - 1).fill('')
+    YKLiblog.Log.debug( `IdTabledata update INIT targetValues.length=${targetValues.length}` )
+
+    YKLiblog.Log.debug( `IdTabledata update BEFORE targetValues.length=${targetValues.length}` )
     for(let i = 0; i < width; i++){
       targetValues[i] = srcValues[i]
+      // targetValuesx[i] = srcValues[i]
+      YKLiblog.Log.debug( `IdTabledata update i=${i} targetValues.length=${targetValues.length}` )
     }
-    YKLiblog.Log.debug( `IdTabledata update targetValues=${targetValues} }` )
-    targetRange.setValues(  targetValues )
+    YKLiblog.Log.debug( `IdTabledata update targetValues.length=${targetValues.length}` )
+    const name = targetedEmailIds.getName()
+    targetValues[0] = name
+    const values = targetValues
+    // const values = [name, ...targetValues]
+    // targetValuesx[0] = name
+    YKLiblog.Log.debug( `IdTabledata update values.length=${values.length}` )
+    YKLiblog.Log.debug( `IdTabledata update JSON.stringify(values.length)=${  JSON.stringify(values) }` )
+    // YKLiblog.Log.debug( `IdTabledata update JSON.stringify(valuesx.length)=${  JSON.stringify(valuesx) }` )
+
+    targetRange.setValues(  [values] )
   }
 }

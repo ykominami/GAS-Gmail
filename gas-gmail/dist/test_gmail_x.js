@@ -1,3 +1,90 @@
+function test_x(){
+  const basename = "0-AA-TEST_NAME"
+  const ssId = CONFIG.configSpreadsheetId;
+  const [ss, sheet] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename);
+  const r = sheet.getRange(1,1,2, 2)
+  const array = [[1,2], [3,4]]
+  r.setValues(array)
+}
+function test_y(){
+  YKLiblog.Log.initLogDebug()
+  const basename = "0-AA-TEST_NAME"
+  const ssId = CONFIG.configSpreadsheetId;
+  const [ss, sheet] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename);
+  const r = sheet.getRange(1,1,2, 2)
+  const s = YKLiba.Range.getRangeShape(r)
+  YKLiba.Range.showRangeShape(s)
+  YKLiblog.Log.debug(`s=${JSON.stringify(r)}`)
+  const basename2 = "A"
+  const [ss2, sheet2] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename2);
+  const range2 = sheet2.getDataRange()
+  const s2 = YKLiba.Range.getRangeShape(range2)
+  YKLiba.Range.showRangeShape(s2)
+  const ret2 = Util.isBrankRange(range2)
+  YKLiblog.Log.debug(`ret2=${ret2}`)
+
+  const data2 = range2.getValues()
+  YKLiblog.Log.debug(`data2=${ JSON.stringify(data2)}` )
+}
+function getRangeForTargetedEmail(r){
+  const result = Util.hasValidDataHeaderAndDataRows(r)
+  YKLiblog.Log.debug(`result[0]=${result[0]}`)
+
+  const headerRange = Util.getHeaderRange(r)
+  const dataRowsRange = Util.geDataRowsRange(r)
+  const headers = CONFIG.getHeaders()
+  const values = dataRowsRange.getValues()
+  assocArray = Util.makeAssocArray(headers, values)
+
+  const headerId = CONFIG.getHeaderId()
+  YKLiblog.Log.debug( `headerId=${headerId}` )
+  const ids = assocArray.map( item => {
+      YKLiblog.Log.debug( `item[headerId]` )
+      return item[headerId]
+    }
+  )
+  YKLiblog.Log.debug( ids )
+  // const ids = array.map( item => item )
+  const idset = new Set(ids)
+  YKLiblog.Log.debug( [...idset] )
+  if( ids.length == idset.size ){
+
+  }
+}
+function test_z(){
+  YKLiblog.Log.initLogDebug()
+  
+  const idTableData = UtilGmail.makeIdTabledata()
+  const keys = idTableData.getKeys()
+  // YKLiblog.Log.debug(keys)
+  keys.map( key => {
+      YKLiblog.Log.debug(key)
+      const targetedEmailIds = idTableData.getTargetedEmailIdsByKey(key)
+      targetedEmailIds
+    }
+  )
+
+  const basename = "Hotwire Weekly"
+  const ssId = CONFIG.configSpreadsheetId;
+  const [ss, sheet] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename);
+  const r = sheet.getDataRange()
+
+/*
+  const s = YKLiba.Range.getRangeShape(r)
+  const r2 = sheet.getRange(1,1,s.h, 1)
+  const values = r2.getValues()
+  const idset = new Set()
+*/
+  /*
+  values.reduce( (accumrator, currentValue) => {
+    if( !accumrator.has(currentValue) ){
+      accumrator.add()
+    }
+  }, ideset)
+  YKLiblog.Log.debug(`values=${ JSON.stringify(values)}`)
+  */
+}
+
 function test_gmail_ids_and_x(){
   YKLiblog.Log.initLogDebug()
 

@@ -8,8 +8,14 @@ class Gmail{
 
     this.folderConf = tabledata.folderConf
     YKLiblog.Log.debug(`Gmail constructor this.folderConf=${this.folderConf}}`)
+    idtabledata.addTabledata(tabledata)
+    const keys = tabledata.keys()
+    idtabledata.adjust(keys)
+
     this.tabledata = tabledata
     this.idtabledata = idtabledata
+    this.idtabledata.addTabledata(tabledata)
+
     this.startIndex = 0
     this.limitx = 0
     this.op = YKLiba.Config.addUnderRow()
@@ -67,7 +73,7 @@ class Gmail{
 
     targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
     targetedEmail.setMaxThreads(this.folderConf.maxThreads);
-    const folder = targetedEmail.getOrCreateFolderUnderDocsFolder(this.parentFolderInfo);
+    const folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(this.parentFolderInfo);
     targetedEmail.backup();
     this.tabledata.rewrite(targetedEmail);
 
@@ -76,7 +82,7 @@ class Gmail{
     const gmailList = new GmailList(targetedEmail, this.idtabledata, this.limit)
     const store = gmailList.getMailListX(op, arg_store);
     targetedEmail.setNth(this.folderConf.nth);
-    targetedEmail.lastDateTime = store.get('last_date_time');
+    targetedEmail.setLastDateTime(store.get('last_date_time'));
     this.tabledata.rewrite(targetedEmail);
   }
   removeLavel(key){

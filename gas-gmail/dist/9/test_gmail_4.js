@@ -29,9 +29,9 @@ function xtestb(gmail, key, numOfItems = 0){
   YKLiblog.Log.debug(`2 targetedEmail.maxSearchesAvailable=${targetedEmail.maxSearchesAvailable}`)
   YKLiblog.Log.debug(`2 targetedEmail.maxThreads=${targetedEmail.maxThreads}`)
   
-  YKLiblog.Log.debug(`1 targetedEmail.id=${targetedEmail.id}`)
-  folder = targetedEmail.getOrCreateFolderUnderDocsFolder(gmail.parentFolderInfo);
-  YKLiblog.Log.debug(`2 targetedEmail.id=${targetedEmail.id}`)
+  YKLiblog.Log.debug(`1 targetedEmail.folderId=${targetedEmail.folderId}`)
+  folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(gmail.parentFolderInfo);
+  YKLiblog.Log.debug(`2 targetedEmail.folderId=${targetedEmail.folderId}`)
   targetedEmail.backup();
   YKLiblog.Log.debug(`3 targetedEmail.maxSearchesAvailable=${targetedEmail.maxSearchesAvailable}`)
   YKLiblog.Log.debug(`3 targetedEmail.maxThreads=${targetedEmail.maxThreads}`)
@@ -44,7 +44,7 @@ function xtestb(gmail, key, numOfItems = 0){
   const gmailList = new GmailList(targetedEmail, gmail.tabledata);
   const store = gmailList.getMailListX(gmail.op);
   targetedEmail.setNth(folderConf.nth);
-  targetedEmail.lastDateTime = store.get('last_date_time');
+  targetedEmail.setLastDateTime(store.get('last_date_time'));
   YKLiblog.Log.debug(`targetedEmail=${targetedEmail}`);
 
   gmail.tabledata.rewrite(targetedEmail);

@@ -1,19 +1,19 @@
 class UtilGmail {
   static makeTabledata2(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigInfo2()
-    YKLiblog.Log.debug(`Util makeTabledata2 values=${values}`)
+    YKLiblog.Log.debug(`UtilGmail makeTabledata2 values=${values}`)
     const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
     return tabledata
   }
   static makeTabledata(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigInfox()
-    YKLiblog.Log.debug(`Util makeTabledata values=${values}`)
+    YKLiblog.Log.debug(`UtilGmail makeTabledata values=${values}`)
     const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
     return tabledata
   }
   static makeIdTabledata(){
     const [spradsheet, worksheet, header, values, dataRange] = CONFIG.getConfigIds()
-    YKLiblog.Log.debug(`Util makeIdTabledata values=${values}`)
+    YKLiblog.Log.debug(`UtilGmail makeIdTabledata values=${values}`)
     const idtabledata = new IdTabledata(spradsheet, worksheet, header, values, dataRange);
     return idtabledata
   }

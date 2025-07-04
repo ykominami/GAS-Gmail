@@ -5,7 +5,7 @@ class Tabledata {
     this.header = header;
     this.values = values;
     this.dataRange = dataRange;
-    const targetedEmailList = new TargetedEmailList(this.values);
+    const targetedEmailList = new TargetedEmailList(spradsheet, this.values);
     this.parentFolderInfo = targetedEmailList.parentFolderInfo;
     this.backupFolderInfo = targetedEmailList.backupFolderInfo;
     this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
@@ -43,9 +43,14 @@ class Tabledata {
     if( item.old_count2 != item.count2 ){
       this.values[item.index][item.index_count2] = item.count2;
     }
+    if( !item.old_folderId ){
+      this.values[item.index][item.index_folderId] = item.folderId;
+    }
   }
   update(){
     // YKLiblog.Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
-    this.dataRange.setValues( [this.header, ...this.values] );
+    const array = [this.header, ...this.values]
+    YKLiblog.Log.debug(`Tabledata update array=${ JSON.stringify(array) }`)
+    this.dataRange.setValues( array );
   }
 }

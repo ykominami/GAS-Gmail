@@ -12,7 +12,11 @@ class IdTabledata {
 
     const targetedEmailIdsList = new TargetedEmailIdsList(values);
     this.targetedEmailIdsList = targetedEmailIdsList;
+    this.registeredEmailList = new RegisteredEmailList(spradsheet)
     YKLiblog.Log.debug(`============================== IdTabledata constructor this.targetedEmailIdsList=${this.targetedEmailIdsList}`)
+  }
+  addTabledata(tabledata){
+    this.registeredEmailList.addTabledata(tabledata)
   }
   dump(){
     YKLiblog.Log.debug(`IdTabledata dump header=${ this.header }`)
@@ -29,6 +33,16 @@ class IdTabledata {
   getTargetedEmailIdsByIndex(index){
     return this.targetedEmailIdsList.getTargetedEmailIdsByIndex(index);
   }
+  getTargetedEmailIdsByKey(key){
+    return this.targetedEmailIdsList.getTargetedEmailIdsByKey(key);
+  }
+  getRegisteredEmailByKey(key){
+    return this.registeredEmailList.getRegisteredEmailByKey(key);
+  }
+  addRegisteredEmails(keys){
+    keys.map( key => this.registeredEmailList.add(key))
+  }
+
   adjust(additionalKeys){
     YKLiblog.Log.debug(`IdTabledata adjust S`)
     const existingKeys = this.targetedEmailIdsList.keys()
@@ -47,6 +61,8 @@ class IdTabledata {
       }
       this.update()
     }
+    const keys = this.getKeys()
+    this.addRegisteredEmails(keys)
     YKLiblog.Log.debug(`IdTabledata adjust E`)
   }
 

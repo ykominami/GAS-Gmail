@@ -1,7 +1,20 @@
-class Dataregister {
-  constructor(){
+class RegisteredEmail {
+  constructor(targetedEmail, spradsheet, sheetName){
+    this.targetedEmail = targetedEmail
+    this.spradsheet = spradsheet
+    this.sheetName = sheetName
+    const worksheet = YKLibb.Gssx.getOrCreateWorksheet(spradsheet, sheetName);
+    const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
+
+    this.worksheet = worksheet
+    this.header = header
+    this.values = values
+    this.dataRange = dataRange
   }
-  registerData(within, targetedEmail, op, limit, lastDate){
+  add(registeredEmail){
+    this.registeredEmail = registeredEmail
+  }
+  registerData(within, op, limit, lastDate){
     YKLiblog.Log.debug(`Dataregister registerData `)
     // 引数withinは、クラスMessageArrayのインスタンス
     // 引数lastDateより、後ろの日時を持つメッセージを処理対象とする
@@ -41,7 +54,7 @@ class Dataregister {
     const dataArray = messageDataList.map( messageData => messageData.getDataAsArray() )
     YKLiblog.Log.debug(`4 registerData dataArray.length=${dataArray.length}`)
     // Google Spreadsheetsのワークシートに追記する
-    this.registerDataArray( dataArray, targetedEmail, op )
+    this.registerDataArray( dataArray, op )
     //記録したので、以降では記録済みメッセージのIDとして扱う。
     const recordedMessageIds = unrecordedMessageIds
     YKLiblog.Log.debug(`5 registerData recordedMessageIds.length=${recordedMessageIds.length}`)
@@ -58,11 +71,10 @@ class Dataregister {
     return range
   }
 
-  registerDataArray(dataArray, targetedEmail, op){
-    const sheetname = targetedEmail.getName()
-    YKLiblog.Log.debug(`Dataregister registerDataArray sheetname=${sheetname} `)
+  registerDataArray(dataArray, op){
+    YKLiblog.Log.debug(`Dataregister registerDataArray sheetname=${this.sheetname} `)
 
-    const [sheet, range] = Util.getDataSheetRange(targetedEmail.spradsheet, sheetname)
+    const [sheet, range] = Util.getDataSheetRange(this.spradsheet, this.sheetname)
     const rangeShape = YKLiba.Range.getRangeShape(range)
     YKLiblog.Log.debug(`Dataregister registerDataArray rangeShape.r=${rangeShape.r} rangeShape.c=${rangeShape.c} rangeShape.h=${rangeShape.h} rangeShape.w=${rangeShape.w}`)
 

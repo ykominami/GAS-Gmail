@@ -3,6 +3,7 @@ class TargetedEmail {
     YKLiblog.Log.debug(`TargetedEmail constructor index=${index} backupRootFolderInfo=${backupRootFolderInfo}`)
     this.spradsheet = spradsheet
 
+    backupRootFolderInfo.x
     this.index = index
     const name = item[1]
     this.name = name
@@ -28,9 +29,18 @@ class TargetedEmail {
     this.count2 = parseInt(item[8])
     this.index_count2 = 8
  
-    this.backupRootFolderInfo = backupRootFolderInfo;
     YKLiblog.Log.debug(`TargetedEmail constructor backupRootFolderInfo=${backupRootFolderInfo}`)
     this.backupRootFolderInfo = backupRootFolderInfo
+    if( this.backupFolderId ){
+      YKLiblog.Log.debug(`this.backupFolderId=${this.backupFolderId}`)
+      try{
+        this.backupFolder = DriveApp.getFolderById(this.backupFolderId)
+      }
+      catch(e){
+        YKLiblog.Log.unknown(e)
+        this.backupFolderId = null
+      }
+    }
     if( !this.backupFolderId ){
       const yklibbFolderInfo = new YKLibb.FolderInfo(backupRootFolderInfo.getPath(), backupRootFolderInfo.getFolderId() )
       this.backupFolder = YKLibb.Googleapi.getOrCreateFolderUnderSpecifiedFolder(yklibbFolderInfo, this.getFolderId(), this.getName())
@@ -38,12 +48,7 @@ class TargetedEmail {
         this.backupFolderId = this.backupFolder.getId()
       }
     }
-    else{
-      this.backupFolder = DriveApp.getFolderById(this.backupFolderId)
-    }
     YKLiblog.Log.debug(`TargetedEmail constructor this.backupFolder=${this.backupFolder}`)
-
-    this.backupFolder.x
 
     this.folderConf = folderConf
     this.maxSearchesAvailable = folderConf.maxSearchesAvailable

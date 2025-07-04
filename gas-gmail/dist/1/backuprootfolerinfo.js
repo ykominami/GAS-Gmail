@@ -8,13 +8,24 @@ class BackupRootFolderInfo {
     this.index_id = 3
     this.url = item[4]
     this.index_url = 4
+    this.folder = null
 
-    this.folder = YKLibb.Googleapi.getOrCreateFolderByPath(this.folderId, this.path)
-
-    const date = new Date();
-    const formattedDate = Utilities.formatDate(date, "JST", "yyyyMMdd");
-    this.formattedDate = formattedDate
-
+    if( this.folderId ){
+      YKLiblog.Log.debug(`this.folderId=${this.folderId}`)
+      try{
+        this.folder = DriveApp.getFolderById(this.folderId)
+      }
+      catch(e){
+        YKLiblog.Log.unknown(e)
+        this.folderId = null
+      }
+    }
+    if( !this.folderId ){
+      this.folder = YKLibb.Googleapi.getOrCreateFolderByPathString(this.path)
+      if( this.folder !== null ){
+        this.folderId = this.folder.getId()
+      }
+    }
   }
   getPath(){
     return this.path
@@ -31,5 +42,4 @@ class BackupRootFolderInfo {
   geFormattedDate(){
     return this.formattedDate;
   }
-
 }

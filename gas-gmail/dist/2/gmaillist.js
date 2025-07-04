@@ -16,7 +16,9 @@ class GmailList{
 
     this.gmailSearch = new GmailSearch( targetedEmailIds )
     this.limitx = limitx;
-    this.register = new Dataregister();
+    const name = targetedEmail.getName()
+    this.registeredEmail = idtabledata.getRegisteredEmailByKey(name);
+    this.registeredEmail.add(targetedEmail)
   }
 
   makePairLabelAndQueryInfo(){
@@ -80,7 +82,7 @@ class GmailList{
     const [newLastDateTime1, within1, remain1] = this.gmailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
     YKLiblog.Log.debug(`GmailList getMailListBaseSub2 this.targetedEmail.name=${this.targetedEmail.getName()} within1.msgCount=${within1.msgCount} newLastDateTime1=${newLastDateTime1}`)
     if( within1.msgCount > 0 ){
-      [recordedMessageIds, messageDataList] = this.register.registerData(within1, this.targetedEmail.getName(), op, this.limit, lastDate)
+      [recordedMessageIds, messageDataList] = this.registeredEmail.registerData(within1, op, this.limit, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub2 recordedMessageIds.length=${recordedMessageIds.length}`)
@@ -114,7 +116,7 @@ class GmailList{
     
     if( within2.msgCount > 0 ){
       YKLiblog.Log.debug(`GmailList getMailListBaseSub3 within2.msgCount=${within2.msgCount}`)
-      const [recordedMessageIds2, messageDataList2] = this.register.registerData(within2, this.targetedEmail, op, this.limit, lastDate)
+      const [recordedMessageIds2, messageDataList2] = this.registeredEmail.registerData(within2, op, this.limit, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds2.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub3 (recoreded IDs) recordedMessageIds2.length=${recordedMessageIds2.length}`)

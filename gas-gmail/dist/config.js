@@ -43,7 +43,7 @@ class Config {
     YKLiblog.Log.debug(`getConfigIds values=${values}`)
     return [spreadsheet, worksheet, header, values, dataRange]
   }
-  getConfig(){
+  getConfigInfox(){
     YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
     const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName)
     const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)

@@ -54,21 +54,34 @@ function getRangeForTargetedEmail(r){
 function test_z(){
   YKLiblog.Log.initLogDebug()
   
+  const tableData = UtilGmail.makeTabledata()
   const idTableData = UtilGmail.makeIdTabledata()
+  const folderConf = tableData.folderConf
+  YKLiblog.Log.debug(`Gmail constructor this.folderConf=${folderConf}}`)
+  idTableData.addTabledata(tableData)
+
+  const tableKeys = tableData.keys()
+  idTableData.adjust(tableKeys)
+
+  this.startIndex = 0
+  this.limitx = 0
+  this.op = YKLiba.Config.addUnderRow()
+
   const keys = idTableData.getKeys()
   // YKLiblog.Log.debug(keys)
   keys.map( key => {
       YKLiblog.Log.debug(key)
       const targetedEmailIds = idTableData.getTargetedEmailIdsByKey(key)
-      targetedEmailIds
+      const ids = targetedEmailIds.getDoneAsArray()
+      YKLiblog.Log.debug(`ids=${ids}`)
     }
   )
-
+/*
   const basename = "Hotwire Weekly"
   const ssId = CONFIG.configSpreadsheetId;
   const [ss, sheet] = YKLibb.Gssx.setupForSpreadsheet(ssId, basename);
   const r = sheet.getDataRange()
-
+*/
 /*
   const s = YKLiba.Range.getRangeShape(r)
   const r2 = sheet.getRange(1,1,s.h, 1)

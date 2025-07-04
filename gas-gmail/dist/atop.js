@@ -17,8 +17,6 @@ class Top {
     const tabledata = UtilGmail.makeTabledata2()
     this.tabledata = tabledata
     const idtabledata = UtilGmail.makeIdTabledata()
-    const keys = tabledata.keys()
-    idtabledata.adjust(keys)
     this.idtabledata = idtabledata
     YKLiblog.Log.debug(`Top setup this.idtabledata.targetedEmailIdsList=${this.idtabledata.targetedEmailIdsList}`)
 

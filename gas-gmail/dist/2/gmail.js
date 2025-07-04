@@ -8,8 +8,14 @@ class Gmail{
 
     this.folderConf = tabledata.folderConf
     YKLiblog.Log.debug(`Gmail constructor this.folderConf=${this.folderConf}}`)
+    idtabledata.addTabledata(tabledata)
+    const keys = tabledata.keys()
+    idtabledata.adjust(keys)
+
     this.tabledata = tabledata
     this.idtabledata = idtabledata
+    this.idtabledata.addTabledata(tabledata)
+
     this.startIndex = 0
     this.limitx = 0
     this.op = YKLiba.Config.addUnderRow()

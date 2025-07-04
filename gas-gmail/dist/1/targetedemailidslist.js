@@ -11,10 +11,10 @@ class TargetedEmailIdsList {
     for(let i=0; i<rows.length; i++){
       item = rows[i]
       key = item[0]
-      if( Util.isWhiteSpaceString(key) ){
+      if( Util.isWhiteSpaceString(key) || key.trim() === "name"){
         continue
       }
-      YKLiblog.Log.debug(`TargetedEmailIdsList constructor i=${i} key=${key}`)
+      YKLiblog.Log.debug(`TargetedEmailIdsList constructor i=${i} key=${key} item=${item}`)
 
       this.addTargetedIds(i, item)
     }

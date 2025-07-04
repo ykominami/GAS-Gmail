@@ -5,17 +5,22 @@ class TargetedEmailIds {
     this.name = item[0]
     const w = item.length
     if( w > 1){
-      array = item.slice(1, w).map( str => parseInt(str) )
+      array = item.slice(1, w).filter( item => item.trim().length > 0 )
     }
     else{
       array = []
     }
-    const done = array.filter( i => typeof(i) === "number" )
+    // const done = array.filter( item => typeof(item) === "string" && item.trim().length > 0 )
+    const done = array
+    // const done = array.filter( item => YKLiblog.Log.debug( typeof(item) ) )
     YKLiblog.Log.debug(`TargetedEmailIds constructor done=${ JSON.stringify( [...done] ) }`)
     this.done = new Set(done)
     this.setOnly = null;
     this.arrayOnly = null;
     this.symmetric = null;
+  }
+  getName(){
+    return this.name
   }
   /**
    * Setと配列の差分を取得する

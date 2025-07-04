@@ -1,5 +1,5 @@
 class Messagedata{
-  constructor (msg, date_str, recorded){
+  constructor (headers, msg, date_str, recorded){
     let date
     if( date_str !== null){
       date = new Date(date_str)
@@ -17,6 +17,8 @@ class Messagedata{
     this.recorded = recorded
     this.isAfter = false
     this.isTruncated = false
+    // const headers = ["id", "from", "subject", "dateStr", "plainBody"]
+    this.names = [...headers,  "date"]
 
     // クラスMessagedataは、1個のメッセージに関する情報を持つ
     // メッセージについて、関心のある一部の情報をクラスMessagedataxのインスタンスとして持つ
@@ -41,9 +43,8 @@ class Messagedata{
 
     this.isTruncated = false;
 
-    const names = ["id", "from", "subject", "dateStr", "date", "plainBody"]
-    for(let i=0; i<names.length; i++){
-      const name = names[i]
+    for(let i=0; i<this.names.length; i++){
+      const name = this.names[i]
       const str = this.original[name]
       if( maxLength === CONFIG.nolimit() ){
         this.truncated[name] = str;
@@ -58,6 +59,9 @@ class Messagedata{
         }        
       }
     }
+  }
+  getHeaders(){
+    return this.headers
   }
   getMessageId(){
     return this.msg.getId()

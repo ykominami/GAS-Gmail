@@ -12,7 +12,9 @@ class Config {
     this.infoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('INFO_SPREADSHEET_ID');
     this.infoWorksheetName = PropertiesService.getScriptProperties().getProperty('INFO_WORKSHEET_NAME');
     this.limit = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT') - 1;
-
+    const headerId = "id"
+    this.headers = [headerId, "from", "subject", "dateStr", "plainBody"]
+    this.headerId = headerId
     this.noop = false
     if( option == "noop"){
       this.noop = true
@@ -24,14 +26,24 @@ class Config {
   setNoop(value){
     this.noop = value
   }
+  getHeaderId(){
+    return this.headerId
+  }
+  getIndexOfHeaderId(){
+    const headerId = this.getHeaderId()
+    this.headers.indexOf(headerId)
+  }
+  getHeaders(){
+    return this.headers
+  }
   getConfigIds(){
     YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configSpreadsheetId} | idsSheetName=${this.idsSheetName}`)
-    // const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheet(this.configInfoSpreadsheetId, this.idsSheetName);
-    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.idsSheetName)
+    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configSpreadsheetId, this.idsSheetName)
     const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
+    YKLiblog.Log.debug(`getConfigIds values=${values}`)
     return [spreadsheet, worksheet, header, values, dataRange]
   }
-  getConfig(){
+  getConfigInfox(){
     YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
     const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName)
     const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
@@ -48,10 +60,12 @@ class Config {
     return -1
   }
 }
-function testdatef(){
-  const date = new Date();
-  const str = YKLiba.formatDateTimeManual(date);
-  YKLiblog.Log.debug(str);
-}
 
 CONFIG = new Config("noop")
+
+function config_test_x(){
+  YKLiblog.Log.initLogDebug()
+
+  CONFIG.getConfigIds()
+}
+

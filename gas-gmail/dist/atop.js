@@ -17,8 +17,6 @@ class Top {
     const tabledata = UtilGmail.makeTabledata2()
     this.tabledata = tabledata
     const idtabledata = UtilGmail.makeIdTabledata()
-    const keys = tabledata.keys()
-    idtabledata.adjust(keys)
     this.idtabledata = idtabledata
     YKLiblog.Log.debug(`Top setup this.idtabledata.targetedEmailIdsList=${this.idtabledata.targetedEmailIdsList}`)
 
@@ -28,21 +26,25 @@ class Top {
 
     YKLiblog.Log.debug(`Top setup this.limitx=${this.limitx}`)
   }
+  
   start(){
     YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
 
-    const startInitIndex = 1
+    const startInitIndex = 0
+    const endInitIndex = 1
     const keys = this.gmail.getKeys()
     const keya = [keys[1]]
-    const [startIndex, limitx] = UtilGmail.makeIndex(startInitIndex, 1, 0) // 0 または 0以外
+    const [startIndex, limitx] = UtilGmail.makeIndex(startInitIndex, endInitIndex, 0) // 0 または 0以外
     // const [startIndex, limitx] = UtilGmail.makeIndex(startInitIndex, 1, 1) // 0 または 0以外
+    YKLiblog.Log.debug(`startIndex=${startIndex} limitx=${limitx}`)
     this.gmail.setStartIndex(startIndex)
 
     // this.gmail.limitx = limitx
     this.gmail.setLimitx(limitx)
 
     this.explore(this.gmail, this.numOfItems)
-  }  
+  }
+
   explore(gmail, numOfItems){
     YKLiblog.Log.debug(`gmail`)
     YKLiblog.Log.debug(`explore gmail.limitx=${gmail.limitx}`)
@@ -51,6 +53,7 @@ class Top {
     YKLiblog.Log.debug(`Top explore start=${start} end=${end}`)
     const endPlusOne = end + 1
     const keys = gmail.getKeys()
+    YKLiblog.Log.debug(`keys=${keys}`)
     const folderConf = gmail.tabledata.folderConf
 
     for(let i=start; i < endPlusOne; i++){
@@ -66,9 +69,11 @@ class Top {
     }
     YKLiblog.Log.debug(`explore END`)
   }
+  
   processOneTargetedEmail(gmail, key, numOfItems = 0){
     YKLiblog.Log.debug(`getOneTargetedEmail key=${key}`)
     const targetedEmail = gmail.tabledata.getTargetedEmail(key);
+    
 
     if( typeof(targetedEmail) === "undefined" ){
       return numOfItems
@@ -101,7 +106,7 @@ class Top {
     const gmailList = new GmailList(targetedEmail, gmail.idtabledata, this.limitx);
     const store = gmailList.getMailListX(gmail.op);
     targetedEmail.setNth(folderConf.nth);
-    targetedEmail.lastDateTime = store.get('last_date_time');
+    targetedEmail.setLastDateTime(store.get('last_date_time'));
   
     gmail.tabledata.rewrite(targetedEmail);
     gmail.tabledata.update();

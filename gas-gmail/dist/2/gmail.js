@@ -52,6 +52,7 @@ class Gmail{
   /**
    * 指定したラベルを持つメールからラベルを削除する
    *
+   * @param {string} labelName ラベル名
    * @param {label} label 削除したいラベル
    */
   removeLabelFromEmails(labelName, label) {
@@ -68,6 +69,34 @@ class Gmail{
     }
     YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
   }
+  
+  /**
+   * ペアラベルとクエリ情報を作成する
+   * @param {Object} targetedEmail 対象メール
+   * @returns {Array} [pairLabel, queryInfo]
+   */
+  makePairLabelAndQueryInfo(targetedEmail) {
+    try {
+      // 実際の実装では、targetedEmailからラベル情報を取得する必要があります
+      const pairLabel = {
+        targetLabelName: targetedEmail.getTargetLabelName ? targetedEmail.getTargetLabelName() : '',
+        targetLabel: targetedEmail.getTargetLabel ? targetedEmail.getTargetLabel() : null,
+        endLabelName: targetedEmail.getEndLabelName ? targetedEmail.getEndLabelName() : '',
+        endLabel: targetedEmail.getEndLabel ? targetedEmail.getEndLabel() : null
+      };
+      
+      const queryInfo = {
+        query: targetedEmail.getQuery ? targetedEmail.getQuery() : '',
+        searchCriteria: targetedEmail.getSearchCriteria ? targetedEmail.getSearchCriteria() : {}
+      };
+      
+      return [pairLabel, queryInfo];
+    } catch (error) {
+      YKLiblog.Log.debug("makePairLabelAndQueryInfo error: " + error.message);
+      return [{}, {}];
+    }
+  }
+  
   getMailList(key, op, arg_store){
     YKLiblog.Log.debug(`key=${key}`);
     const targetedEmail = this.tabledata.getTargetedEmail(key);
@@ -87,12 +116,19 @@ class Gmail{
   removeLabel(key){
     YKLiblog.Log.debug(`key=${key}`);
     const targetedEmail = this.tabledata.getTargetedEmail(key);
+    
+    if (!targetedEmail) {
+      YKLiblog.Log.debug(`targetedEmail not found for key: ${key}`);
+      return;
+    }
+    
     const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
     this.removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel);
     this.removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel);
     YKLiblog.Log.debug(pairLabel);
     YKLiblog.Log.debug(queryInfo);
   }
+  
   removeLabelAll(){
     if (typeof CONFIG !== 'undefined' && CONFIG.setNoop) {
       CONFIG.setNoop(false);

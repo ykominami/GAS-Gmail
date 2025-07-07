@@ -6,6 +6,13 @@ class GmailSearch {
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
+    
+    // queryInfo.getQuery0()の存在チェック
+    if (!queryInfo || typeof queryInfo.getQuery0 !== 'function') {
+      YKLiblog.Log.debug("SearchWithTargetLabel: queryInfo.getQuery0 is not available");
+      return [null, null, null];
+    }
+    
     const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery0(), targetedEmail, start, maxThreads, maxSearchesAvailable)
     return [newLastDateTime, within, remain]
   }
@@ -13,6 +20,13 @@ class GmailSearch {
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
+    
+    // queryInfo.getQuery1()の存在チェック
+    if (!queryInfo || typeof queryInfo.getQuery1 !== 'function') {
+      YKLiblog.Log.debug("SearchWithFrom: queryInfo.getQuery1 is not available");
+      return [null, null, null];
+    }
+    
     const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery1(), targetedEmail, start, maxThreads, maxSearchesAvailable)
     return [newLastDateTime, within, remain]
   }
@@ -22,22 +36,39 @@ class GmailSearch {
     }
 
     const [within, remain] = this.getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable)
-    targetedEmail.setCount( within.msgCount )
+    
+    // targetedEmail.setCount()とwithin.msgCountの存在チェック
+    if (targetedEmail && typeof targetedEmail.setCount === 'function' && within && typeof within.msgCount !== 'undefined') {
+      targetedEmail.setCount( within.msgCount )
+    } else {
+      YKLiblog.Log.debug("SearchWithBase: targetedEmail.setCount or within.msgCount is not available");
+    }
 
-    const newLastDateTime = within.lastDate.getTime()
-
-    return [newLastDateTime, within, remain]
+    // within.lastDate.getTime()の存在チェック
+    if (within && within.lastDate && typeof within.lastDate.getTime === 'function') {
+      const newLastDateTime = within.lastDate.getTime()
+      return [newLastDateTime, within, remain]
+    } else {
+      YKLiblog.Log.debug("SearchWithBase: within.lastDate.getTime is not available");
+      return [null, within, remain]
+    }
   }
   determinStatus(msgsStatus, currentValue, accumulator){
     // thread = currentValue.thread
     const messagedataArray = currentValue.messagedataArray
+
+    // accumulator[0]の存在チェック
+    if (!accumulator || !accumulator[0]) {
+      YKLiblog.Log.debug("determinStatus: accumulator[0] is not available");
+      return false;
+    }
 
     const maxSearchesAvailable = accumulator[0].maxSearchesAvailable;
     const maxThreads = accumulator[0].maxThreads;        
 
     if( msgsStatus ){
       if( (messagedataArray.length > maxSearchesAvailable) || maxThreads <= 0 ){
-        msgsStatus = false
+        return false  // msgsStatusを直接変更せずに戻り値として返す
       }
     }
     return msgsStatus
@@ -50,6 +81,13 @@ class GmailSearch {
     // また、検索結果に、すでに記録済みのメッセージが存在した場合、記録処理またはオリジナル版データ保存処理はしない。
     // ただし、スレッドに関するメタデータの計算の対象には含める。
     YKLiblog.Log.debug(`################## query=${query} maxSearchesAvailable=${maxSearchesAvailable}`)
+    
+    // Messagearrayクラスの存在チェック
+    if (typeof Messagearray === 'undefined') {
+      YKLiblog.Log.debug("Messagearray class is not defined");
+      return [null, null];
+    }
+    
     const initialValue = [
       new Messagearray(maxSearchesAvailable),
       new Messagearray(maxSearchesAvailable),
@@ -74,10 +112,54 @@ class GmailSearch {
       // をつくる
       // 1個のメッセージから、対応する1個のMessagedataクラスのインスタンスを生成する
       // 1個のthreadと（スレッドの属する全メッセージに対応する)Messagedataの配列を持つ、1個のThreadAndMessagedataarrayを作成する
+      
+      // Messagedataクラスの存在チェック
+      if (typeof Messagedata === 'undefined') {
+        YKLiblog.Log.debug("Messagedata class is not defined");
+        return initialValue;
+      }
+      
+      // ThreadAndMessagedataarrayクラスの存在チェック
+      if (typeof ThreadAndMessagedataarray === 'undefined') {
+        YKLiblog.Log.debug("ThreadAndMessagedataarray class is not defined");
+        return initialValue;
+      }
+      
+      // CONFIGの存在チェック
+      if (typeof CONFIG === 'undefined' || typeof CONFIG.getHeaders !== 'function') {
+        YKLiblog.Log.debug("CONFIG.getHeaders is not available");
+        return initialValue;
+      }
+      
       const threadAndMessagedataarrayList = threads.map( (thread) => {
+        // thread.getMessageCount()の存在チェック
+        if (!thread || typeof thread.getMessageCount !== 'function') {
+          YKLiblog.Log.debug("getThreadsAndMessagedataArray: thread.getMessageCount is not available");
+          return null;
+        }
+        
         YKLiblog.Log.debug(`this.getThreadsAndMessagedataArray thread.getMessageCount()=${thread.getMessageCount()}`)
+        
+        // thread.getMessages()の存在チェック
+        if (typeof thread.getMessages !== 'function') {
+          YKLiblog.Log.debug("getThreadsAndMessagedataArray: thread.getMessages is not available");
+          return null;
+        }
+        
         const messages = thread.getMessages()
         const messagedataArray = messages.map( (message) =>  {
+          // message.getId()の存在チェック
+          if (!message || typeof message.getId !== 'function') {
+            YKLiblog.Log.debug("getThreadsAndMessagedataArray: message.getId is not available");
+            return null;
+          }
+          
+          // message.getDate()の存在チェック
+          if (typeof message.getDate !== 'function') {
+            YKLiblog.Log.debug("getThreadsAndMessagedataArray: message.getDate is not available");
+            return null;
+          }
+          
           // 記録済みメッセージであるか否かを判定
           const messageId = message.getId()
           const recorded = this.targetedEmailIds.doneHas(messageId)
@@ -85,10 +167,11 @@ class GmailSearch {
           YKLiblog.Log.debug(`GmailSearch getThreadsAndMessagedataArray typeof(messagedata)=${typeof(messagedata)} messageId=${messageId} recorded=${recorded}`)
 
           return messagedata
-        } )
+        } ).filter(item => item !== null)  // nullアイテムをフィルタリング
+        
         messagedataArray.map( (item) => YKLiblog.Log.debug( typeof(item) ) )
         return new ThreadAndMessagedataarray(thread, messagedataArray)
-      } )
+      } ).filter(item => item !== null)  // nullアイテムをフィルタリング
 
       // let msgsStatus = true ← 削除（関数冒頭で宣言済み）
       // 順次ThreadAndMessagedataarrayの単位で、検索結果を記録していく。検索対象IDごとに、Google Spreadsheetのワークシートを用意し、1メッセージ1行で記録する。
@@ -98,10 +181,20 @@ class GmailSearch {
         msgsStatus = this.determinStatus(msgsStatus, currentValue, accumulator)
 
         if( msgsStatus ){
-          accumulator[0].addValidMessagedataarray(currentValue)
+          // accumulator[0].addValidMessagedataarray()の存在チェック
+          if (accumulator[0] && typeof accumulator[0].addValidMessagedataarray === 'function') {
+            accumulator[0].addValidMessagedataarray(currentValue)
+          } else {
+            YKLiblog.Log.debug("getThreadsAndMessagedataArray: accumulator[0].addValidMessagedataarray is not available");
+          }
         }
         else{
-          accumulator[1].addInvalidMessagedataarray(currentValue)
+          // accumulator[1].addInvalidMessagedataarray()の存在チェック
+          if (accumulator[1] && typeof accumulator[1].addInvalidMessagedataarray === 'function') {
+            accumulator[1].addInvalidMessagedataarray(currentValue)
+          } else {
+            YKLiblog.Log.debug("getThreadsAndMessagedataArray: accumulator[1].addInvalidMessagedataarray is not available");
+          }
         }
         return accumulator
       }, initialValue )
@@ -136,9 +229,28 @@ class GmailSearch {
     }
   }
   gmailSearch(query, start, maxThreads){
+    // GmailAppの存在チェック
+    if (typeof GmailApp === 'undefined' || typeof GmailApp.search !== 'function') {
+      YKLiblog.Log.debug("gmailSearch: GmailApp.search is not available");
+      return [false, null];
+    }
+    
     const threads = GmailApp.search(query, start, maxThreads);
+    
+    // threads.sort()の存在チェック
+    if (!threads || !Array.isArray(threads) || typeof threads.sort !== 'function') {
+      YKLiblog.Log.debug("gmailSearch: threads.sort is not available");
+      return [false, null];
+    }
+    
     // 取得したスレッドを日付の古い順にソート
     threads.sort(function(a, b) {
+      // getLastMessageDate()の存在チェック
+      if (!a || typeof a.getLastMessageDate !== 'function' || !b || typeof b.getLastMessageDate !== 'function') {
+        YKLiblog.Log.debug("gmailSearch: getLastMessageDate is not available");
+        return 0;
+      }
+      
       return a.getLastMessageDate().getTime() - b.getLastMessageDate().getTime();
     });
     if( threads.length > 0 ){

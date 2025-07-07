@@ -39,7 +39,22 @@ class UtilGmail {
   }
 */
   static makeIndex(startIndex, limitx, makeindexFlag = 0){
+    if (typeof startIndex !== 'number' || typeof limitx !== 'number') {
+      UtilGmail.safeLogDebug('makeIndex: startIndex or limitx is not a number');
+      return [0, 0];
+    }
     return [startIndex, limitx]
+  }
+  static safeLogDebug(message) {
+    try {
+      if (typeof YKLiblog !== 'undefined' && YKLiblog.Log && typeof YKLiblog.Log.debug === 'function') {
+        YKLiblog.Log.debug(message);
+      } else {
+        console.log(`[UtilGmail] ${message}`);
+      }
+    } catch (error) {
+      console.log(`[UtilGmail] Log error: ${error.message}`);
+    }
   }
 }
 

@@ -25,7 +25,6 @@ class Top {
     this.gmail = new Gmail(this.limitx, this.tabledata, this.idtabledata, this.makeIndexFlag)
     YKLiblog.Log.debug(`Top setup this.limitx=${this.limitx}`)
   }
-  
   start(){
     if (!this.gmail) {
       YKLiblog.Log.debug('Top start: gmail is not initialized')
@@ -83,7 +82,6 @@ class Top {
     // 必要ならthis.numOfItemsに反映
     this.numOfItems = numOfItems
   }
-  
   processOneTargetedEmail(gmail, key, numOfItems = 0){
     YKLiblog.Log.debug(`getOneTargetedEmail key=${key}`)
     if(typeof(key) === "undefined"){
@@ -110,6 +108,10 @@ class Top {
     YKLiblog.Log.debug(`Top processOneTargetedEmail gmail.idtabledata=${gmail.idtabledata}`)
     YKLiblog.Log.debug(`Top processOneTargetedEmail gmail.idtabledata.targetedEmailIdsList=${gmail.idtabledata.targetedEmailIdsList}`)
     const gmailList = new GmailList(targetedEmail, gmail.idtabledata, this.limitx);
+    if (typeof gmailList.getMailListX !== 'function') {
+      this.safeLogDebug('processOneTargetedEmail: gmailList.getMailListX is not available');
+      return numOfItems;
+    }
     const store = gmailList.getMailListX(gmail.op);
     targetedEmail.setNth(folderConf.nth);
     gmail.tabledata.rewrite(targetedEmail);

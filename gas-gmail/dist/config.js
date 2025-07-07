@@ -29,14 +29,14 @@ class Config {
 
     this.noop = false
     if( option == "noop"){
-      this.noop = true
+      this.noop = true;
     }
   }
   isNoop(){
-    return this.noop
+    return this.noop;
   }
   setNoop(value){
-    this.noop = value
+    this.noop = value;
   }
   getSpreadsheetForRecordSpreadsheet(){
     const [spreadsheet, _worksheet] = YKLiba.Base.getSpreadsheet(this.configSpreadsheetId)
@@ -127,7 +127,18 @@ class Config {
     return [_spreadsheet, worksheet, values, totalRange]
   }
   nolimit(){
-    return -1
+    return -1;
+  }
+  safeLogDebug(message) {
+    try {
+      if (typeof YKLiblog !== 'undefined' && YKLiblog.Log && typeof YKLiblog.Log.debug === 'function') {
+        YKLiblog.Log.debug(message);
+      } else {
+        console.log(`[Config] ${message}`);
+      }
+    } catch (error) {
+      console.log(`[Config] Log error: ${error.message}`);
+    }
   }
 }
 Config.TableDef = class {

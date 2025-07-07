@@ -2,6 +2,7 @@ class GmailSave {
   constructor(folder){
     this.folder = folder
   }
+
   saveData(messageDataList){
     YKLiblog.Log.debug(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
     if( typeof(messageDataList) !== "undefined" ){
@@ -22,7 +23,6 @@ class GmailSave {
       throw Error(`GmailSave.saveData 3`)
     }
     // throw Error(`under saveData 3`)
-  
   }
   
   outputSupplementaryFileFromArray(messageDataList, folder){
@@ -57,18 +57,7 @@ class GmailSave {
     // const rawcontent = messageData.msg.getRawContent()
     const rawcontent = messageData.original.plainBody || ''
   
-    // folder.getUrl()の存在チェック
-    if (folder && typeof folder.getUrl === 'function') {
-      YKLiblog.Log.debug(`===============folder=${folder.getUrl()} filename=${filename} rawcontent.length=${rawcontent.length}`)
-    } else {
-      YKLiblog.Log.debug(`===============folder=not_available filename=${filename} rawcontent.length=${rawcontent.length}`)
-    }
-    
-    // YKLibb.Googleapi.outputFileUnderFolderの存在チェック
-    if (typeof YKLibb !== 'undefined' && YKLibb.Googleapi && typeof YKLibb.Googleapi.outputFileUnderFolder === 'function') {
-      YKLibb.Googleapi.outputFileUnderFolder(folder, filename, rawcontent)
-    } else {
-      YKLiblog.Log.debug("outputSupplementaryFile: YKLibb.Googleapi.outputFileUnderFolder is not available");
-    }
+    YKLiblog.Log.debug(`===============folder=${folder.getUrl()} filename=${filename} rawcontent.length=${rawcontent.length}`)
+    YKLibb.Googleapi.outputFileUnderFolder(folder, filename, rawcontent)
   }
 }

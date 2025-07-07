@@ -1,62 +1,43 @@
 class UtilGmail {
+  static makeAll(config){
+    // configSpreadsheet = config.setConfigInfoType(Config.CONFIG_INFO())
+    config.setConfigInfoType(Config.CONFIG_INFO2())
+    // config.setConfigInfoType(Config.CONFIG_INFOX())
+    const configSpreadsheet = UtilGmail.makeConfigSpreassheet(config)
+    const recordSpreadsheet = UtilGmail.makeRecordSpreassheet(config, configSpreadsheet)
+    recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
+  }
+  static makeRecordSpreassheet(config, configSpreadsheet){
+    const [spreadsheet, _worksheet] = config.getSpreadsheetForRecordSpreadsheet()
+
+    const recordSpreadsheet = new RecordSpreadsheet(spreadsheet, config)
+    recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
+    return recordSpreadsheet
+  }
+  static makeConfigSpreassheet(config){
+    const [spreadsheet, _worksheet] = config.getSpreadsheetForConfigSpreadsheet()
+
+    const configSpreadsheet = new ConfigSpreadsheet(spreadsheet, config)
+    return configSpreadsheet
+  }
+/*
   static makeTabledata2(){
-    if (typeof CONFIG === 'undefined' || typeof CONFIG.getConfigInfo2 !== 'function') {
-      UtilGmail.safeLogDebug('makeTabledata2: CONFIG.getConfigInfo2 is not available');
-      return null;
-    }
-    const result = CONFIG.getConfigInfo2();
-    if (!Array.isArray(result) || result.length < 5) {
-      UtilGmail.safeLogDebug('makeTabledata2: CONFIG.getConfigInfo2 did not return expected array');
-      return null;
-    }
-    const [spradsheet, worksheet, header, values, dataRange] = result;
-    UtilGmail.safeLogDebug(`UtilGmail makeTabledata2 values=${values}`);
-    if (typeof Tabledata !== 'function') {
-      UtilGmail.safeLogDebug('makeTabledata2: Tabledata constructor is not available');
-      return null;
-    }
-    const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
-    return tabledata;
+    CONFIG.setConfigInfoType(Config.CONFIG_INFO2)
+    const tabledata = new Tabledata(CONFIG);
+    return tabledata
   }
   static makeTabledata(){
-    if (typeof CONFIG === 'undefined' || typeof CONFIG.getConfigInfox !== 'function') {
-      UtilGmail.safeLogDebug('makeTabledata: CONFIG.getConfigInfox is not available');
-      return null;
-    }
-    const result = CONFIG.getConfigInfox();
-    if (!Array.isArray(result) || result.length < 5) {
-      UtilGmail.safeLogDebug('makeTabledata: CONFIG.getConfigInfox did not return expected array');
-      return null;
-    }
-    const [spradsheet, worksheet, header, values, dataRange] = result;
-    UtilGmail.safeLogDebug(`UtilGmail makeTabledata values=${values}`);
-    if (typeof Tabledata !== 'function') {
-      UtilGmail.safeLogDebug('makeTabledata: Tabledata constructor is not available');
-      return null;
-    }
-    const tabledata = new Tabledata(spradsheet, worksheet, header, values, dataRange);
-    return tabledata;
+    CONFIG.setConfigInfoType(Config.CONFIG_INFOX)
+    const tabledata = new Tabledata(CONFIG);
+    return tabledata
   }
   static makeIdTabledata(){
-    if (typeof CONFIG === 'undefined' || typeof CONFIG.getConfigIds !== 'function') {
-      UtilGmail.safeLogDebug('makeIdTabledata: CONFIG.getConfigIds is not available');
-      return null;
-    }
-    const result = CONFIG.getConfigIds();
-    if (!Array.isArray(result) || result.length < 5) {
-      UtilGmail.safeLogDebug('makeIdTabledata: CONFIG.getConfigIds did not return expected array');
-      return null;
-    }
-    const [spradsheet, worksheet, header, values, dataRange] = result;
-    UtilGmail.safeLogDebug(`UtilGmail makeIdTabledata values=${values}`);
-    if (typeof IdTabledata !== 'function') {
-      UtilGmail.safeLogDebug('makeIdTabledata: IdTabledata constructor is not available');
-      return null;
-    }
-    const idtabledata = new IdTabledata(spradsheet, worksheet, header, values, dataRange);
-    return idtabledata;
-  }
+    YKLiblog.Log.initLogDebug()
 
+    const idtabledata = new IdTabledata(CONFIG);
+    return idtabledata
+  }
+*/
   static makeIndex(startIndex, limitx, makeindexFlag = 0){
     if (typeof startIndex !== 'number' || typeof limitx !== 'number') {
       UtilGmail.safeLogDebug('makeIndex: startIndex or limitx is not a number');
@@ -77,11 +58,17 @@ class UtilGmail {
   }
 }
 
+function test_makeIdTabledata(){
+  YKLiblog.Log.initLogDebug()
 
+  const tabledata = UtilGmail.makeIdTabledata()
+}
 function test_util(){
+  YKLiblog.Log.initLogDebug()
+
   let key
   const idtabledata = UtilGmail.makeIdTabledata()
-  const keys = idtabledata.keys()
+  const keys = idtabledata.getKeys()
   YKLiblog.Log.debug(`keys=${ keys }`)
   key = keys[0]
   test_util_b(idtabledata, key)
@@ -91,15 +78,45 @@ function test_util(){
   
 }
 function test_util_b(idtabledata, key){
-  YKLiblog.Log.debug(key)
-  const targetedEmailIds = idtabledata.getTargetedEmailIds(key)
+  const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
   const ret = typeof(targetedEmailIds)
   if( ret !== "undefined" ){
     YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
   }
 }
-function test_util_c(idtabledata, key){
-  YKLiblog.Log.debug(key)
-  const targetedEmailIds = idtabledata.getTargetedEmailIds(key)
-  YKLiblog.Log.debug(`done=${ [...targetedEmailIds.done] }`)
+function test_util_c(){
+  YKLiblog.Log.debug()
+  const [spreadsheet, _worksheet] = CONFIG.getSpreadsheetForRecordSpreadsheet()
+  const recordSpreadsheet = UtilGmail.makeRecordSpreadsheet(spreadsheet, CONFIG)
+}
+function test_util_d(){
+  YKLiblog.Log.debug()
+  const [spreadsheet, _worksheet] = CONFIG.getSpreadsheetForConfigSpreadsheet()
+
+  CONFIG.setConfigInfoType(Config.CONFIG_INFO2())
+  // CONFIG.setConfigInfoType(Config.CONFIG_INFOX())
+  // CONFIG.setConfigInfoType(Config.CONFIG_INFO())
+  const configSpreadsheet = UtilGmail.makeConfigSpreadsheet(spreadsheet, CONFIG)
+}
+function test_x(){
+  
+  let [spreadsheet, _worksheet] = CONFIG.getSpreadsheetForRecordSpreadsheet()
+  let [worksheet, header, values, totalRange, headerRange, dataRange] = CONFIG.getRecordIds(spreadsheet)
+  let dataRowsRange
+
+  const [spreadsheet2, _worksheet2] = CONFIG.getSpreadsheetForConfigSpreadsheet()
+
+  CONFIG.setConfigInfoType(Config.CONFIG_INFO())
+  const [worksheetA, valuesA, totalRangeA] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesA=${valuesA}`)
+  CONFIG.setConfigInfoType(Config.CONFIG_INFO2())
+  const [worksheetB, valuesB, totalRangeB] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesB=${valuesB}`)
+  CONFIG.setConfigInfoType(Config.CONFIG_INFOX())
+  const [worksheetC, valuesC, totalRangeC] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesC=${valuesC}`)
+}
+function test_z(){
+  const config = new Config()
+  UtilGmail.makeAll(config)
 }

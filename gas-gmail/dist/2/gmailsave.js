@@ -3,6 +3,7 @@ class GmailSave {
     folder.x
     this.folder = folder
   }
+
   saveData(messageDataList){
     YKLiblog.Log.debug(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
     if( typeof(messageDataList) !== "undefined" ){
@@ -16,7 +17,6 @@ class GmailSave {
       YKLiblog.Log.debug(`#### 2 messagedata=${JSON.stringify(messageDataList).slice(0,100) }`)
     }
     // throw Error(`under saveData 3`)
-  
   }
   
   outputSupplementaryFileFromArray(messageDataList, folder){
@@ -31,6 +31,6 @@ class GmailSave {
     const rawcontent = messageData.original.plainBody
   
     YKLiblog.Log.debug(`===============folder=${folder.getUrl()} filename=${filename} rawcontent.length=${rawcontent.length}`)
-    YKLibb.Googleapi.outputFileUnderFolder(folder, fileName, rawcontent)
+    YKLibb.Googleapi.outputFileUnderFolder(folder, filename, rawcontent)
   }
 }

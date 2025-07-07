@@ -1,37 +1,39 @@
 class TargetedEmailList {
-  constructor(spradsheet, values){
-    let backupRootFolderInfo = null;
-    let folderConf = null;
-
-    this.backupFolderInfo = null;
-    this.parentFolderInfo = null;
+  constructor(spreadsheet, values, config){
+    this.config = config;
+    this.backupRootFolderInfo = null;
     this.folderConf = null;
-    this.targetedEmailAssoc = {};
-    this.spradsheet = spradsheet
+    this.keySet = new Set();
+    this.targetedEmailByKey = {};
+    this.spreadsheet = spreadsheet;
 
     YKLiblog.Log.debug(`TargetedEmailList constructor values=${ JSON.stringify(values) }`)
     YKLiblog.Log.debug(`TargetedEmailList constructor values.length=${values.length}`)
     for(let i=0; i<values.length; i++){
-      const item = values[i]
+      const item = values[i];
       YKLiblog.Log.debug(`TargetedEmailList constructor i=${i} item=${item}`)
       switch(item[0]){
         case "backup_root_folder":
           YKLiblog.Log.debug("TargetedEmailList constructor backup_root_folder")
-          // backupRootFolderInfoは、backup用のフォルダ群の親フォルダの情報を持つ。
-          backupRootFolderInfo = new BackupRootFolderInfo(i, item);
-          this.backupRootFolderInfo = backupRootFolderInfo;
+          this.backupRootFolderInfo = new BackupRootFolderInfo(i, item);
           break;
         case "folder_conf":
           YKLiblog.Log.debug("TargetedEmailList constructor folder_conf")
-          folderConf = new FolderConf(i, item);
-          this.folderConf = folderConf;
+          this.folderConf = new FolderConf(i, item);
           break;
         case "folder":
           YKLiblog.Log.debug("TargetedEmailList constructor folder")
-          if(item[1]){
-            const targetedEmail = new TargetedEmail(i, item, backupRootFolderInfo, folderConf, spradsheet);
-
-            this.targetedEmailAssoc[item[1]] = targetedEmail;
+          const key = item[1];
+          if(key && !this.keySet.has(key)){
+            if (!this.backupRootFolderInfo) {
+              YKLiblog.Log.warn("TargetedEmailList: backupRootFolderInfo is null when creating TargetedEmail");
+            }
+            if (!this.folderConf) {
+              YKLiblog.Log.warn("TargetedEmailList: folderConf is null when creating TargetedEmail");
+            }
+            const targetedEmail = new TargetedEmail(i, item, this.backupRootFolderInfo, this.folderConf, spreadsheet, config);
+            this.targetedEmailByKey[key] = targetedEmail;
+            this.keySet.add(key);
           }
           break;
         default:
@@ -40,6 +42,11 @@ class TargetedEmailList {
       }
     }
     YKLiblog.Log.debug( `TargetedEmailList this.folderConf=${this.folderConf}` )
-
+  }
+  getKeys(){
+    return Object.keys(this.targetedEmailByKey);
+  }
+  getTargetedEmailByKey(key){
+    return this.targetedEmailByKey[key];
   }
 }

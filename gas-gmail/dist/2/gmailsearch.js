@@ -60,7 +60,7 @@ class GmailSearch {
     let msgsStatus = true
 
     if( maxThreads <= 0){
-      throw Error(`maxTreads=${maxTreads}`)
+      throw Error(`maxThreads=${maxThreads}`)
     }
     // queryによる検索結果をスレッドの配列として取得
     const threads = this.getMailListWithQuery(query, start, maxThreads)
@@ -90,7 +90,7 @@ class GmailSearch {
         return new ThreadAndMessagedataarray(thread, messagedataArray)
       } )
 
-      let msgsStatus = true
+      // let msgsStatus = true ← 削除（関数冒頭で宣言済み）
       // 順次ThreadAndMessagedataarrayの単位で、検索結果を記録していく。検索対象IDごとに、Google Spreadsheetのワークシートを用意し、1メッセージ1行で記録する。
       // また切り詰めが発生した場合は、オリジナルのMessagedataの内容をGoogle Docsファイルに、1メッセージ1ファイルで本損する。
       // ただし、記録する前に、記録後の総スレッド数または、総メッセージ数が指定された制限を超える場合は、記録せずに、1番目要素に追加していく
@@ -106,15 +106,15 @@ class GmailSearch {
         return accumulator
       }, initialValue )
       YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray 1`)
-      resultArray[0].debug
-      resultArray[1].debug
+      if (typeof resultArray[0].debug === 'function') resultArray[0].debug();
+      if (typeof resultArray[1].debug === 'function') resultArray[1].debug();
 
       return resultArray
     }
     else{
       YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray 2`)
-      initialValue[0].debug
-      initialValue[1].debug
+      if (typeof initialValue[0].debug === 'function') initialValue[0].debug();
+      if (typeof initialValue[1].debug === 'function') initialValue[1].debug();
 
       return initialValue
     }

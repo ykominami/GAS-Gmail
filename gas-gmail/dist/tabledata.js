@@ -1,25 +1,27 @@
 class Tabledata {
-  constructor(spradsheet, worksheet, header, values, dataRange){
-    this.spradsheet = spradsheet; 
+  constructor(config){
+    this.config = config
+    const [spreadsheet, worksheet, header, values, headerRange, dataRowsRange, totalRange] = config.getConfigInfo()
+
+    this.spreadsheet = spreadsheet; 
     this.worksheet = worksheet; 
     this.header = header;
     this.values = values;
-    this.dataRange = dataRange;
-    const targetedEmailList = new TargetedEmailList(spradsheet, this.values);
-    this.parentFolderInfo = targetedEmailList.parentFolderInfo;
+    this.totalRange = totalRange
+    this.headerRange = headerRange
+    this.dataRowsRange = dataRowsRange;
+    const targetedEmailList = new TargetedEmailList(spreadsheet, this.values, config);
     this.backupFolderInfo = targetedEmailList.backupFolderInfo;
-    this.targetedEmailAssoc = targetedEmailList.targetedEmailAssoc;
     YKLiblog.Log.debug(`Tabledata constructor targetedEmailList.folderConf=${targetedEmailList.folderConf}`)
     this.folderConf = targetedEmailList.folderConf;
     YKLiblog.Log.debug(`Tabledata constructor this.folderConf=${this.folderConf}`)
     this.targetedEmailList = targetedEmailList;
   }
   keys(){
-    const keyArray = Object.keys(this.targetedEmailAssoc)
-    return keyArray;
+    return this.targetedEmailList.getKeys()
   }
   getTargetedEmail(key){
-    return this.targetedEmailAssoc[key];
+    return this.targetedEmailList.getTargetedEmailByKey(key);
   }
   rewrite(targetedEmail){
     const item = targetedEmail

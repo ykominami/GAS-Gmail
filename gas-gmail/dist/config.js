@@ -1,4 +1,13 @@
 class Config {
+  static CONFIG_INFOX() {
+    return "CONFIG_INFOX"
+  }
+  static CONFIG_INFO2() {
+    return "CONFIG_INFO2"
+  }
+  static CONFIG_INFO() {
+    return "CONFIG_INFO"
+  }
   constructor(option = null){
     this.limit = 2
     this.configSpreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_SPREADSHEET_ID');
@@ -7,14 +16,17 @@ class Config {
     this.configInfoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO_SPREADSHEET_ID');
     this.configInfoxSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFOX_SHEETNAME');
     this.configInfo2SheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO2_SHEETNAME');
+    this.configInfoSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO_SHEETNAME');
     this.docParentFolderId = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_ID');
     this.docParentFolderPath = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_PATH');
     this.infoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('INFO_SPREADSHEET_ID');
     this.infoWorksheetName = PropertiesService.getScriptProperties().getProperty('INFO_WORKSHEET_NAME');
-    this.limit = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT') - 1;
-    const headerId = "id"
-    this.headers = [headerId, "from", "subject", "dateStr", "plainBody"]
-    this.headerId = headerId
+    this.limitx = PropertiesService.getUserProperties().getProperty('CELL_CONTENT_LIMIT');
+    this.limit = parseInt(this.limitx) - 1
+
+    this.registeredEmailTableDef = this.makeRegisteredEmailTableDef()
+    this.targetedEmailIdsTableDef = this.makeTargetedEmailIdsTableDef()
+
     this.noop = false
     if( option == "noop"){
       this.noop = true
@@ -26,46 +38,133 @@ class Config {
   setNoop(value){
     this.noop = value
   }
-  getHeaderId(){
-    return this.headerId
+  getSpreadsheetForRecordSpreadsheet(){
+    const [spreadsheet, _worksheet] = YKLiba.Base.getSpreadsheet(this.configSpreadsheetId)
+    return [spreadsheet, _worksheet]
   }
-  getIndexOfHeaderId(){
-    const headerId = this.getHeaderId()
-    this.headers.indexOf(headerId)
+  getSpreadsheetForConfigSpreadsheet(){
+    const [spreadsheet, _worksheet] = YKLiba.Base.getSpreadsheet(this.configInfoSpreadsheetId)
+    return [spreadsheet, _worksheet]
   }
-  getHeaders(){
-    return this.headers
+
+  getRegisteredEmailTableDef(){
+    return this.registeredEmailTableDef
   }
-  getConfigIds(){
-    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configSpreadsheetId} | idsSheetName=${this.idsSheetName}`)
-    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configSpreadsheetId, this.idsSheetName)
-    const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
+  getTargetedEmailIdsTableDef(){
+    return this.targetedEmailIdsTableDef
+  }
+  makeRegisteredEmailTableDef(){
+    const nameOfId = "id"
+    const header = [nameOfId, "from", "subject", "dateStr", "plainBody"]
+    const tableDef = new Config.TableDef(header, nameOfId)
+    return tableDef
+  }
+  makeTargetedEmailIdsTableDef(){
+    const nameOfId = "name"
+    const header = [nameOfId]
+    const tableDef = new Config.TableDef(header, nameOfId)
+    return tableDef
+  }
+  setConfigInfoType(value){
+    this.configInfoType = value
+  }
+  getConfigInfoType(){
+    return this.configInfoType
+  }
+  getConfigInfo(spreadsheet){
+    const configInfoType = this.getConfigInfoType()
+    if( configInfoType == Config.CONFIG_INFO() ){
+      return this.ConfigInfo(spreadsheet)
+    }
+    else if( configInfoType == Config.CONFIG_INFO2() ){
+      return this.ConfigInfo2(spreadsheet)
+    }
+    else{
+      return this.ConfigInfox(spreadsheet)
+    }
+  }
+  getRecordIds(spreadsheet){
+    YKLiblog.Log.debug(`idsSheetName=${this.idsSheetName}`)
+    const worksheet = YKLibb.Gssx.getOrCreateWorksheet(spreadsheet, this.idsSheetName)
+    const tableDef = this.getTargetedEmailIdsTableDef()
+    const headerx = tableDef.getHeader()
+    const yklibbConfig = new YKLibb.Config( headerx.length, headerx, YKLibb.Config.PARTIAL() )
+    const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.setupSpreadsheetAndHeaderAndData(worksheet, yklibbConfig)
     YKLiblog.Log.debug(`getConfigIds values=${values}`)
-    return [spreadsheet, worksheet, header, values, dataRange]
+    return [worksheet, header, values, headerRange, dataRowsRange, totalRange]
   }
-  getConfigInfox(){
-    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfoxSheetName=${this.configInfoxSheetName}`)
-    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.configInfoxSheetName)
-    const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
-    return [spreadsheet, worksheet, header, values, dataRange]
+  ConfigInfox(spreadsheet){
+    YKLiblog.Log.debug(`configInfoxSheetName=${this.configInfoxSheetName}`)
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoxSheetName)
+    const values = totalRange.getValues()
+    YKLiblog.Log.debug(`getConfigInfo values=${values}`)
+    return [worksheet, values, totalRange]
   }
-  getConfigInfo2(){
-    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId} | configInfo2SheetName=${this.configInfo2SheetName}`)
-    // [header, values, dataRange] = YKLibb.setupSpreadsheet(spreadsheetId, sheetName);
-    const [spreadsheet, worksheet] = YKLibb.Gssx.setupForSpreadsheet(this.configInfoSpreadsheetId, this.configInfo2SheetName)
-    const [header, values, dataRange] = YKLibb.Gssx.setupSpreadsheetX(worksheet)
-    return [spreadsheet, worksheet, header, values, dataRange]
+  ConfigInfo(spreadsheet){
+    YKLiblog.Log.debug(`configInfoSheetName=${this.configInfoSheetName}`)
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoSheetName)
+    const values = totalRange.getValues()
+    YKLiblog.Log.debug(`getConfigInfo values=${values}`)
+    return [worksheet, values, totalRange]
+  }
+  ConfigInfo2(spreadsheet){
+    YKLiblog.Log.debug(`configInfo2SheetName=${this.configInfo2SheetName}`)
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfo2SheetName)
+    const values = totalRange.getValues()
+    YKLiblog.Log.debug(`getConfigInfo values=${values}`)
+    return [worksheet, values, totalRange]
+  }
+  getRecordSpreadsheet(){
+    YKLiblog.Log.debug(`configSpreadsheetId=${this.configSpreadsheetId}`)
+    const [_spreadsheet, worksheet, values, totalRange] = YKLibb.Gssx.setupSpeadsheetValues(this.configSpreadsheetId, this.configInfo2SheetName)
+    YKLiblog.Log.debug(`getConfigInfo2 values=${values}`)
+    return [_spreadsheet, worksheet, values, totalRange]
+  }
+  getConfigSpreadsheet(){
+    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId}`)
+    const [_spreadsheet, worksheet, values, totalRange] = YKLibb.Gssx.setupSpeadsheetValues(this.configInfoSpreadsheetId, this.configInfo2SheetName)
+    YKLiblog.Log.debug(`getConfigInfo2 values=${values}`)
+    return [_spreadsheet, worksheet, values, totalRange]
   }
   nolimit(){
     return -1
   }
 }
+Config.TableDef = class {
+  constructor( header, nameOfId ){
+    this.header = header
+    this.nameOfId = nameOfId
+    this.indexOfId = header.indexOf(nameOfId)    
+  }
+  getHeader(){
+    return this.header
+  }
+  getNameOfId(){
+    return this.nameOfId
+  }
+  getIndexOfId(){
+    return this.indexOfId
+  }
+}
 
 CONFIG = new Config("noop")
 
-function config_test_x(){
+function test_config_getConfigIds(){
   YKLiblog.Log.initLogDebug()
 
-  CONFIG.getConfigIds()
+  let [spreadsheet, _worksheet] = CONFIG.getSpreadsheetForRecordSpreadsheet()
+  let [worksheet, header, values, headerRange, dataRowsRange, totalRange] = CONFIG.getRecordIds(spreadsheet)
+  let dataRowsRange2
+
+  const [spreadsheet2, _worksheet2] = CONFIG.getSpreadsheetForConfigSpreadsheet()
+  CONFIG.setConfigInfoType(Config.CONFIG_INFO())
+  const [worksheetA, valuesA, totalRangeA] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesA=${valuesA}`)
+  CONFIG.setConfigInfoType(Config.CONFIG_INFO2())
+  const [worksheetB, valuesB, totalRangeB] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesB=${valuesB}`)
+  CONFIG.setConfigInfoType(Config.CONFIG_INFOX())
+  const [worksheetC, valuesC, totalRangeC] = CONFIG.getConfigInfo(spreadsheet2)
+  YKLiblog.Log.debug(`valuesC=${valuesC}`)
 }
 

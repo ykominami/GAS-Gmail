@@ -1,13 +1,10 @@
 class TargetedEmailList {
-  constructor(spradsheet, values){
-    let backupRootFolderInfo = null;
-    let folderConf = null;
-
+  constructor(spreadsheet, values){
     this.backupFolderInfo = null;
     this.parentFolderInfo = null;
     this.folderConf = null;
     this.targetedEmailAssoc = {};
-    this.spradsheet = spradsheet
+    this.spreadsheet = spreadsheet
 
     YKLiblog.Log.debug(`TargetedEmailList constructor values=${ JSON.stringify(values) }`)
     YKLiblog.Log.debug(`TargetedEmailList constructor values.length=${values.length}`)
@@ -18,18 +15,16 @@ class TargetedEmailList {
         case "backup_root_folder":
           YKLiblog.Log.debug("TargetedEmailList constructor backup_root_folder")
           // backupRootFolderInfoは、backup用のフォルダ群の親フォルダの情報を持つ。
-          backupRootFolderInfo = new BackupRootFolderInfo(i, item);
-          this.backupRootFolderInfo = backupRootFolderInfo;
+          this.backupRootFolderInfo = new BackupRootFolderInfo(i, item);
           break;
         case "folder_conf":
           YKLiblog.Log.debug("TargetedEmailList constructor folder_conf")
-          folderConf = new FolderConf(i, item);
-          this.folderConf = folderConf;
+          this.folderConf = new FolderConf(i, item);
           break;
         case "folder":
           YKLiblog.Log.debug("TargetedEmailList constructor folder")
           if(item[1]){
-            const targetedEmail = new TargetedEmail(i, item, backupRootFolderInfo, folderConf, spradsheet);
+            const targetedEmail = new TargetedEmail(i, item, this.backupRootFolderInfo, this.folderConf, spreadsheet);
 
             this.targetedEmailAssoc[item[1]] = targetedEmail;
           }

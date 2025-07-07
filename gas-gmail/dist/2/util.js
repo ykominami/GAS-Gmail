@@ -6,13 +6,24 @@ class Util {
     return (typeof(str) === "string" && str.trim() !== '')
   }
   static getDataSheetRange(spradsheet, sheetName){
-    YKLiblog.Log.debug(`Util.getDataSheetRange sheetName=${sheetName}`)
-    let sheet = spradsheet.getSheetByName(sheetName);
-    if(sheet === null){
-      sheet = spradsheet.insertSheet(sheetName)
-      YKLiblog.Log.debug(`Util.getDataSheetRange insert sheetName=${sheetName}`)
+    Util.safeLogDebug(`Util.getDataSheetRange sheetName=${sheetName}`)
+    if (!spradsheet || typeof spradsheet.getSheetByName !== 'function') {
+      Util.safeLogDebug('getDataSheetRange: spradsheet.getSheetByName is not available');
+      return [null, null];
     }
-    // const [values, dataRange] = YKLibb.Gssx.getValuesFromSheet(sheet);
+    let sheet = spradsheet.getSheetByName(sheetName);
+    if(sheet === null && typeof spradsheet.insertSheet === 'function'){
+      sheet = spradsheet.insertSheet(sheetName)
+      Util.safeLogDebug(`Util.getDataSheetRange insert sheetName=${sheetName}`)
+    }
+    if (!sheet) {
+      Util.safeLogDebug('getDataSheetRange: sheet is not available');
+      return [null, null];
+    }
+    if (typeof YKLibb === 'undefined' || !YKLibb.Gssx || typeof YKLibb.Gssx.getMinimalContentRange !== 'function') {
+      Util.safeLogDebug('getDataSheetRange: YKLibb.Gssx.getMinimalContentRange is not available');
+      return [sheet, null];
+    }
     const range = YKLibb.Gssx.getMinimalContentRange(sheet)
     return [sheet, range]
   }
@@ -20,11 +31,27 @@ class Util {
     return (value.length == 1 && value[0] === '')
   }
   static getHeaderRange(range){
+    if (typeof YKLiba === 'undefined' || !YKLiba.Range || typeof YKLiba.Range.getRangeShape !== 'function') {
+      Util.safeLogDebug('getHeaderRange: YKLiba.Range.getRangeShape is not available');
+      return null;
+    }
     const shape = YKLiba.Range.getRangeShape(range)
+    if (!range || typeof range.offset !== 'function') {
+      Util.safeLogDebug('getHeaderRange: range.offset is not available');
+      return null;
+    }
     return range.offset(0,0, 1, shape.w)
   }
   static geDataRowsRange(range){
+    if (typeof YKLiba === 'undefined' || !YKLiba.Range || typeof YKLiba.Range.getRangeShape !== 'function') {
+      Util.safeLogDebug('geDataRowsRange: YKLiba.Range.getRangeShape is not available');
+      return null;
+    }
     const shape = YKLiba.Range.getRangeShape(range)
+    if (!range || typeof range.offset !== 'function') {
+      Util.safeLogDebug('geDataRowsRange: range.offset is not available');
+      return null;
+    }
     return range.offset(1,0)
   }
   static makeAssocArray(headers, values){
@@ -34,7 +61,7 @@ class Util {
       const assoc = Util.makeAssoc(headers, value)
       array.push(assoc)
     }
-    YKLiblog.Log.debug( array )
+    Util.safeLogDebug( array )
     return array
   }
   static makeAssoc(headers, value){
@@ -46,6 +73,10 @@ class Util {
     return assoc
   }
   static hasValidDataHeaderAndDataRows(range){
+    if (!range || typeof range.getValues !== 'function') {
+      Util.safeLogDebug('hasValidDataHeaderAndDataRows: range.getValues is not available');
+      return [false, false, false];
+    }
     const values = range.getValues()
     const header = values.shift()
     const dataValues = values
@@ -54,12 +85,12 @@ class Util {
 
     invalidHeader = Util.hasInvalidHeader(header)
     if(invalidHeader){
-      YKLiblog.Log.debug(`Util.hasValidDataHeaderAndDataRows invalidHeader`)
+      Util.safeLogDebug(`Util.hasValidDataHeaderAndDataRows invalidHeader`)
     }
     else{
       invalidDataRows = Util.hasInvalidDataRows(dataValues)
       if(invalidDataRows){
-        YKLiblog.Log.debug(`Util.hasValidDataHeaderAndDataRows invalidDataRows`)
+        Util.safeLogDebug(`Util.hasValidDataHeaderAndDataRows invalidDataRows`)
       }
     }
     const validHeader = !invalidHeader
@@ -76,23 +107,22 @@ class Util {
    * @returns {boolean} 2つの配列が完全に一致する場合はtrue、そうでない場合はfalse。
    */
   static areArraysEqual(arr1, arr2) {
-    // 1. まず、配列の長さが異なる場合は一致しない
+    if (!Array.isArray(arr1) || !Array.isArray(arr2)) return false;
     if (arr1.length !== arr2.length) {
       return false;
     }
-
-    // 2. 次に、各要素を順番に比較する
     for (let i = 0; i < arr1.length; i++) {
       if (arr1[i] !== arr2[i]) {
-        // 1つでも異なる要素があれば一致しない
         return false;
       }
     }
-
-    // すべてのチェックを通過すれば一致する
     return true;
   }
   static hasInvalidHeader(value){
+    if (typeof CONFIG === 'undefined' || typeof CONFIG.getHeaders !== 'function') {
+      Util.safeLogDebug('hasInvalidHeader: CONFIG.getHeaders is not available');
+      return true;
+    }
     let result = false
     if( Util.isBlankRow(value) && Util.areArraysEqual(value, CONFIG.getHeaders()) ){
       result = true
@@ -100,50 +130,77 @@ class Util {
     return result
   }
   static hasInvalidDataRows(values){
+    if (typeof CONFIG === 'undefined' || typeof CONFIG.getHeaders !== 'function') {
+      Util.safeLogDebug('hasInvalidDataRows: CONFIG.getHeaders is not available');
+      return true;
+    }
     const width = CONFIG.getHeaders().length
     const invalid = values.some( item => item.length !== width )
     return invalid
   }
 
   static getDataSheetRange0(spradsheet, sheetName){
-    YKLiblog.Log.debug(`Util.getDataSheetRange sheetName=${sheetName}`)
+    Util.safeLogDebug(`Util.getDataSheetRange sheetName=${sheetName}`)
+    if (!spradsheet || typeof spradsheet.getSheetByName !== 'function') {
+      Util.safeLogDebug('getDataSheetRange0: spradsheet.getSheetByName is not available');
+      return [null, null];
+    }
     let sheet = spradsheet.getSheetByName(sheetName);
-    if(sheet === null){
+    if(sheet === null && typeof spradsheet.insertSheet === 'function'){
       sheet = spradsheet.insertSheet(sheetName)
-      YKLiblog.Log.debug(`Util.getDataSheetRange insert sheetName=${sheetName}`)
+      Util.safeLogDebug(`Util.getDataSheetRange insert sheetName=${sheetName}`)
+    }
+    if (!sheet) {
+      Util.safeLogDebug('getDataSheetRange0: sheet is not available');
+      return [null, null];
+    }
+    if (typeof YKLibb === 'undefined' || !YKLibb.Gssx || typeof YKLibb.Gssx.getValuesFromSheet !== 'function') {
+      Util.safeLogDebug('getDataSheetRange0: YKLibb.Gssx.getValuesFromSheet is not available');
+      return [sheet, null];
     }
     const [values, dataRange] = YKLibb.Gssx.getValuesFromSheet(sheet);
     let range = dataRange;
-    let row, col, height, width
-    // [row, col, height, width] = Tableop.getRangeShape(range)
+    let row, col, height, width;
+    if (typeof YKLiba === 'undefined' || !YKLiba.Range || typeof YKLiba.Range.getRangeShape !== 'function') {
+      Util.safeLogDebug('getDataSheetRange0: YKLiba.Range.getRangeShape is not available');
+      return [sheet, range];
+    }
     const dataRangeShape = YKLiba.Range.getRangeShape(range)
     row = dataRangeShape.r
-    col = dataRangeShape.c,
+    col = dataRangeShape.c
     height = dataRangeShape.h
     width = dataRangeShape.w_p4wYx5U
-
     if( !height ){
       if( !width ){
-        YKLiblog.Log.debug(`Util.getDataSheetRange 0 1`)
-        range = sheet.getRange(row, col, 1, 1);
+        Util.safeLogDebug(`Util.getDataSheetRange 0 1`)
+        if (typeof sheet.getRange === 'function') {
+          range = sheet.getRange(row, col, 1, 1);
+        } else {
+          Util.safeLogDebug('getDataSheetRange0: sheet.getRange is not available');
+        }
       }
       else{
-        YKLiblog.Log.debug(`Util.getDataSheetRange 0 2`)
-        range = dataRange.offset(row, col, 1, width);
+        Util.safeLogDebug(`Util.getDataSheetRange 0 2`)
+        if (typeof dataRange.offset === 'function') {
+          range = dataRange.offset(row, col, 1, width);
+        } else {
+          Util.safeLogDebug('getDataSheetRange0: dataRange.offset is not available');
+        }
       }
     }
     else{
       if( !width ){
-        YKLiblog.Log.debug(`Util.getDataSheetRange 0 3`)
-        range = dataRange.offset(row, col, height, 1);
+        Util.safeLogDebug(`Util.getDataSheetRange 0 3`)
+        if (typeof dataRange.offset === 'function') {
+          range = dataRange.offset(row, col, height, 1);
+        } else {
+          Util.safeLogDebug('getDataSheetRange0: dataRange.offset is not available');
+        }
       }
       else{
-        YKLiblog.Log.debug(`Util.getDataSheetRange 0 4`)
+        Util.safeLogDebug(`Util.getDataSheetRange 0 4`)
       }
     }
-    // [row, col, height, width] = Tableop.getRangeShape(range)
-    // [row, col, height, width] = YKLiba.Range.getRangeShape(range)
-
     return [sheet, range]
   }
   /**
@@ -154,19 +211,26 @@ class Util {
    */
   static calculateSetAndArrayDifference(done, arrayObj) {
     const x2 = [...arrayObj]
-    YKLiblog.Log.debug(`Util calculateSetAndArrayDifference x2=${x2}`)
-
+    Util.safeLogDebug(`Util calculateSetAndArrayDifference x2=${x2}`)
     const arrayAsSet = new Set(arrayObj);
-
-    // this.doneにのみ存在する要素
     const setOnly = [...done].filter(el => !arrayAsSet.has(el));
-    
-    // 配列にのみ存在する要素
     const arrayOnly = [...arrayObj].filter(el => !done.has(el));
-    
-    // 対称差
     const symmetric = [...setOnly, ...arrayOnly];
-    
     return [setOnly, arrayOnly, symmetric,];
+  }
+  /**
+   * 安全なログ出力メソッド
+   * @param {string|any} message ログメッセージ
+   */
+  static safeLogDebug(message) {
+    try {
+      if (typeof YKLiblog !== 'undefined' && YKLiblog.Log && typeof YKLiblog.Log.debug === 'function') {
+        YKLiblog.Log.debug(message);
+      } else {
+        console.log(`[Util] ${message}`);
+      }
+    } catch (error) {
+      console.log(`[Util] Log error: ${error.message}`);
+    }
   }
 }

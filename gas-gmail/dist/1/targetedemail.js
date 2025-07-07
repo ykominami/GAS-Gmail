@@ -1,9 +1,8 @@
 class TargetedEmail {
-  constructor(index, item, backupRootFolderInfo, folderConf, spradsheet){
+  constructor(index, item, backupRootFolderInfo, folderConf, spreadsheet){
     YKLiblog.Log.debug(`TargetedEmail constructor index=${index} backupRootFolderInfo=${backupRootFolderInfo}`)
-    this.spradsheet = spradsheet
+    this.spreadsheet = spreadsheet
 
-    backupRootFolderInfo.x
     this.index = index
     const name = item[1]
     this.name = name
@@ -68,7 +67,7 @@ class TargetedEmail {
     return this.backupFolder
   }
   getFolderId(){
-    return this.folderId;
+    return this.backupFolderId;
   }
   getOrCreateBackupfile(){
     Logger.log(`this.backupRootFolderInfo.constructor.name=${this.backupRootFolderInfo.constructor.name}`)
@@ -149,7 +148,7 @@ class TargetedEmail {
     return this.name;
   }
   getUrl() {
-    return this.url;
+    return this.backupFolderUrl;
   }
   getCondition() {
     return this.condition;

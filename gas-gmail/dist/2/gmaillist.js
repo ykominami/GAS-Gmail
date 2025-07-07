@@ -5,8 +5,15 @@ class GmailList{
     this.idtabledata = idtabledata;
     this.targetedEmailIds = this.idtabledata.getTargetedEmailIdsByKey(targetedEmail.getName())
     const x = this.targetedEmail.getBackupFolder()
-    x.x
-    this.gmailsave = new GmailSave( this.targetedEmail.getBackupFolder() )
+    
+    // GmailSaveクラスの存在チェック
+    if (typeof GmailSave !== 'undefined') {
+      this.gmailsave = new GmailSave( this.targetedEmail.getBackupFolder() )
+    } else {
+      YKLiblog.Log.debug("GmailSave class is not defined");
+      this.gmailsave = null;
+    }
+    
     YKLiblog.Log.debug(`GmailList constructor idtabledata=${ JSON.stringify(idtabledata.constructor)}`)
     const key = targetedEmail.getName()
     const targetedEmailIds = idtabledata.getTargetedEmailIdsByKey(key)
@@ -14,7 +21,14 @@ class GmailList{
     YKLiblog.Log.debug(`GmailList constructor idtabledata=${idtabledata}`)
     YKLiblog.Log.debug(`GmailList constructor idtabledata.targetedEmailIdsList=${idtabledata.targetedEmailIdsList}`)
 
-    this.gmailSearch = new GmailSearch( targetedEmailIds )
+    // GmailSearchクラスの存在チェック
+    if (typeof GmailSearch !== 'undefined') {
+      this.gmailSearch = new GmailSearch( targetedEmailIds )
+    } else {
+      YKLiblog.Log.debug("GmailSearch class is not defined");
+      this.gmailSearch = null;
+    }
+    
     this.limitx = limitx;
     const name = targetedEmail.getName()
     this.registeredEmail = idtabledata.getRegisteredEmailByKey(name);
@@ -22,24 +36,48 @@ class GmailList{
   }
 
   makePairLabelAndQueryInfo(){
+    // PairLabelクラスの存在チェック
+    if (typeof PairLabel === 'undefined') {
+      YKLiblog.Log.debug("PairLabel class is not defined");
+      return [null, null];
+    }
+    
     const pairLabel = new PairLabel(this.targetedEmail.getName())
     if(this.targetedEmail.getMaxThreads() < 0 ){
       throw Error(`info.maxThreads=${this.targetedEmail.getMaxThreads()}`)
     }
     YKLiblog.Log.debug(`GmailList makePairLabelAndQueryInfo typeof(this.targetedEmail.getMaxSearchesAvailable())=${ typeof(this.targetedEmail.getMaxSearchesAvailable()) }`)
+    
+    // QueryInfoクラスの存在チェック
+    if (typeof QueryInfo === 'undefined') {
+      YKLiblog.Log.debug("QueryInfo class is not defined");
+      return [pairLabel, null];
+    }
+    
     const queryInfo = new QueryInfo(this.targetedEmail.getCondition(), pairLabel, this.targetedEmail.getMaxThreads(), this.targetedEmail.getMaxSearchesAvailable())
     return [pairLabel, queryInfo]
   }
 
   getMailListX(op, arg_store = null){
     const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo()
+    if (!queryInfo) {
+      YKLiblog.Log.debug("queryInfo is null, cannot proceed with getMailList");
+      return null;
+    }
     return this.getMailList(op, queryInfo, arg_store)
   }
 
   getMailList(op, queryInfo, arg_store=null){
     if( queryInfo.maxThreads <= 0 ){
-      throw Error(`ueryInfo.maxThreads=${queryInfo.maxThreads}`)
+      throw Error(`queryInfo.maxThreads=${queryInfo.maxThreads}`)
     }
+    
+    // Storeクラスの存在チェック
+    if (typeof Store === 'undefined') {
+      YKLiblog.Log.debug("Store class is not defined");
+      return null;
+    }
+    
     const store = Store.getValidStore( this.targetedEmail.getName(), arg_store );
 /*
     store.set("name", this.targetedEmail.getName() );
@@ -77,12 +115,18 @@ class GmailList{
     return [start, maxThreads, lastDate, lastDateTime, maxSearchesAvailable]
   }
   getMailListBaseSub2(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op){
+    // GmailSearchが存在しない場合は処理をスキップ
+    if (!this.gmailSearch) {
+      YKLiblog.Log.debug("GmailSearch is not available, skipping SearchWithTargetLabel");
+      return [null];
+    }
+    
     // within1はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearrayである。
     // 以後within1のみを処理対象とする
     const [newLastDateTime1, within1, remain1] = this.gmailSearch.SearchWithTargetLabel(queryInfo, this.targetedEmail, start, maxThreads, maxSearchesAvailable)
     YKLiblog.Log.debug(`GmailList getMailListBaseSub2 this.targetedEmail.name=${this.targetedEmail.getName()} within1.msgCount=${within1.msgCount} newLastDateTime1=${newLastDateTime1}`)
     if( within1.msgCount > 0 ){
-      [recordedMessageIds, messageDataList] = this.registeredEmail.registerData(within1, op, this.limit, lastDate)
+      const [recordedMessageIds, messageDataList] = this.registeredEmail.registerData(within1, op, this.limitx, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub2 recordedMessageIds.length=${recordedMessageIds.length}`)
@@ -93,21 +137,33 @@ class GmailList{
       // 切り詰めメッセージが1個以上であれば、Google Docsファイルとして保存する
       if(  messageDataList.length > 0 ){
         YKLiblog.Log.debug(`getMailListBaseSub2 messageDataList.length=${messageDataList.length}`)
-        this.gmailsave.saveData(messageDataList)
+        if (this.gmailsave && typeof this.gmailsave.saveData === 'function') {
+          this.gmailsave.saveData(messageDataList)
+        }
       }
       // throw Error(`under saveData`)
     }
     if( typeof(within1.threads) !== "undefined" && within1.threads.length > 0 ){
-      YKLiblog.Log.debug(`getMailListBaseSub2 threadAndMsgs.length=${threadAndMsgs.length}`)
+      YKLiblog.Log.debug(`getMailListBaseSub2 threadAndMsgs.length=${within1.array.length}`)
       within1.array.map( threadAndMsgs => {
         const thread = threadAndMsgs[0]
-        queryInfo.pariLabel.targetLabel.addToThreads(thread)
-        queryInfo.pariLabel.endLabel.addToThreads(thread)
+        if (queryInfo.pairLabel && queryInfo.pairLabel.targetLabel && typeof queryInfo.pairLabel.targetLabel.addToThreads === 'function') {
+          queryInfo.pairLabel.targetLabel.addToThreads(thread)
+        }
+        if (queryInfo.pairLabel && queryInfo.pairLabel.endLabel && typeof queryInfo.pairLabel.endLabel.addToThreads === 'function') {
+          queryInfo.pairLabel.endLabel.addToThreads(thread)
+        }
       })
     }
     return [newLastDateTime1]
   }
   getMailListBaseSub3(start, maxThreads, store, lastDate, queryInfo, maxSearchesAvailable, op){
+    // GmailSearchが存在しない場合は処理をスキップ
+    if (!this.gmailSearch) {
+      YKLiblog.Log.debug("GmailSearch is not available, skipping SearchWithFrom");
+      return [null];
+    }
+    
     /***********************************/
     // within2はスレッド総数、メッセージ総数が指定された制限値を超えないスレッド、メッセージをもつMessagearraである。
     // 以後within2のみを処理対象とする
@@ -116,7 +172,7 @@ class GmailList{
     
     if( within2.msgCount > 0 ){
       YKLiblog.Log.debug(`GmailList getMailListBaseSub3 within2.msgCount=${within2.msgCount}`)
-      const [recordedMessageIds2, messageDataList2] = this.registeredEmail.registerData(within2, op, this.limit, lastDate)
+      const [recordedMessageIds2, messageDataList2] = this.registeredEmail.registerData(within2, op, this.limitx, lastDate)
       // 記録済みになったメッセージのIDを処理済みIDテーブルに追加
       if(recordedMessageIds2.length > 0){
         YKLiblog.Log.debug(`getMailListBaseSub3 (recoreded IDs) recordedMessageIds2.length=${recordedMessageIds2.length}`)
@@ -127,15 +183,19 @@ class GmailList{
       // 切り詰めたメッセージが1個以上であれば、Google Docsファイルとして保存する
       if(  messageDataList2.length > 0 ){
         YKLiblog.Log.debug(`getMailListBaseSub3 (Google Docs) messageDataList.length=${messageDataList2.length}`)
-        this.gmailsave.saveData(store, messageDataList2)
+        if (this.gmailsave && typeof this.gmailsave.saveData === 'function') {
+          this.gmailsave.saveData(store, messageDataList2)
+        }
       }
       // throw Error(`under saveData`)
     }
     if( typeof(within2.threads) !== "undefined" && within2.threads.length > 0){
-      YKLiblog.Log.debug(`getMailListBaseSub3 4 threadAndMsgs.length=${threadAndMsgs.length}`)
+      YKLiblog.Log.debug(`getMailListBaseSub3 4 threadAndMsgs.length=${within2.array.length}`)
       within2.array.map( threadAndMsgs => {
         const thread = threadAndMsgs[0]
-        queryInfo.pariLabel.endLabel.addToThreads(thread)
+        if (queryInfo.pairLabel && queryInfo.pairLabel.endLabel && typeof queryInfo.pairLabel.endLabel.addToThreads === 'function') {
+          queryInfo.pairLabel.endLabel.addToThreads(thread)
+        }
       })
     }
     return [newLastDateTime2]  

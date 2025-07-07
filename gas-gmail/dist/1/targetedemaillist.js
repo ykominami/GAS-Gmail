@@ -1,8 +1,8 @@
 class TargetedEmailList {
-  constructor(spreadsheet, values, config){
-    this.config = config;
+  constructor(){
     this.backupRootFolderInfo = null;
-    this.folderConf = null;
+    this.searchConf = null;
+    this.searchStatus = null;
     this.keySet = new Set();
     this.targetedEmailByKey = {};
     this.spreadsheet = spreadsheet;
@@ -39,9 +39,35 @@ class TargetedEmailList {
         default:
           YKLiblog.Log.debug("TargetedEmailList constructor default")
           break;
+  }
+  areAllNthValueMoreThanOrEqual(value){
+    const targetedEmails = Object.values(this.targetedEmailByKey)
+    const nthes = [ ...targetedEmails ].map( targetedEmail => targetedEmail.getNth() )
+    const [max, min] = YKLiba.Arrayx.getMaxAndMin( nthes )
+    return (min >= value)
+  }
+  setBackupRootFolderInfo(backupRootFolderInfo){
+    this.backupRootFolderInfo = backupRootFolderInfo
+  }
+  setSearchConf(searchConf){
+    this.searchConf = searchConf
+  }
+  setSearchStatus(searchStatus){
+    this.searchStatus = searchStatus
+  }
+  addTargetedEmail(i, item){
+    const key = item[1];
+    if(key && !this.keySet.has(key)){
+      if (!this.backupRootFolderInfo) {
+        YKLiblog.Log.warn("TargetedEmailList: backupRootFolderInfo is null when creating TargetedEmail");
       }
+      if (!this.searchConf) {
+        YKLiblog.Log.warn("TargetedEmailList: folderConf is null when creating TargetedEmail");
+      }
+      const targetedEmail = new TargetedEmail(i, item, this.searchConf);
+      this.targetedEmailByKey[key] = targetedEmail;
+      this.keySet.add(key);
     }
-    YKLiblog.Log.debug( `TargetedEmailList this.folderConf=${this.folderConf}` )
   }
   getKeys(){
     return Object.keys(this.targetedEmailByKey);

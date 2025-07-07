@@ -1,6 +1,6 @@
 class RegisteredEmail {
   constructor(targetedEmail, spreadsheet, sheetName, config, tableDef, yklibbConfig){
-    YKLiblog.Log.debug(`RegisteredEmail sheetName=${sheetName}`)
+    YKLiblog.Log.debug(`RegisteredEmail constructor sheetName=${sheetName}`)
     this.config = config
     this.tableDef = tableDef
     this.yklibbConfig = yklibbConfig
@@ -10,7 +10,9 @@ class RegisteredEmail {
     this.sheetName = sheetName
     const worksheet = YKLibb.Gssx.getOrCreateWorksheet(spreadsheet,sheetName);
 
-    const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.getHeaderAndDataFromWorksheet(worksheet, yklibbConfig)
+    // ヘッダーが存在しなければ、headerとheaderRangeはnull
+    const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.setupSpreadsheetAndHeaderAndDataOfCol1(worksheet, yklibbConfig)
+    // const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.getHeaderAndDataFromWorksheet(worksheet, yklibbConfig)
 
     this.worksheet = worksheet
     this.header = header
@@ -19,7 +21,6 @@ class RegisteredEmail {
     this.headerRange = headerRange
     this.dataRowsRange = dataRowsRange
 
-    // Logger.log(`tableDef.constructor=${ tableDef.constructor }`)
     this.indexOfHeaderId = tableDef.getIndexOfId()
     const [ids, idSet, selectedRows]  = this.distinctValues(values)
 
@@ -35,6 +36,7 @@ class RegisteredEmail {
   update(selectedRows){
     // const lineArray = []
     // selectedRows.forEach( (v, ind, ar) => lineArray.push( this.values[v] ) )
+    YKLiblog.Log.debug(`RegisteredEmail update sheetName=${sheetName}`)
     if( selectedRows.length > 0){
       this.dataRowsRange.clear()
       const range = this.worksheet.getRange(1, 1, selectedRows.length, selectedRows[0].length)
@@ -44,21 +46,31 @@ class RegisteredEmail {
       this.totalRange = this.worksheet.getRange(1, 1, this.headerRange.getNumRows() + this.dataRowsRange.getNumRows(), this.headerRange.getNumColumns())
     }
   }
+  distinctValuesAndUpdate(rows){
+    const [idSet, selectedRows]  = this.distinctValues(rows)
+    this.idSet = idSet
+    this.ids = [...idSet]
+
+    const idSetSize = idSet.size
+    const valuesLength = rows.length 
+    if( idSetSize !== valuesLength ){
+      this.update(selectedRows)
+    }
+  }
   distinctValues(rows){
     YKLiblog.Log.debug(`this.indexOfHeaderId=${this.indexOfHeaderId}`)
     // const ids = rows.map( row => row[this.indexOfHeaderId] )
     const idSetInit = new Set()
-    const [idSet, ids, selectedRows] = rows.reduce( (accumulator, currentValue) => {
+    const [idSet, selectedRows] = rows.reduce( (accumulator, currentValue) => {
       const id = currentValue[this.indexOfHeaderId]
       YKLiblog.Log.debug(`id=${id}`)
       if( !accumulator[0].has(id) ){
         accumulator[0].add(id)
-        accumulator[1].push(id)
-        accumulator[2].push(currentValue)
+        accumulator[1].push(currentValue)
       }
       return accumulator
-    }, [idSetInit, [], []])
-    return [ids, idSet, selectedRows]
+    }, [idSetInit, []])
+    return [idSet, selectedRows]
   }
   registerData(within, op, limit, lastDate){
     YKLiblog.Log.debug(`RegisteredEmail registerData `)
@@ -79,7 +91,6 @@ class RegisteredEmail {
     // ThreadAndMessagedataarray毎のメッセージの配列の配列を、フラットな配列に変換
     const filteredMessagearrayList = nestedArray.flat()
     YKLiblog.Log.debug(`2 RegisteredEmail registerData filteredMessagearrayList.length=${filteredMessagearrayList.length}`)
-    // const messageDataList = this.truncateStringArray(filteredMessagearrayList, limit)
     // 未記録メッセージのみを取り出す
     const unrecordedList = filteredMessagearrayList.filter( item => {
         YKLiblog.Log.debug(`2.5 RegisteredEmail registerData item.msg.getId()=${item.msg.getId()} item.recorded=${item.recorded}`)
@@ -99,6 +110,7 @@ class RegisteredEmail {
     // 未記録メッセージを、1メッセージを表す配列の配列として取り出す（ワークシートに記録するのに適した形式に変換）
     const dataArray = messageDataList.map( messageData => messageData.getDataAsArray() )
     YKLiblog.Log.debug(`4 RegisteredEmail registerData dataArray.length=${dataArray.length}`)
+    YKLiblog.Log.debug(`4-X RegisteredEmail registerData dataArray=${ JSON.stringify( dataArray ) }`)
     // Google Spreadsheetsのワークシートに追記する
     this.registerDataArray( dataArray, op )
     //記録したので、以降では記録済みメッセージのIDとして扱う。
@@ -128,7 +140,7 @@ class RegisteredEmail {
     let range3;
     let rangeShape2;
     let rangeShape3;
-    if( op === YKLiba.Config.rewrite() ){
+    if( op === YKLiba.Config.REWRITE() ){
       range.deleteCells(SpreadsheetApp.Dimension.ROWS);
       range2 = this.addHeader(sheet)
       rangeShape2 = YKLiba.Range.getRangeShape(range2)
@@ -137,7 +149,7 @@ class RegisteredEmail {
     else{
       // YKLiba.Config.addUnderRow
       // 既存のrangeの最後のROWの直下から追加する
-      if( Util.hasValidDataHeaderAndDataRows(range, this.yklibbConfig)[0] ){
+      if( YKLibb.Util.hasValidDataHeaderAndDataRows(range, this.yklibbConfig)[0] ){
         range2 = range
         rangeShape2 = rangeShape
       }

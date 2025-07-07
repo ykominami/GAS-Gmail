@@ -1,5 +1,8 @@
 class QueryInfo {
-  constructor(from, pairLabel, maxThreads, maxSearchesAvailable ){
+  constructor(from, pairLabel, maxThreads, maxSearchesAvailable, lastDateTime ){
+    if( maxThreads <= 0 ){
+      throw Error(`maxThreads=${maxThreads}`)
+    }
     this.from = from
     this.pairLabel = pairLabel
 
@@ -17,25 +20,29 @@ class QueryInfo {
     if( from.includes(" ") ){
       from2 = `"${from}"`
     }
-    const query   = `label:${targetLabelName2} -label:${endLabelName2}`
-    const query2 = `from: ${from2} -label:${targetLabelName2}`
-    this.queries = [query, query2]
+    const searchQuery   = `label:${targetLabelName2} -label:${endLabelName2}`
+    const searchQuery2 = `from: ${from2} -label:${targetLabelName2}`
+    this.searchQueries = [searchQuery, searchQuery2]
 
-    this.start = 0
+    const [validLastDate, validLastDateTime, validLastDateStr] = YKLibb.Util.getValidDateAndDateTime(lastDateTime)
+
     this.maxThreads = maxThreads
     this.maxSearchesAvailable = maxSearchesAvailable
+    this.lastDateTime = validLastDateTime
+    this.lastDateStr = validLastDateStr
+    this.lastDate = validLastDate
   }
   setQuery0(query){
-    this.queries[0] = query
+    this.searchQueries[0] = query
   }
   setQuery1(query){
-    this.queries[1] = query
+    this.searchQueries[1] = query
   }
   getQuery0(query){
-    return this.queries[0]
+    return this.searchQueries[0]
   }
   getQuery1(query){
-    return this.queries[1]
+    return this.searchQueries[1]
   }
   setCount(value){
     this.count = value
@@ -48,6 +55,12 @@ class QueryInfo {
   }
   getCount2(){
     return this.count2    
+  }
+  getStart(){
+    this.start
+  }
+  setStart(value){
+    this.start = value
   }
   isValid(){
     let ret
@@ -79,9 +92,9 @@ class QueryInfo {
         messages.push(message)
       count++
     }
-    const retQueries = YKLiba.isValidObject(this.queries)
-    const retQueries0 = YKLiba.isValidObject(this.queries[0])
-    const retQueries1 = YKLiba.isValidObject(this.queries[1])
+    const retQueries = YKLiba.isValidObject(this.searchQueries)
+    const retQueries0 = YKLiba.isValidObject(this.searchQueries[0])
+    const retQueries1 = YKLiba.isValidObject(this.searchQueries[1])
     YKLiblog.Log.debug(`QueryInfo.isValid count=${count}`)
     if(count > 0){
       result = false

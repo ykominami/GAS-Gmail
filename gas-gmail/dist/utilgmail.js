@@ -4,15 +4,8 @@ class UtilGmail {
     config.setConfigInfoType(Config.CONFIG_INFO2())
     // config.setConfigInfoType(Config.CONFIG_INFOX())
     const configSpreadsheet = UtilGmail.makeConfigSpreassheet(config)
-    const recordSpreadsheet = UtilGmail.makeRecordSpreassheet(config, configSpreadsheet)
+    const recordSpreadsheet = UtilGmail.makeRecordSpreassheet(config)
     recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
-  }
-  static makeRecordSpreassheet(config, configSpreadsheet){
-    const [spreadsheet, _worksheet] = config.getSpreadsheetForRecordSpreadsheet()
-
-    const recordSpreadsheet = new RecordSpreadsheet(spreadsheet, config)
-    recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
-    return recordSpreadsheet
   }
   static makeConfigSpreassheet(config){
     const [spreadsheet, _worksheet] = config.getSpreadsheetForConfigSpreadsheet()
@@ -20,26 +13,14 @@ class UtilGmail {
     const configSpreadsheet = new ConfigSpreadsheet(spreadsheet, config)
     return configSpreadsheet
   }
-/*
-  static makeTabledata2(){
-    CONFIG.setConfigInfoType(Config.CONFIG_INFO2)
-    const tabledata = new Tabledata(CONFIG);
-    return tabledata
-  }
-  static makeTabledata(){
-    CONFIG.setConfigInfoType(Config.CONFIG_INFOX)
-    const tabledata = new Tabledata(CONFIG);
-    return tabledata
-  }
-  static makeIdTabledata(){
-    YKLiblog.Log.initLogDebug()
+  static makeRecordSpreassheet(config){
+    const [spreadsheet, _worksheet] = config.getSpreadsheetForRecordSpreadsheet()
 
-    const idtabledata = new IdTabledata(CONFIG);
-    return idtabledata
+    const recordSpreadsheet = new RecordSpreadsheet(spreadsheet, config)
+    return recordSpreadsheet
   }
-*/
-  static makeIndex(startIndex, limitx, makeindexFlag = 0){
-    return [startIndex, limitx]
+  static makeIndex(startIndex, endIndex, makeindexFlag = 0){
+    return [startIndex, endIndex]
   }
 }
 

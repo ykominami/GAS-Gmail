@@ -19,8 +19,8 @@ class RegisteredEmail {
     this.headerRange = headerRange
     this.dataRowsRange = dataRowsRange
 
-    YKLiblog.Log.debug(`tableDef.constructor=${ tableDef.constructor }`)
-    this.indexOfHeaderId = tableDef.getIndexOfHeaderId()
+    // Logger.log(`tableDef.constructor=${ tableDef.constructor }`)
+    this.indexOfHeaderId = tableDef.getIndexOfId()
     const [ids, idSet, selectedRows]  = this.distinctValues(values)
 
     const idSetSize = idSet.size

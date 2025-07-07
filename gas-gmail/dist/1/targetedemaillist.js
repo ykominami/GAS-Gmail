@@ -34,6 +34,7 @@ class TargetedEmailList {
             const targetedEmail = new TargetedEmail(i, item, this.backupRootFolderInfo, this.folderConf, spreadsheet, config);
             this.targetedEmailByKey[key] = targetedEmail;
             this.keySet.add(key);
+          }
           break;
         default:
           YKLiblog.Log.debug("TargetedEmailList constructor default")

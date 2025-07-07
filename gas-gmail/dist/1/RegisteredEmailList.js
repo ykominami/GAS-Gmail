@@ -5,8 +5,8 @@ class RegisteredEmailList {
     this.registeredEmailByKey = {}
     this.tabledata = null
     this.keySet = new Set()
-    YKLiblog.Log.debug( `config.constructor=${ config.constructor }` )
-    Logger.log( `config.constructor=${ config.constructor }` )
+    // YKLiblog.Log.debug( `config.constructor=${ config.constructor }` )
+    // Logger.log( `config.constructor=${ config.constructor }` )
     // const x = 0
     const tableDef = config.getRegisteredEmailTableDef()
     this.tableDef = tableDef

@@ -83,16 +83,6 @@ class Config {
       return this.ConfigInfox(spreadsheet)
     }
   }
-  getRecordIds(spreadsheet){
-    YKLiblog.Log.debug(`idsSheetName=${this.idsSheetName}`)
-    const worksheet = YKLibb.Gssx.getOrCreateWorksheet(spreadsheet, this.idsSheetName)
-    const tableDef = this.getTargetedEmailIdsTableDef()
-    const headerx = tableDef.getHeader()
-    const yklibbConfig = new YKLibb.Config( headerx.length, headerx, YKLibb.Config.PARTIAL() )
-    const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.setupSpreadsheetAndHeaderAndData(worksheet, yklibbConfig)
-    YKLiblog.Log.debug(`getConfigIds values=${values}`)
-    return [worksheet, header, values, headerRange, dataRowsRange, totalRange]
-  }
   ConfigInfox(spreadsheet){
     YKLiblog.Log.debug(`configInfoxSheetName=${this.configInfoxSheetName}`)
     const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoxSheetName)
@@ -148,23 +138,4 @@ Config.TableDef = class {
 }
 
 CONFIG = new Config("noop")
-
-function test_config_getConfigIds(){
-  YKLiblog.Log.initLogDebug()
-
-  let [spreadsheet, _worksheet] = CONFIG.getSpreadsheetForRecordSpreadsheet()
-  let [worksheet, header, values, headerRange, dataRowsRange, totalRange] = CONFIG.getRecordIds(spreadsheet)
-  let dataRowsRange2
-
-  const [spreadsheet2, _worksheet2] = CONFIG.getSpreadsheetForConfigSpreadsheet()
-  CONFIG.setConfigInfoType(Config.CONFIG_INFO())
-  const [worksheetA, valuesA, totalRangeA] = CONFIG.getConfigInfo(spreadsheet2)
-  YKLiblog.Log.debug(`valuesA=${valuesA}`)
-  CONFIG.setConfigInfoType(Config.CONFIG_INFO2())
-  const [worksheetB, valuesB, totalRangeB] = CONFIG.getConfigInfo(spreadsheet2)
-  YKLiblog.Log.debug(`valuesB=${valuesB}`)
-  CONFIG.setConfigInfoType(Config.CONFIG_INFOX())
-  const [worksheetC, valuesC, totalRangeC] = CONFIG.getConfigInfo(spreadsheet2)
-  YKLiblog.Log.debug(`valuesC=${valuesC}`)
-}
 

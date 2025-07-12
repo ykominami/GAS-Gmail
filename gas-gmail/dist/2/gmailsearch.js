@@ -1,27 +1,39 @@
 class GmailSearch {
-  constructor(targetedEmailIds){
-    this.targetedEmailIds = targetedEmailIds
-  }
-  SearchWithTargetLabel(queryInfo, targetedEmail, start, maxThreads, maxSearchesAvailable){
-    if( maxThreads <= 0){
-      throw Error(`maxThreads=${maxThreads}`)
+  constructor(registeredEmail, config){
+    this.registeredEmail = registeredEmail
+    if( !config ){
+      throw new Error('GamilSearch config is null')
     }
-    const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery0(), targetedEmail, start, maxThreads, maxSearchesAvailable)
-    return [newLastDateTime, within, remain]
-  }
-  SearchWithFrom(queryInfo, targetedEmail,  start, maxThreads, maxSearchesAvailable){
-    if( maxThreads <= 0){
-      throw Error(`maxThreads=${maxThreads}`)
+    if( typeof(config) === "undefined" ){
+      throw new Error('GamilSearch config is undefined')
     }
-    const [newLastDateTime, within, remain] = this.SearchWithBase(queryInfo.getQuery1(), targetedEmail, start, maxThreads, maxSearchesAvailable)
-    return [newLastDateTime, within, remain]
+    this.config = config
   }
-  SearchWithBase(query, targetedEmail, start, maxThreads, maxSearchesAvailable){
+  search(queryInfo, targetedEmail, way){
+    let queryString
+    let newLastDateTime, within, remain
+
+    const maxSearchesAvailable = queryInfo.maxSearchesAvailable
+    const maxThreads = queryInfo.maxThreads
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}`)
     }
 
-    const [within, remain] = this.getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable)
+    if( way === EmailFetcherAndStorer.SearchWithTargetLabel()){
+      queryString = queryInfo.getQuery0()
+    }
+    else{
+      queryString = queryInfo.getQuery1()
+    }
+    [newLastDateTime, within, remain] = this.searchBase(queryString, targetedEmail, maxThreads, maxSearchesAvailable)
+    return [newLastDateTime, within, remain]
+  }
+  searchBase(queryString, targetedEmail, maxThreads, maxSearchesAvailable){
+    if( maxThreads <= 0){
+      throw Error(`maxThreads=${maxThreads}`)
+    }
+
+    const [within, remain] = this.getThreadsAndMessagedataArray(queryString, maxThreads, maxSearchesAvailable)
     targetedEmail.setCount( within.msgCount )
 
     const newLastDateTime = within.lastDate.getTime()
@@ -43,7 +55,7 @@ class GmailSearch {
     return msgsStatus
   }
   //  const firstQuery = queryInfo.getQuery0()
-  getThreadsAndMessagedataArray(query, start, maxThreads, maxSearchesAvailable){
+  getThreadsAndMessagedataArray(query, maxThreads, maxSearchesAvailable){
     // Google Apps Scriptの実行事件の制限を考慮し、検索結果をスプレッドシートに記録する際に、記録するスレッド数またはメッセージ数で、記録処理を打ち切るか否か決める
     // このメソッドの借地の配列の0番目の要素が、処理済みのスレッド、メッセージが格納される。
     // 1番目の要素には、検索されたが、このメソッドでは未処理のスレッド、メッセージが格納される。
@@ -63,7 +75,7 @@ class GmailSearch {
       throw Error(`maxThreads=${maxThreads}`)
     }
     // queryによる検索結果をスレッドの配列として取得
-    const threads = this.getMailListWithQuery(query, start, maxThreads)
+    const threads = this.getMailListWithQuery(query, maxThreads)
 
     if( threads !== null ){
       YKLiblog.Log.debug(`Gmailsearch getThreadsAndMessagedataArray threads !== null`)
@@ -80,8 +92,10 @@ class GmailSearch {
         const messagedataArray = messages.map( (message) =>  {
           // 記録済みメッセージであるか否かを判定
           const messageId = message.getId()
-          const recorded = this.targetedEmailIds.doneHas(messageId)
-          const messagedata = new Messagedata(CONFIG.getHeaders(), message, message.getDate(), recorded )
+          const recorded = this.registeredEmail.hasId(messageId)
+          // const recorded = this.targetedEmailIds.doneHas(messageId)
+          const tabledef = this.config.getRegisteredEmailTableDef()
+          const messagedata = new Messagedata(tabledef.getHeader(), message, message.getDate(), recorded, this.config )
           YKLiblog.Log.debug(`GmailSearch getThreadsAndMessagedataArray typeof(messagedata)=${typeof(messagedata)} messageId=${messageId} recorded=${recorded}`)
 
           return messagedata
@@ -119,12 +133,12 @@ class GmailSearch {
       return initialValue
     }
   }
-  getMailListWithQuery(query, start, maxThreads){
+  getMailListWithQuery(query, maxThreads){
     if( maxThreads <= 0){
       throw Error(`maxThreads=${maxThreads}` )
     }
-    YKLiblog.Log.debug(`### get_mail_list_with_query 0 query=${query} start=${start} maxThreads)=${maxThreads}`)
-    const [ret, threads] = this.gmailSearch(query, start, maxThreads)
+    YKLiblog.Log.debug(`### get_mail_list_with_query 0 query=${query} maxThreads)=${maxThreads}`)
+    const [ret, threads] = this.gmailSearch(query, maxThreads)
     if( ret ){
       // YKLiblog.Log.debug(`##### gmailsearch|getMailListWithQuery ret=${ret} threads.length=${threads.length}`)
       YKLiblog.Log.debug(`### getMailListWithQuery 1 threads.length=${threads.length}`)
@@ -135,16 +149,21 @@ class GmailSearch {
       return null
     }
   }
-  gmailSearch(query, start, maxThreads){
+  gmailSearch(query, maxThreads){
+    const start = 0
+    YKLiblog.Log.debug(`query=${query} start=${start} maxThreads=${maxThreads}`)
     const threads = GmailApp.search(query, start, maxThreads);
+    YKLiblog.Log.debug(`threads.length=${threads.length}`)
     // 取得したスレッドを日付の古い順にソート
     threads.sort(function(a, b) {
       return a.getLastMessageDate().getTime() - b.getLastMessageDate().getTime();
     });
     if( threads.length > 0 ){
+      // null.y
       return [true, threads];
     }
     else{
+      // null.x
       return [false, null];
     }
   }

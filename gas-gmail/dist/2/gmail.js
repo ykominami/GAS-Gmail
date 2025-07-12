@@ -1,35 +1,39 @@
 function __A(){}
 
 class Gmail{
-  constructor(limitx, configSpreadsheet, recordSpreadsheet, makeindexFlag = 0){
+  constructor(limitx, configSpreadsheet, recordSpreadsheet, config, makeindexFlag = 0){
     this.limitx = limitx;
     this.configSpreadsheet = configSpreadsheet;
+    this.configTable = this.configSpreadsheet.getConfigTable()
+    this.targetedEmailList = this.configTable.getTargetedEmailList()
+    this.searchConf = this.configTable.getSearchConf()
+    this.searchStatus = this.configTable.getSearchStatus()
+    this.nth = this.searchStatus.getNth()
+
     this.recordSpreadsheet = recordSpreadsheet;
+    this.recordSpreadsheet.addConfigSpreadsheet(this.configSpreadsheet)
+    this.config = config
     this.makeindexFlag = makeindexFlag;
+
     // 必要に応じて他のプロパティも初期化
   }
-  initWithTabledata(limitx, tabledata, idtabledata, makeindexFlag = 0){
-    YKLiblog.Log.debug(`Gmail initWithTabledata limitx=${limitx}`)
-    this.parentFolderInfo = tabledata.parentFolderInfo;
-    this.backupFolderInfo = tabledata.backupFolderInfo;
-    this.folderConf = tabledata.folderConf;
-    YKLiblog.Log.debug(`Gmail initWithTabledata this.folderConf=${this.folderConf}`)
-    idtabledata.addTabledata(tabledata);
-    const keysFromTabledata = tabledata.keys();
-    const names = idtabledata.adjust(keysFromTabledata);
-    this.tabledata = tabledata;
-    this.idtabledata = idtabledata;
-    this.idtabledata.addTabledata(tabledata);
-    this.startIndex = 0;
-    this.limitx = limitx;
-    this.op = YKLiba.Config.addUnderRow();
-    this.makeindexFlag = makeindexFlag;
+  areAllNthValueMoreThanOrEqual(value){
+    return this.targetedEmailList.areAllNthValueMoreThanOrEqual(value)
   }
-  getStartIndex(){
-    return this.startIndex;
+  getTargetedEmail(key){
+    const configTable = this.configSpreadsheet.getConfigTable()
+    const targetedEmailList = configTable.getTargetedEmailList()
+    return targetedEmailList.getTargetedEmailByKey(key)
   }
-  setStartIndex(startIndex){
-    this.startIndex = startIndex;
+  getRegisteredEmail(key){
+    const registeredEmailList = this.recordSpreadsheet.getRegisteredEmailList()
+    return registeredEmailList.getRegisteredEmailByKey(key)
+  }
+  getConfigSpreadsheet(){
+    return this.configSpreadsheet
+  }
+  getRecordSpreadsheet(){
+    return this.recordSpreadsheet
   }
   setLimitx(limitx){
     this.limitx = limitx;
@@ -37,17 +41,29 @@ class Gmail{
   getLimitx(){
     return this.limitx;
   }
-  getLimitedAccessRange(){
-    const keys = this.getKeys();
-    const keysLength = keys.length;
-    const [max, min] = YKLiba.Arrayx.getMaxAndMin([keysLength, this.getLimitx()]);
-    return [this.getStartIndex(), min];
-  }
   getByKey(key){
-    return this.tabledata.getTargetedEmail(key);
+    return this.configSpreadsheet.getTargetedEmail(key);
   }
   getKeys(){
-    return this.tabledata.keys();
+    const configSpreadsheet = this.configSpreadsheet
+    const keys = configSpreadsheet.getKeys();
+    return keys
+  }
+  getSearchConf(){
+    const searchConf = this.configTable.getSearchConf()
+    return searchConf
+  }
+  getSearchStatus(){
+    const searchStatus = this.configTable.getSearchStatus()
+    return searchStatus
+  }
+  getBackupRootFolderInfo(){
+    const backupRootFolderInfo = this.configTable.getBackupRootFolderInfo()
+    return backupRootFolderInfo
+  }
+  isBiggerThanMaxItems(numOfItems){
+    const searchConf = this.getSearchConf()
+    return searchConf.isBiggerThanMaxItems(numOfItems)
   }
   /**
    * 指定したラベルを持つメールからラベルを削除する
@@ -68,21 +84,130 @@ class Gmail{
     }
     YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
   }
+<<<<<<< HEAD
   getMailList(key, op, arg_store){
     YKLiblog.Log.debug(`key=${key}`);
     const targetedEmail = this.tabledata.getTargetedEmail(key);
     targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
     targetedEmail.setMaxThreads(this.folderConf.maxThreads);
     const folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(this.parentFolderInfo);
+||||||| parent of be3dfaa (fix)
+  
+  /**
+   * ペアラベルとクエリ情報を作成する
+   * @param {Object} targetedEmail 対象メール
+   * @returns {Array} [pairLabel, queryInfo]
+   */
+  makePairLabelAndQueryInfo(targetedEmail) {
+    try {
+      // 実際の実装では、targetedEmailからラベル情報を取得する必要があります
+      const pairLabel = {
+        targetLabelName: targetedEmail.getTargetLabelName ? targetedEmail.getTargetLabelName() : '',
+        targetLabel: targetedEmail.getTargetLabel ? targetedEmail.getTargetLabel() : null,
+        endLabelName: targetedEmail.getEndLabelName ? targetedEmail.getEndLabelName() : '',
+        endLabel: targetedEmail.getEndLabel ? targetedEmail.getEndLabel() : null
+      };
+      
+      const queryInfo = {
+        query: targetedEmail.getQuery ? targetedEmail.getQuery() : '',
+        searchCriteria: targetedEmail.getSearchCriteria ? targetedEmail.getSearchCriteria() : {}
+      };
+      
+      return [pairLabel, queryInfo];
+    } catch (error) {
+      YKLiblog.Log.debug("makePairLabelAndQueryInfo error: " + error.message);
+      return [{}, {}];
+    }
+  }
+  
+  getMailList(key, op, arg_store){
+    YKLiblog.Log.debug(`key=${key}`);
+    const targetedEmail = this.tabledata.getTargetedEmail(key);
+    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
+    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
+    const folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(this.parentFolderInfo);
+=======
+  prepareForTargetedEmail(targetedEmail){
+    const backupRootFolderInfo = this.getBackupRootFolderInfo()
+    targetedEmail.prepareForSearch(backupRootFolderInfo)
+    
+    YKLiblog.Log.debug(`name=${targetedEmail.getName()} nth=${targetedEmail.getNth()} searchStatus.nth=${this.searchStatus.getNth()}`)
+
+    targetedEmail.setMaxSearchesAvailable(this.searchConf.getMaxSearchesAvailable());
+    targetedEmail.setMaxThreads(this.searchConf.getMaxThreads());
+>>>>>>> be3dfaa (fix)
     targetedEmail.backup();
-    this.tabledata.rewrite(targetedEmail);
-    YKLiblog.Log.debug(`Gmail getMailList this.idtabledata=${this.idtabledata}`);
-    YKLiblog.Log.debug(`Gmail getMailList this.idtabledata.targetedEmailIdsList=${this.idtabledata.targetedEmailIdsList}`);
-    const gmailList = new GmailList(targetedEmail, this.idtabledata, this.limitx);
-    gmailList.getMailListX(op, arg_store);
-    targetedEmail.setNth(this.folderConf.nth);
-    // targetedEmail.setLastDateTime(store.get('last_date_time'));
-    this.tabledata.rewrite(targetedEmail);
+  }
+  getLimitedAccessRange(startIndex, endIndex){
+    // return [0,1]
+    return [startIndex, endIndex]
+  }
+
+  explore(startIndex, endIndex, numOfItems, op){
+    YKLiblog.Log.debug(`Top explore numOfItems=${numOfItems}`)
+ 
+    const [start, end] = this.getLimitedAccessRange(startIndex, endIndex)
+    const keys = this.getKeys()
+    YKLiblog.Log.debug(`Gmail explore keys=${keys}`)
+    YKLiblog.Log.debug(`Gmail explore start=${start} end=${end} keys.length=${keys.length}`)
+    const endx = keys.length - 1
+    const [max, min] = YKLiba.Arrayx.getMaxAndMin([end, endx])
+
+    const end2 = min
+
+    for(let i=start; i <= end2; i++){
+      if( this.isBiggerThanMaxItems(numOfItems) ){
+        YKLiblog.Log.debug(`Gmail explore break numOfItems=${numOfItems} this.searchConf.maxItems=${this.searchConf.maxItems}`)
+        break;
+      }
+      const key = keys[i]
+      YKLiblog.Log.debug(`Gmail explore i=${i} key=${key}`)
+      numOfItems = this.searchAndStore(key, numOfItems, this.nth, op)
+
+      if( this.areAllNthValueMoreThanOrEqual(this.nth) ){
+        this.searchStatus.incrementNth()
+        this.configTable.rewriteSearchStatus(this.searchStatus)
+      }
+      this.update( this.configTable.getValues() )
+    }
+    YKLiblog.Log.debug(`Gmail explore END`)
+    return numOfItems
+  }
+
+  searchAndStore(key, numOfItems, nth, op){
+    YKLiblog.Log.debug(`searchAndStore key=${key}`)
+    if(typeof(key) === "undefined"){
+      YKLiblog.Log.debug(`Gmail searchAndStore  key=undefined`)
+      return numOfItems
+    }
+
+    const registeredEmail = this.getRegisteredEmail(key);
+    if(typeof(registeredEmail) === "undefined" ){
+      return numOfItems
+    }  
+
+    const targetedEmail = this.getTargetedEmail(key);
+    if(typeof(targetedEmail) === "undefined" ){
+      YKLiblog.Log.debug(`Gmail searchAndStore  targetedEmail=undefined`)
+      return numOfItems
+    }
+    if( targetedEmail.getNth() >= nth ){
+      YKLiblog.Log.debug(`Gmail searchAndStore  targetedEmail.getNth()=${targetedEmail.getNth()} <= this.searchStatus.getNth()=${this.searchStatus.getNth()}`)
+      return numOfItems
+    }
+
+    this.prepareForTargetedEmail(targetedEmail)
+
+    const emailFetcherAndStorer = new EmailFetcherAndStorer(targetedEmail, registeredEmail, this.limitx, op, nth, this.config);
+    const [_pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
+    emailFetcherAndStorer.searchAndRegister(queryInfo)
+
+    targetedEmail.setNth( nth )
+    this.configTable.rewrite(targetedEmail);
+    // this.configTable.update();
+
+    numOfItems += 1
+    return numOfItems
   }
   removeLabel(key){
     YKLiblog.Log.debug(`key=${key}`);
@@ -94,8 +219,8 @@ class Gmail{
     YKLiblog.Log.debug(queryInfo);
   }
   removeLabelAll(){
-    if (typeof CONFIG !== 'undefined' && CONFIG.setNoop) {
-      CONFIG.setNoop(false);
+    if (typeof this.config !== 'undefined' && this.config.setNoop) {
+      this.config.setNoop(false);
     }
     const keys = this.getKeys();
     const [max, min] = YKLiba.Arrayx.getMaxAndMin([keys.length, this.limitx]);
@@ -105,6 +230,9 @@ class Gmail{
       this.removeLabel(key);
     }
     // YKLiblog.Log.debug(`END i=${i}`)
+  }
+  update(values){
+    this.configTable.update(values)
   }
 }
 

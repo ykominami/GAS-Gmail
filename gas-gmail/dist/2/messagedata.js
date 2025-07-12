@@ -1,5 +1,7 @@
 class Messagedata{
-  constructor (headers, msg, date_str, recorded){
+  constructor (headers, msg, date_str, recorded, config){
+    this.config = config
+
     let date
     if( date_str !== null){
       date = new Date(date_str)
@@ -9,7 +11,9 @@ class Messagedata{
         date = msg.getDate()
       }
       catch(error){
-        YKLiblog.Log.unknown(error)
+        YKLiblog.Log.unknown(error.name)
+        YKLiblog.Log.unknown(error.message)
+        YKLiblog.Log.unknown(error.stack)
         return null
       }
     }
@@ -35,10 +39,10 @@ class Messagedata{
   }
   truncateString(maxLength) {
     if (typeof maxLength !== 'number'){
-      maxLength = CONFIG.nolimit()
+      maxLength = this.config.nolimit()
     } 
     if ( maxLength <= 0) {
-      maxLength = CONFIG.nolimit()
+      maxLength = this.config.nolimit()
     }
 
     this.isTruncated = false;
@@ -46,7 +50,7 @@ class Messagedata{
     for(let i=0; i<this.names.length; i++){
       const name = this.names[i]
       const str = this.original[name]
-      if( maxLength === CONFIG.nolimit() ){
+      if( maxLength === this.config.nolimit() ){
         this.truncated[name] = str;
       }
       else{

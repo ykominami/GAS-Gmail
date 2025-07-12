@@ -1,3 +1,6 @@
 _tmp/
 !*.code-workspace
 *.code-workspace
+#
+Store.js
+

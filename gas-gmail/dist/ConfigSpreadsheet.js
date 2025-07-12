@@ -4,17 +4,28 @@ class ConfigSpreadsheet {
     // this.config = config;           // 必要なら保存
     this.configTable = null;
     if (spreadsheet && config) {
-      this.configTable = new ConfigTable(spreadsheet, config);
+      const [worksheet, values, totalRange] = config.getConfigInfo(spreadsheet)
+      const totalRangeShape = YKLiba.Range.getRangeShape(totalRange)
+      this.configTable = new ConfigTable(values, totalRange);
     }
   }
-
+  getSearchConf(){
+    return this.configTable.getSearchConf()
+  }
   getConfigTable() {
     if (!this.configTable) {
       throw new Error('ConfigTable is not initialized.');
     }
     return this.configTable;
   }
-
+  getBackupRootFolderInfo(){
+    return this.configTable.getBackupRootFolderInfo();
+  }
+  getKeys(){
+    const targetedEmailList = this.getTargetedEmailList() 
+    const keys = targetedEmailList.getKeys()
+    return keys
+  }
   getTargetedEmailList() {
     if (!this.configTable) {
       throw new Error('ConfigTable is not initialized.');

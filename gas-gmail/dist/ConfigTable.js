@@ -6,7 +6,7 @@ class ConfigTable {
     const totalRangeShape = YKLiba.Range.getRangeShape(totalRange)
     this.totalRangeShape = totalRangeShape
 
-    this.backupFolderInfo = null;
+    this.backupFolderConf = null;
     this.searchConf = null;
     this.searchStatus = null;
 
@@ -24,18 +24,19 @@ class ConfigTable {
   getValues(){
     return this.values
   }
-  getBackupRootFolderInfo(){
-    return this.backupRootFolderInfo
+  getBackupRootFolderConf(){
+    return this.backupRootFolderConf
   }
   processRows(values){
     for(let i=0; i<values.length; i++){
       const item = values[i];
+      const rowRange = this.totalRange.offset(i,0, 1)
       YKLiblog.Log.debug(`TargetedEmailList constructor i=${i} item=${item}`)
       switch(item[0]){
         case "backup_root_folder":
           YKLiblog.Log.debug("TargetedEmailList constructor backup_root_folder")
-          this.backupRootFolderInfo = new BackupRootFolderInfo(i, item);
-          this.targetedEmailList.setBackupRootFolderInfo(this.backupRootFolderInfo)
+          this.backupRootFolderConf = new BackupRootFolderConf(i, item);
+          this.targetedEmailList.setBackupRootFolderConf(this.backupRootFolderConf)
           break;
         case "search_conf":
           YKLiblog.Log.debug("TargetedEmailList constructor search_conf")
@@ -44,12 +45,12 @@ class ConfigTable {
           break;
         case "search_status":
           YKLiblog.Log.debug("TargetedEmailList constructor search_status")
-          this.searchStatus = new SearchStatus(i, item);
+          this.searchStatus = new SearchStatus(i, item, rowRange);
           this.targetedEmailList.setSearchStatus(this.searchStatus)
           break;
         case "folder":
           YKLiblog.Log.debug("TargetedEmailList constructor folder")
-          this.targetedEmailList.addTargetedEmail(i, item)
+          this.targetedEmailList.addTargetedEmail(i, item, rowRange)
           break;
         defualt:
           YKLiblog.Log.debug("TargetedEmailList constructor default")
@@ -66,8 +67,8 @@ class ConfigTable {
   getTargetedEmailList(){
     return this.targetedEmailList
   }
-  getBackupFolderInfo(){
-    return this.backupFolderInfo
+  getBackupFolderConf(){
+    return this.backupFolderConf
   }
   getFolderConf(){
     return this.folderConf
@@ -78,50 +79,5 @@ class ConfigTable {
   }
   getTargetedEmail(key){
     return this.targetedEmailList.getTargetedEmailByKey(key);
-  }
-  rewriteSearchStatus(item){
-    this.values[item.rowIndex][item.index_nth] = item.nth;
-  }
-  rewrite(item){
-    // YKLiblog.Log.debug(`------------------rewrite`)
-    YKLiblog.Log.debug(`rewrite item.index=${item.index}`)
-    YKLiblog.Log.debug(`rewrite item.name=${item.name}`)
-    YKLiblog.Log.debug(`rewrite this.values.length=${ this.values.length }`)
-    YKLiblog.Log.debug(`rewrite this.values[${item.index}]=${ JSON.stringify( this.values[item.index] ) }`)
-    this.values[item.index][item.index_name] = item.name;
-    this.values[item.index][item.index_backupFolderId] = item.backupFolderId;
-
-    this.values[item.index][item.index_backupFolderId] = item.backupFolderId;
-    this.values[item.index][item.index_backupFolderUrl] = item.backupFolderUrl;
-    this.values[item.index][item.index_lastDate] = item.lastDate;
-    this.values[item.index][item.index_lastDateStr] = item.lastDateStr;
-    this.values[item.index][item.index_lastDateTime] = item.lastDateTime;
-    const lastDateStr = YKLibb.Util.dateTimeToString(item.lastDate);
-    this.values[item.index][item.index_lastDateStr] = lastDateStr;
-
-    Logger.log(`item.index=${item.index} item.index_lastDateStr=${item.index_lastDateStr} this.values[${item.index}][${item.index_lastDateStr}]=${this.values[item.index][item.index_lastDateStr]}`)
-    this.values[item.index][item.index_nth] = item.nth;
-    this.values[item.index][item.index_count] = item.count;
-    this.values[item.index][item.index_count2] = item.count2;
-    const width = this.totalRange.getWidth()
-    const range = this.totalRange.offset(item.index, 0, 1, width)
-    const array = this.values[item.index]
-    Logger.log(`array=${JSON.stringify(array)}`)
-    // this.update( array, range )
-  }
-  update(array, range = null){
-    // YKLiblog.Log.debug(`Tabledata.update=${ [this.header, ...this.values] }`)
-    // const array = [this.header, ...this.values]
-    // const array = this.values
-    YKLiblog.Log.debug(`Tabledata update array=${ JSON.stringify(array) }`)
-    if( range === null ){
-      const totalRangeShape = YKLiba.Range.getRangeShape(this.totalRange)
-      YKLiblog.Log.debug(`Tabledata update totalRangeShape=${ JSON.stringify(totalRangeShape) }`)
-      YKLiblog.Log.debug(`Tabledata update this.totalRangeShape=${ JSON.stringify(this.totalRangeShape) }`)
-      this.totalRange.setValues( this.values );
-    }
-    else{
-      range.setValues(array)
-    }
   }
 }

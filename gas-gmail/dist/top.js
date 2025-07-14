@@ -4,8 +4,8 @@ class Top {
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.FAULT())
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.ERROR())
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.WARN())
-    // YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
-     YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
+     YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
+    // YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
     // YKLiblog.Log.initLogDebug()
     this.config = config
     this.makeIndexFlag = maxIndexFlag
@@ -43,8 +43,8 @@ class Top {
 function start(){
   const config = new Config()
   // configSpreadsheet = config.setConfigInfoType(Config.CONFIG_INFO())
-  //config.setConfigInfoType(Config.CONFIG_INFO())
-   config.setConfigInfoType(Config.CONFIG_INFO2())
+  config.setConfigInfoType(Config.CONFIG_INFO())
+  // config.setConfigInfoType(Config.CONFIG_INFO2())
   // config.setConfigInfoType(Config.CONFIG_INFOX())
   
   const top = new Top(config, 10000)
@@ -53,5 +53,30 @@ function start(){
   top.execute(startIndex, endIndex)
 }
 
+/**
+ * 指定した名前のシートのURLを取得し、メッセージボックスに表示します。
+ */
+function showUrlOfSheetByName() {
+  // ★★★ ここにURLを取得したいシートの名前を入力してください ★★★
+  const sheetName = 'シート2'; 
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  // 名前でシートオブジェクトを取得します。
+  const targetSheet = spreadsheet.getSheetByName(sheetName);
+
+  // targetSheetが存在するか（指定した名前のシートが見つかったか）を確認します。
+  if (targetSheet) {
+    // シートが見つかった場合の処理
+    const spreadsheetUrl = spreadsheet.getUrl();
+    const sheetId = targetSheet.getSheetId();
+    const sheetUrl = `${spreadsheetUrl}#gid=${sheetId}`;
+    
+    SpreadsheetApp.getUi().alert(`'${sheetName}' のURL:\n${sheetUrl}`);
+    
+  } else {
+    // シートが見つからなかった場合の処理
+    SpreadsheetApp.getUi().alert(`エラー: '${sheetName}' という名前のシートは見つかりませんでした。`);
+  }
+}
 
 

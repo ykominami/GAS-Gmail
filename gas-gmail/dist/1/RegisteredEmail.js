@@ -7,9 +7,16 @@ class RegisteredEmail {
 
     this.targetedEmail = targetedEmail
     this.spreadsheet = spreadsheet
+    const spreadsheetUrl = spreadsheet.getUrl();
+
     this.sheetName = sheetName
     const worksheet = YKLibb.Gssx.getOrCreateWorksheet(spreadsheet,sheetName);
 
+    const sheetId = worksheet.getSheetId();
+    const sheetUrl = `${spreadsheetUrl}#gid=${sheetId}`;
+    this.sheetUrl = sheetUrl
+
+    this.targetedEmail.setWorksheetUrl(this.sheetUrl)
     // ヘッダーが存在しなければ、headerとheaderRangeはnull
     const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.setupSpreadsheetAndHeaderAndDataOfCol1(worksheet, yklibbConfig)
     // const [header, values, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.getHeaderAndDataFromWorksheet(worksheet, yklibbConfig)
@@ -22,16 +29,21 @@ class RegisteredEmail {
     this.dataRowsRange = dataRowsRange
 
     this.indexOfHeaderId = tableDef.getIndexOfId()
-    const [ids, idSet, selectedRows]  = this.distinctValues(values)
-
-    const idSetSize = idSet.size
-    const valuesLength = values.length 
-    if( idSetSize !== valuesLength ){
-      this.update(selectedRows)
-    }
-
-    this.ids = ids
-    this.idSet = idSet
+    this.ids = []
+    this.idSet = new Set()
+    this.distinctValuesAndUpdate(values)
+  }
+  getName(){
+    return this.sheetName
+  }
+  hasId(id){
+    return this.idSet.has(id)
+  }
+  getIdSet(){
+    return this.idSet
+  }
+  getIds(){
+    return this.ids
   }
   update(selectedRows){
     // const lineArray = []
@@ -51,12 +63,16 @@ class RegisteredEmail {
     this.idSet = idSet
     this.ids = [...idSet]
 
-    const idSetSize = idSet.size
     const valuesLength = rows.length 
-    if( idSetSize !== valuesLength ){
+    YKLiblog.Log.unknown(`this.targetedEmail.getName()=${this.targetedEmail.getName()}`)
+    YKLiblog.Log.unknown(`this.ids=${this.ids}`)
+    YKLiblog.Log.unknown(`this.idSet.size=${this.idSet.size}`)
+    if( this.idSet.size !== valuesLength ){
       this.update(selectedRows)
     }
+    this.targetedEmail.setMessageCount(this.idSet.size)
   }
+
   distinctValues(rows){
     YKLiblog.Log.debug(`this.indexOfHeaderId=${this.indexOfHeaderId}`)
     // const ids = rows.map( row => row[this.indexOfHeaderId] )

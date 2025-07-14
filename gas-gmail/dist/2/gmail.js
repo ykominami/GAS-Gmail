@@ -57,9 +57,9 @@ class Gmail{
     const searchStatus = this.configTable.getSearchStatus()
     return searchStatus
   }
-  getBackupRootFolderInfo(){
-    const backupRootFolderInfo = this.configTable.getBackupRootFolderInfo()
-    return backupRootFolderInfo
+  getBackupRootFolderConf(){
+    const backupRootFolderConf = this.configTable.getBackupRootFolderConf()
+    return backupRootFolderConf
   }
   isBiggerThanMaxItems(numOfItems){
     const searchConf = this.getSearchConf()
@@ -84,59 +84,14 @@ class Gmail{
     }
     YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
   }
-<<<<<<< HEAD
-  getMailList(key, op, arg_store){
-    YKLiblog.Log.debug(`key=${key}`);
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
-    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
-    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
-    const folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(this.parentFolderInfo);
-||||||| parent of be3dfaa (fix)
-  
-  /**
-   * ペアラベルとクエリ情報を作成する
-   * @param {Object} targetedEmail 対象メール
-   * @returns {Array} [pairLabel, queryInfo]
-   */
-  makePairLabelAndQueryInfo(targetedEmail) {
-    try {
-      // 実際の実装では、targetedEmailからラベル情報を取得する必要があります
-      const pairLabel = {
-        targetLabelName: targetedEmail.getTargetLabelName ? targetedEmail.getTargetLabelName() : '',
-        targetLabel: targetedEmail.getTargetLabel ? targetedEmail.getTargetLabel() : null,
-        endLabelName: targetedEmail.getEndLabelName ? targetedEmail.getEndLabelName() : '',
-        endLabel: targetedEmail.getEndLabel ? targetedEmail.getEndLabel() : null
-      };
-      
-      const queryInfo = {
-        query: targetedEmail.getQuery ? targetedEmail.getQuery() : '',
-        searchCriteria: targetedEmail.getSearchCriteria ? targetedEmail.getSearchCriteria() : {}
-      };
-      
-      return [pairLabel, queryInfo];
-    } catch (error) {
-      YKLiblog.Log.debug("makePairLabelAndQueryInfo error: " + error.message);
-      return [{}, {}];
-    }
-  }
-  
-  getMailList(key, op, arg_store){
-    YKLiblog.Log.debug(`key=${key}`);
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
-    targetedEmail.setMaxSearchesAvailable(this.folderConf.maxSearchesAvailable);
-    targetedEmail.setMaxThreads(this.folderConf.maxThreads);
-    const folder = targetedEmail.getOrCreateFolderUnderSpecifiedFolder(this.parentFolderInfo);
-=======
   prepareForTargetedEmail(targetedEmail){
-    const backupRootFolderInfo = this.getBackupRootFolderInfo()
-    targetedEmail.prepareForSearch(backupRootFolderInfo)
+    const backupRootFolderConf = this.getBackupRootFolderConf()
+    targetedEmail.prepareForSearch(backupRootFolderConf)
     
     YKLiblog.Log.debug(`name=${targetedEmail.getName()} nth=${targetedEmail.getNth()} searchStatus.nth=${this.searchStatus.getNth()}`)
 
     targetedEmail.setMaxSearchesAvailable(this.searchConf.getMaxSearchesAvailable());
     targetedEmail.setMaxThreads(this.searchConf.getMaxThreads());
->>>>>>> be3dfaa (fix)
-    targetedEmail.backup();
   }
   getLimitedAccessRange(startIndex, endIndex){
     // return [0,1]
@@ -166,9 +121,11 @@ class Gmail{
 
       if( this.areAllNthValueMoreThanOrEqual(this.nth) ){
         this.searchStatus.incrementNth()
-        this.configTable.rewriteSearchStatus(this.searchStatus)
+        this.searchStatus.rewrite()
+        this.searchStatus.update()
+        // this.configTable.rewriteSearchStatus(this.searchStatus)
       }
-      this.update( this.configTable.getValues() )
+      // this.update( this.configTable.getValues() )
     }
     YKLiblog.Log.debug(`Gmail explore END`)
     return numOfItems
@@ -203,7 +160,9 @@ class Gmail{
     emailFetcherAndStorer.searchAndRegister(queryInfo)
 
     targetedEmail.setNth( nth )
-    this.configTable.rewrite(targetedEmail);
+    targetedEmail.rewrite();
+    targetedEmail.update();
+    // this.configTable.rewrite(targetedEmail);
     // this.configTable.update();
 
     numOfItems += 1
@@ -231,8 +190,10 @@ class Gmail{
     }
     // YKLiblog.Log.debug(`END i=${i}`)
   }
+  /*
   update(values){
     this.configTable.update(values)
   }
+  */
 }
 

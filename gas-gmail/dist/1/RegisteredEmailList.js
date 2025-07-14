@@ -5,18 +5,12 @@ class RegisteredEmailList {
     this.registeredEmailByKey = {}
     this.tabledata = null
     this.keySet = new Set()
-    // YKLiblog.Log.debug( `config.constructor=${ config.constructor }` )
-    // Logger.log( `config.constructor=${ config.constructor }` )
-    // const x = 0
     const tableDef = config.getRegisteredEmailTableDef()
     this.tableDef = tableDef
     this.sourceHeader = tableDef.getHeader()
     this.yklibbConfig = new YKLibb.Config(this.sourceHeader.length, this.sourceHeader, YKLibb.Config.COMPLETE())
     this.configTable = null
     this.targetedEmailList = null
-
-    // const [header, values, totalRange] = YKLibb.Gssx.setupSpeadsheet(spreadsheet, )
-    // YKLibb.Gssx.getHeaderAndData(values, totalRange, config)
   }
   getKeys(){
     return Object.keys(this.registeredEmailByKey)

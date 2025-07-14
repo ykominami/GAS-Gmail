@@ -1,4 +1,4 @@
-class BackupRootFolderInfo {
+class BackupRootFolderConf {
   static INDEX_PATH(){
     return 1;
   }
@@ -11,13 +11,15 @@ class BackupRootFolderInfo {
 
   constructor(index, item) {
     this.index = index;
-    const index_path = BackupRootFolderInfo.INDEX_PATH() 
+    this.item = item
+
+    const index_path = BackupRootFolderConf.INDEX_PATH() 
     this.path = item[index_path];
-    const index_id = BackupRootFolderInfo.INDEX_ID()
+    const index_id = BackupRootFolderConf.INDEX_ID()
     const folderId = item[index_id];
     this.folderId = folderId;
     YKLiblog.Log.debug(`index_id=${index_id} folderId=${folderId}`)
-    const index_url = BackupRootFolderInfo.INDEX_URL()
+    const index_url = BackupRootFolderConf.INDEX_URL()
     this.url = item[index_url];
     this.folder = null;
 
@@ -39,7 +41,6 @@ class BackupRootFolderInfo {
       }
     }
   }
-
   getPath() {
     return this.path;
   }

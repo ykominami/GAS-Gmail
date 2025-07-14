@@ -1,44 +1,62 @@
 class TargetedEmail {
-  constructor(index, item, searchConf){
+  constructor(index, item, searchConf, rowRange){
+    this.rowRange = rowRange
+    this.item = item
     this.index = index
-    this.index_name = 1
+
+    let currentIndex = 1
+    this.index_name = currentIndex++
     this.name = item[ this.index_name ]
-    this.index_condition = 2
+
+    this.index_condition = currentIndex++
     this.condition = item[ this.index_condition ]
-    this.index_backupFolderId = 3
+
+    this.index_backupFolderId = currentIndex++
     this.backupFolderId = item[ this.index_backupFolderId ]
-    this.index_backupFolderUrl = 4
+
+    this.index_backupFolderUrl = currentIndex++
     this.backupFolderUrl = item[ this.index_backupFolderUrl ]
 
-    this.index_lastDateTime = 5
+    this.index_worksheetUrl = currentIndex++
+    this.worksheetUrl = item[ this.index_worksheetUrl ]
+
+    this.index_messageCount = currentIndex++
+    let messageCount = parseInt(this.index_messageCount, 10)
+    if( isNaN(messageCount) ){
+      messageCount = 0
+    }
+
+    this.index_lastDateTime = currentIndex++
     let lastDateTime = parseInt(this.index_lastDateTime, 10)
     if( isNaN(lastDateTime) ){
       lastDateTime = 0
     }
+    this.lastDateTime = lastDateTime
     this.lastDate = new Date(lastDateTime)
 
-    this.setValidLatestDateAndDateTime(this.lastDate)
-    this.index_lastDateStr = 6
+    this.setValidLatestDateAndDateTime(this.lastDateTime)
+    this.index_lastDateStr = currentIndex++
 
-    this.index_nth = 7
+    this.index_nth = currentIndex++
     this.nth = parseInt(item[ this.index_nth ], 10)
     if( isNaN(this.nth) ){
       this.nth = 1
     }
 
-    this.index_count = 8
+    this.index_count = currentIndex++
     this.count = parseInt(item[ this.index_count ], 10)
     if( isNaN(this.count) ){
       this.count = 10
     }
 
-    this.index_count2 = 9
+    this.index_count2 = currentIndex++
     this.count2 = parseInt(item[ this.index_count2 ], 10)
     if( isNaN(this.count2) ){
       this.count2 = 10
     }
 
     this.searchConf = searchConf
+    this.idSetSize = 0
   }
   setValidLatestDateAndDateTime(lastDateTime){
     const [validLastDate, validLastDateTime, validLastDateStr] = YKLibb.Util.getValidDateAndDateTime(lastDateTime)
@@ -47,8 +65,6 @@ class TargetedEmail {
     this.lastDateStr = validLastDateStr
   }
   prepareForSearch(backupRootFolderInfo){
-    this.backup()
-
     this.backupFolder = this.getOrCreateBackupFolderFromBackupRootFolder(backupRootFolderInfo)
     if(this.backupFolder === null){
       throw Error("Can't get or create backupFolder")
@@ -81,14 +97,14 @@ class TargetedEmail {
         folder = subFolders.next();
         if (folder.getName() === folderName) {
           // 指定したフォルダ名が見つかった場合、そのIDを返す
-          YKLiblog.Log.info(`"${folderName}" フォルダが既存のため、IDを返します: ${folder.getId()}`);
+          YKLiblog.Log.debug(`"${folderName}" フォルダが既存のため、IDを返します: ${folder.getId()}`);
           return folder;
         }
       }
 
       // 指定したフォルダ名が見つからなかった場合、新規作成する
       const newFolder = parentFolder.createFolder(folderName);
-      YKLiblog.Log.info(`"${folderName}" フォルダを新規作成しました。ID: ${newFolder.getId()}`);
+      YKLiblog.Log.debug(`"${folderName}" フォルダを新規作成しました。ID: ${newFolder.getId()}`);
       return newFolder;
 
     } catch (e) {
@@ -181,16 +197,52 @@ class TargetedEmail {
   saveData(messageDataList){
     this.backupFile.saveData(messageDataList)
   }
-  backup(){
-    // Store old values for backup functionality
-    this.old_backupFolderId = this.backupFolderId;
-    this.old_backupFolderUrl = this.backupFolderUrl;
-    this.old_lastDateTime = this.lastDateTime;
-    this.old_lastDate = this.lastDate;
-    this.old_lastDateStr = this.lastDateStr;
-    this.old_nth = this.nth;
-    this.old_count = this.count;
-    this.old_count2 = this.count2;
+  rewrite(){
+    // YKLiblog.Log.debug(`------------------rewrite`)
+    YKLiblog.Log.debug(`rewrite this.index=${this.index}`)
+    YKLiblog.Log.debug(`rewrite this.name=${this.name}`)
+    YKLiblog.Log.debug(`rewrite this.item.length=${ this.item.length }`)
+    YKLiblog.Log.debug(`rewrite this.item[${this.index}]=${ JSON.stringify( this.item ) }`)
+    this.item[this.index_name] = this.name;
+    this.item[this.index_backupFolderId] = this.backupFolderId;
+
+    this.item[this.index_backupFolderId] = this.backupFolderId;
+    this.item[this.index_backupFolderUrl] = this.backupFolderUrl;
+
+    this.item[this.index_messageCount] = this.messageCount;
+    this.item[this.index_worksheetUrl] = this.worksheetUrl;
+
+    // this.item[this.index_lastDate] = this.lastDate;
+    this.item[this.index_lastDateStr] = this.lastDateStr;
+    this.item[this.index_lastDateTime] = this.lastDateTime;
+    const lastDateStr = YKLibb.Util.dateTimeToString(this.lastDate);
+    this.item[this.index_lastDateStr] = lastDateStr;
+
+    YKLiblog.Log.debug(`this.index=${this.index} this.index_lastDateStr=${this.index_lastDateStr} this.item[${this.index}][${this.index_lastDateStr}]=${this.item[this.index_lastDateStr]}`)
+    this.item[this.index_nth] = this.nth;
+    // this.item[this.index_count] = this.count;
+    this.item[this.index_count2] = this.count2;
+    this.item[this.index_count] = this.idSetSize
+    YKLiblog.Log.unknown(`this.idSetSize=${ this.idSetSize }`)
+
+    YKLiblog.Log.debug(`this.item=${JSON.stringify(this.item)}`)
+  }
+  update(){
+    const rangeShape = YKLiba.Range.getRangeShape(this.rowRange)
+    YKLiblog.Log.debug(`rangeShape=${ JSON.stringify(rangeShape) }`)
+    YKLiblog.Log.debug(`this.item=${ JSON.stringify(this.item) }` )
+    this.rowRange.setValues( [this.item] )
+  }
+  /*
+  setIdSetSize(value){
+    this.idSetSize = value
+  }
+  */
+  setMessageCount(value){
+    this.messageCount = value
+  }
+  setWorksheetUrl(url){
+    this.worksheetUrl = url
   }
   getName(){
     return this.name

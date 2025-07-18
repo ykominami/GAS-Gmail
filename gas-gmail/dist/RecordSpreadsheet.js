@@ -1,13 +1,39 @@
 class RecordSpreadsheet {
+  /**
+   * RecordSpreadsheetクラスのコンストラクタ
+   * 記録スプレッドシートを初期化し、関連するコンポーネントを設定する
+   * @param {Spreadsheet} spreadsheet - 記録用のスプレッドシートオブジェクト
+   * @param {Object} config - 設定オブジェクト
+   */
   constructor(spreadsheet, config){
     this.config = config
   
     this.spreadsheet = spreadsheet
     this.registeredEmailList = new RegisteredEmailList(spreadsheet, config)
+    //
+    this.bTable = new BTable(spreadsheet, config)
   }
+  
+  /**
+   * BTableオブジェクトを取得する
+   * @returns {BTable} BTableオブジェクト
+   */
+  getBTable(){
+    return this.bTable
+  }
+  
+  /**
+   * RegisteredEmailListオブジェクトを取得する
+   * @returns {RegisteredEmailList} RegisteredEmailListオブジェクト
+   */
   getRegisteredEmailList(){
     return this.registeredEmailList
   }
+  
+  /**
+   * 設定スプレッドシートを追加し、関連する設定を適用する
+   * @param {ConfigSpreadsheet} configSpreadsheet - 設定スプレッドシートオブジェクト
+   */
   addConfigSpreadsheet(configSpreadsheet){
     this.configSpreadsheet = configSpreadsheet
     this.targetedEmailList = configSpreadsheet.getTargetedEmailList()

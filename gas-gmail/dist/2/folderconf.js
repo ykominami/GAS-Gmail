@@ -1,4 +1,10 @@
 class FolderConf {
+  /**
+   * FolderConfクラスのコンストラクタ
+   * フォルダ設定を初期化し、検索可能数、スレッド数、アイテム数の制限値を設定する
+   * @param {number} index - フォルダのインデックス番号
+   * @param {Array} item - 設定項目の配列 [nth, maxSearchesAvailable, maxThreads, maxItems]
+   */
   constructor(index, item){
     this.index = index
     this.nth = parseInt(item[1])

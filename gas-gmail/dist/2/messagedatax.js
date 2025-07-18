@@ -1,4 +1,10 @@
 class Messagedatax{
+  /**
+   * Messagedataxクラスのコンストラクタ
+   * Gmailメッセージと日付情報からMessagedataxオブジェクトを初期化する
+   * @param {Object} msg - Gmailメッセージオブジェクト（null可）
+   * @param {Date} date - 日付オブジェクト（null可）
+   */
   constructor(msg, date){
     this.id = null
     this.from = null

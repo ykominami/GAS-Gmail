@@ -1,9 +1,22 @@
+/**
+ * Gmailメッセージのバックアップファイルを管理するクラス
+ * Google Driveのフォルダ内でGoogle Docsファイルとしてメッセージデータを保存・管理する
+ */
 class BackupFile {
+  /**
+   * BackupFileクラスのコンストラクタ
+   * @param {Folder} folder - バックアップファイルを保存するGoogle Driveフォルダ
+   */
   constructor(folder){
     this.folder = folder
     this.filenameSet = new Set()
     this.fileArrayByKey = null
   }
+  
+  /**
+   * フォルダ内のGoogle Docsファイルを列挙し、ファイル名とファイルオブジェクトのマッピングを作成する
+   * 既に列挙済みの場合は何もしない
+   */
   listup(){
     YKLiblog.Log.debug(`listup 1 ##############`)
     if( this.fileArrayByKey !== null ){
@@ -25,9 +38,20 @@ class BackupFile {
       }
     }
   }
+  
+  /**
+   * バックアップフォルダのURLを取得する
+   * @returns {string} フォルダのURL
+   */
   getUrl(){
     return this.folder.getUrl()
   }
+  
+  /**
+   * メッセージデータのリストをバックアップファイルとして保存する
+   * @param {Array} messageDataList - 保存するメッセージデータの配列
+   * @throws {Error} messageDataListが未定義の場合にエラーを投げる
+   */
   saveData(messageDataList){
     YKLiblog.Log.debug(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
     if( typeof(messageDataList) !== "undefined" ){
@@ -43,18 +67,34 @@ class BackupFile {
     // throw Error(`under saveData 3`)
   }
   
+  /**
+   * メッセージデータの配列を順次処理して、各メッセージを個別のファイルとして出力する
+   * @param {Array} messageDataList - 処理するメッセージデータの配列
+   */
   outputSupplementaryFileFromArray(messageDataList){
     for(let i=0; i<messageDataList.length; i++){
       this.outputSupplementaryFile(messageDataList[i])
     } 
   }
-  // messageDataの持つメタデータからバックアップファイルのファイル名を作成
+  
+  /**
+   * 単一のメッセージデータからバックアップファイルを作成する
+   * ファイル名は日時と件名から自動生成される
+   * @param {Object} messageData - 保存するメッセージデータ
+   */
   outputSupplementaryFile(messageData){
     const filename = `${ YKLiba.formatDateTimeManual(messageData.original.date) }_${messageData.original.subject}.json`
     // const rawcontent = messageData.msg.getRawContent()
     const rawcontent = messageData.original.plainBody
     this.getOrCreateFile(filename, rawcontent)
   }
+  
+  /**
+   * 指定されたファイル名でファイルを取得または作成し、内容を更新する
+   * ファイルが存在しない場合は新規作成し、存在する場合は内容を上書きする
+   * @param {string} filename - ファイル名
+   * @param {string} content - ファイルに保存する内容
+   */
   getOrCreateFile(filename, content){
     let file
     this.listup()

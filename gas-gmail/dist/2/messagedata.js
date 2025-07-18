@@ -1,4 +1,13 @@
 class Messagedata{
+  /**
+   * Messagedataクラスのコンストラクタ
+   * 1個のメッセージに関する情報を管理するインスタンスを初期化する
+   * @param {Array} headers - メッセージのヘッダー情報の配列
+   * @param {Object} msg - Gmailメッセージオブジェクト
+   * @param {string|null} date_str - 日付文字列（nullの場合はmsgから取得）
+   * @param {boolean} recorded - 記録済みフラグ
+   * @param {Object} config - 設定オブジェクト
+   */
   constructor (headers, msg, date_str, recorded, config){
     this.config = config
 
@@ -21,22 +30,19 @@ class Messagedata{
     this.recorded = recorded
     this.isAfter = false
     this.isTruncated = false
-    // const headers = ["id", "from", "subject", "dateStr", "plainBody"]
     this.names = [...headers,  "date"]
 
-    // クラスMessagedataは、1個のメッセージに関する情報を持つ
-    // メッセージについて、関心のある一部の情報をクラスMessagedataxのインスタンスとして持つ
-    // Messagedataxの持つ情報のうち、文字列として保持するものは、オリジナルのものと、指定バイト数まで切り詰めた文字列の2種類もつ。
-    // オリジナルの情報がすべて指定バイト数以下の文字列であれば、切り詰め版の情報と同一である。
-    // 通常は、切り詰め版の情報を用いる。
-    // 切り詰めが発生した場合、オリジナル版をGoogle Docsのファイルとして保存する
-
-    // クラスMessagedataxは、クラスMessagedataの
     this.truncated = new Messagedatax(null, null)
     this.original = new Messagedatax(msg, date)
 
     this.dataArray = null
   }
+  
+  /**
+   * 文字列データを指定された最大長に切り詰める
+   * オリジナルデータと切り詰めデータの両方を保持し、切り詰めが発生した場合はisTruncatedフラグを設定する
+   * @param {number} maxLength - 最大文字数（無効な値の場合は設定の無制限値を使用）
+   */
   truncateString(maxLength) {
     if (typeof maxLength !== 'number'){
       maxLength = this.config.nolimit()
@@ -64,12 +70,20 @@ class Messagedata{
       }
     }
   }
-  getHeaders(){
-    return this.headers
-  }
+  
+  /**
+   * メッセージのIDを取得する
+   * @returns {string} メッセージのID
+   */
   getMessageId(){
     return this.msg.getId()
   }
+  
+  /**
+   * 切り詰められたデータを配列形式で取得する
+   * id, from, subject, date, plainBodyの順序で配列を返す
+   * @returns {Array} メッセージデータの配列
+   */
   getDataAsArray(){
     this.dataArray = [this.truncated.id, this.truncated.from, this.truncated.subject, this.truncated.date, this.truncated.plainBody]
     YKLiblog.Log.debug(`Messagedata.getDataAsArray dataArray.length=${this.dataArray.length} this.dataArray[0]=${this.dataArray[0]} this.dataArray[2]=${this.dataArray[2]}`)

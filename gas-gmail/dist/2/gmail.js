@@ -1,6 +1,18 @@
 function __A(){}
 
+/**
+ * Gmail操作を管理するクラス
+ * 設定スプレッドシートとレコードスプレッドシートを使用してGmailの検索・保存・ラベル管理を行う
+ */
 class Gmail{
+  /**
+   * Gmailクラスのコンストラクタ
+   * @param {number} limitx - 処理制限数
+   * @param {Object} configSpreadsheet - 設定スプレッドシートオブジェクト
+   * @param {Object} recordSpreadsheet - レコードスプレッドシートオブジェクト
+   * @param {Object} config - 設定オブジェクト
+   * @param {number} makeindexFlag - インデックス作成フラグ（デフォルト: 0）
+   */
   constructor(limitx, configSpreadsheet, recordSpreadsheet, config, makeindexFlag = 0){
     this.limitx = limitx;
     this.configSpreadsheet = configSpreadsheet;
@@ -12,78 +24,101 @@ class Gmail{
 
     this.recordSpreadsheet = recordSpreadsheet;
     this.recordSpreadsheet.addConfigSpreadsheet(this.configSpreadsheet)
+    this.bTable = this.getBTable()
     this.config = config
     this.makeindexFlag = makeindexFlag;
-
-    // 必要に応じて他のプロパティも初期化
   }
+
+  /**
+   * Bテーブルを取得する
+   * @returns {Object} Bテーブルオブジェクト
+   */
+  getBTable(){
+    return this.recordSpreadsheet.getBTable()
+  }
+
+  /**
+   * 全てのターゲットメールのnth値が指定値以上かどうかをチェックする
+   * @param {number} value - 比較する値
+   * @returns {boolean} 全てのnth値が指定値以上の場合true
+   */
   areAllNthValueMoreThanOrEqual(value){
     return this.targetedEmailList.areAllNthValueMoreThanOrEqual(value)
   }
+
+  /**
+   * 指定されたキーに対応するターゲットメールを取得する
+   * @param {string} key - ターゲットメールのキー
+   * @returns {Object} ターゲットメールオブジェクト
+   */
   getTargetedEmail(key){
     const configTable = this.configSpreadsheet.getConfigTable()
     const targetedEmailList = configTable.getTargetedEmailList()
     return targetedEmailList.getTargetedEmailByKey(key)
   }
+
+  /**
+   * 指定されたキーに対応する登録済みメールを取得する
+   * @param {string} key - 登録済みメールのキー
+   * @returns {Object} 登録済みメールオブジェクト
+   */
   getRegisteredEmail(key){
     const registeredEmailList = this.recordSpreadsheet.getRegisteredEmailList()
     return registeredEmailList.getRegisteredEmailByKey(key)
   }
-  getConfigSpreadsheet(){
-    return this.configSpreadsheet
-  }
-  getRecordSpreadsheet(){
-    return this.recordSpreadsheet
-  }
-  setLimitx(limitx){
-    this.limitx = limitx;
-  }
-  getLimitx(){
-    return this.limitx;
-  }
-  getByKey(key){
-    return this.configSpreadsheet.getTargetedEmail(key);
-  }
+
+  /**
+   * 設定スプレッドシートからキー一覧を取得する
+   * @returns {Array} キーの配列
+   */
   getKeys(){
     const configSpreadsheet = this.configSpreadsheet
     const keys = configSpreadsheet.getKeys();
     return keys
   }
+
+  /**
+   * 検索設定を取得する
+   * @returns {Object} 検索設定オブジェクト
+   */
   getSearchConf(){
     const searchConf = this.configTable.getSearchConf()
     return searchConf
   }
+
+  /**
+   * 検索ステータスを取得する
+   * @returns {Object} 検索ステータスオブジェクト
+   */
   getSearchStatus(){
     const searchStatus = this.configTable.getSearchStatus()
     return searchStatus
   }
+
+  /**
+   * バックアップルートフォルダ設定を取得する
+   * @returns {Object} バックアップルートフォルダ設定オブジェクト
+   */
   getBackupRootFolderConf(){
     const backupRootFolderConf = this.configTable.getBackupRootFolderConf()
     return backupRootFolderConf
   }
+
+  /**
+   * 指定されたアイテム数が最大アイテム数を超えているかチェックする
+   * @param {number} numOfItems - チェックするアイテム数
+   * @returns {boolean} 最大アイテム数を超えている場合true
+   */
   isBiggerThanMaxItems(numOfItems){
     const searchConf = this.getSearchConf()
     return searchConf.isBiggerThanMaxItems(numOfItems)
   }
+
   /**
-   * 指定したラベルを持つメールからラベルを削除する
-   *
-   * @param {label} label 削除したいラベル
+   * ターゲットメールの検索準備を行う
+   * バックアップルートフォルダ設定の適用と検索設定の設定を行う
+   * @param {Object} targetedEmail - ターゲットメールオブジェクト
    */
-  removeLabelFromEmails(labelName, label) {
-    // ラベルが存在しない場合は処理を終了
-    if (!label) {
-      YKLiblog.Log.debug("指定されたラベルが見つかりませんでした: " + labelName);
-      return;
-    }
-    // 指定されたラベルを持つスレッドを検索
-    let threads = label.getThreads();
-    // 各スレッドに対してラベルを削除
-    for (var i = 0; i < threads.length; i++) {
-      threads[i].removeLabel(label);
-    }
-    YKLiblog.Log.debug(threads.length + "件のスレッドからラベル '" + labelName + "' を削除しました。");
-  }
   prepareForTargetedEmail(targetedEmail){
     const backupRootFolderConf = this.getBackupRootFolderConf()
     targetedEmail.prepareForSearch(backupRootFolderConf)
@@ -93,14 +128,28 @@ class Gmail{
     targetedEmail.setMaxSearchesAvailable(this.searchConf.getMaxSearchesAvailable());
     targetedEmail.setMaxThreads(this.searchConf.getMaxThreads());
   }
+
+  /**
+   * アクセス範囲を制限して返す
+   * @param {number} startIndex - 開始インデックス
+   * @param {number} endIndex - 終了インデックス
+   * @returns {Array} [開始インデックス, 終了インデックス]の配列
+   */
   getLimitedAccessRange(startIndex, endIndex){
-    // return [0,1]
     return [startIndex, endIndex]
   }
 
+  /**
+   * 指定された範囲でメールの探索・検索・保存を実行する
+   * @param {number} startIndex - 開始インデックス
+   * @param {number} endIndex - 終了インデックス
+   * @param {number} numOfItems - 現在のアイテム数
+   * @param {Object} op - 操作オブジェクト
+   * @returns {number} 更新されたアイテム数
+   */
   explore(startIndex, endIndex, numOfItems, op){
     YKLiblog.Log.debug(`Top explore numOfItems=${numOfItems}`)
- 
+    
     const [start, end] = this.getLimitedAccessRange(startIndex, endIndex)
     const keys = this.getKeys()
     YKLiblog.Log.debug(`Gmail explore keys=${keys}`)
@@ -123,14 +172,81 @@ class Gmail{
         this.searchStatus.incrementNth()
         this.searchStatus.rewrite()
         this.searchStatus.update()
-        // this.configTable.rewriteSearchStatus(this.searchStatus)
       }
-      // this.update( this.configTable.getValues() )
     }
     YKLiblog.Log.debug(`Gmail explore END`)
     return numOfItems
   }
 
+  /**
+   * 指定された範囲で全てのラベルを削除する（拡張版）
+   * @param {number} startIndex - 開始インデックス
+   * @param {number} endIndex - 終了インデックス
+   */
+  removeLabelAllx(startIndex, endIndex){
+    YKLiblog.Log.debug(`Top removeLabelAllx`)
+    this.removeLabelAll()
+  }
+
+  /**
+   * 指定された範囲でラベルを削除する（拡張版）
+   * @param {number} startIndex - 開始インデックス
+   * @param {number} endIndex - 終了インデックス
+   */
+  removeLabelx(startIndex, endIndex){
+    YKLiblog.Log.debug(`Top removeLabelx`)
+    const [start, end] = this.getLimitedAccessRange(startIndex, endIndex)
+    const keys = this.getKeys()
+    YKLiblog.Log.debug(`Gmail explore keys=${keys}`)
+    YKLiblog.Log.debug(`Gmail explore start=${start} end=${end} keys.length=${keys.length}`)
+    const endx = keys.length - 1
+    const [max, min] = YKLiba.Arrayx.getMaxAndMin([end, endx])
+
+    const end2 = min
+
+    for(let i=start; i <= end2; i++){
+      const key = keys[i]
+      this.clearRegisteredEmail(key)
+    }
+  }
+
+  /**
+   * 指定されたキーの登録済みメールをクリアする
+   * ターゲットラベルとエンドラベルを削除し、登録済みメールの内容をクリアする
+   * @param {string} key - クリアするメールのキー
+   * @returns {number} アイテム数（エラー時）
+   */
+  clearRegisteredEmail(key){
+    YKLiblog.Log.debug(`clearRegisteredEmail key=${key}`)
+    if(typeof(key) === "undefined"){
+      YKLiblog.Log.debug(`Gmail clearRegisteredEmail key=undefined`)
+      return numOfItems
+    }
+
+    const registeredEmail = this.getRegisteredEmail(key);
+    if(typeof(registeredEmail) === "undefined" ){
+      return numOfItems
+    }  
+
+    const targetedEmail = this.getTargetedEmail(key);
+    if(typeof(targetedEmail) === "undefined" ){
+      YKLiblog.Log.debug(`Gmail clearRegisteredEmail targetedEmail=undefined`)
+      return numOfItems
+    }
+    const [pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
+    pairLabel.removeTargetLabelFromEmails();
+    pairLabel.removeEndLabelFromEmails();
+    registeredEmail.clear()
+  }
+
+  /**
+   * 指定されたキーでメールを検索して保存する
+   * @param {string} key - 検索するメールのキー
+   * @param {number} numOfItems - 現在のアイテム数
+   * @param {number} nth - 検索回数
+   * @param {Object} op - 操作オブジェクト
+   * @returns {number} 更新されたアイテム数
+   */
   searchAndStore(key, numOfItems, nth, op){
     YKLiblog.Log.debug(`searchAndStore key=${key}`)
     if(typeof(key) === "undefined"){
@@ -155,28 +271,33 @@ class Gmail{
 
     this.prepareForTargetedEmail(targetedEmail)
 
-    const emailFetcherAndStorer = new EmailFetcherAndStorer(targetedEmail, registeredEmail, this.limitx, op, nth, this.config);
-    const [_pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
+    const [pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
+    const emailFetcherAndStorer = new EmailFetcherAndStorer(targetedEmail, registeredEmail, this.limitx, op, nth, this.config, this.bTable) 
     emailFetcherAndStorer.searchAndRegister(queryInfo)
 
     targetedEmail.setNth( nth )
     targetedEmail.rewrite();
     targetedEmail.update();
-    // this.configTable.rewrite(targetedEmail);
-    // this.configTable.update();
 
     numOfItems += 1
     return numOfItems
   }
+
+  /**
+   * 指定されたキーのラベルを削除する
+   * @param {string} key - ラベルを削除するメールのキー
+   */
   removeLabel(key){
-    YKLiblog.Log.debug(`key=${key}`);
-    const targetedEmail = this.tabledata.getTargetedEmail(key);
-    const [pairLabel, queryInfo] = this.makePairLabelAndQueryInfo(targetedEmail);
+    const targetedEmail = this.getTargetedEmail(key);
+    const [pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo();
     this.removeLabelFromEmails(pairLabel.targetLabelName, pairLabel.targetLabel);
     this.removeLabelFromEmails(pairLabel.endLabelName, pairLabel.endLabel);
-    YKLiblog.Log.debug(pairLabel);
-    YKLiblog.Log.debug(queryInfo);
   }
+
+  /**
+   * 全てのキーに対してラベルを削除する
+   * 制限数まで処理を実行する
+   */
   removeLabelAll(){
     if (typeof this.config !== 'undefined' && this.config.setNoop) {
       this.config.setNoop(false);
@@ -184,16 +305,10 @@ class Gmail{
     const keys = this.getKeys();
     const [max, min] = YKLiba.Arrayx.getMaxAndMin([keys.length, this.limitx]);
     for(let i=0; i < min; i++){
-      YKLiblog.Log.debug(`i=${i}`);
       const key = keys[i];
+      YKLiblog.Log.debug(`Gmail removeLabelAll i=${i} key=${key}`);
       this.removeLabel(key);
     }
-    // YKLiblog.Log.debug(`END i=${i}`)
   }
-  /*
-  update(values){
-    this.configTable.update(values)
-  }
-  */
 }
 

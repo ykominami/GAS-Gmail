@@ -1,11 +1,18 @@
 
+/**
+ * YouTube APIのテスト実行関数
+ * execute_Test_youtube関数を呼び出してテストを実行する
+ */
 function execute_Test_youtube_x(){
   execute_Test_youtube()
 }
+
 /**
- * Searches for videos about dogs, then logs the video IDs and title.
- * Note that this sample limits the results to 25. To return more
- * results, pass additional parameters as shown in the YouTube Data API docs.
+ * YouTube Data APIを使用してキーワード検索を実行する
+ * 指定されたキーワードで動画を検索し、結果をコンソールに出力する
+ * @param {string} keyword - 検索キーワード
+ * @param {number} limit - 取得する結果の最大数（デフォルト: 25）
+ * @returns {boolean} 検索が成功した場合はtrue、失敗した場合はfalse
  * @see https://developers.google.com/youtube/v3/docs/search/list
  */
 function searchByKeyword(keyword, limit = 25) {

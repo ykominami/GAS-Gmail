@@ -1,14 +1,34 @@
 class BackupRootFolderConf {
+  /**
+   * パスのインデックスを取得する
+   * @returns {number} パスのインデックス値
+   */
   static INDEX_PATH(){
     return 1;
   }
+  
+  /**
+   * フォルダIDのインデックスを取得する
+   * @returns {number} フォルダIDのインデックス値
+   */
   static INDEX_ID(){
     return 3;
   }
+  
+  /**
+   * URLのインデックスを取得する
+   * @returns {number} URLのインデックス値
+   */
   static INDEX_URL(){
     return 4;
   }
 
+  /**
+   * BackupRootFolderConfクラスのコンストラクタ
+   * バックアップルートフォルダの設定を初期化する
+   * @param {number} index - アイテムのインデックス
+   * @param {Array} item - フォルダ情報を含む配列
+   */
   constructor(index, item) {
     this.index = index;
     this.item = item
@@ -41,26 +61,12 @@ class BackupRootFolderConf {
       }
     }
   }
-  getPath() {
-    return this.path;
-  }
-  getFolderId() {
-    return this.folderId;
-  }
+  
+  /**
+   * フォルダオブジェクトを取得する
+   * @returns {GoogleAppsScript.Drive.DriveFolder|null} フォルダオブジェクト、存在しない場合はnull
+   */
   getFolder() {
     return this.folder;
-  }
-  getUrl() {
-    return this.url;
-  }
-  getFormattedDate() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
   }
 }

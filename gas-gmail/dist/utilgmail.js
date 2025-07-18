@@ -1,4 +1,8 @@
 class UtilGmail {
+  /**
+   * 設定とレコードスプレッドシートを作成し、設定を統合する
+   * @param {Object} config - 設定オブジェクト
+   */
   static makeAll(config){
     // configSpreadsheet = config.setConfigInfoType(Config.CONFIG_INFO())
     config.setConfigInfoType(Config.CONFIG_INFO2())
@@ -7,18 +11,35 @@ class UtilGmail {
     const recordSpreadsheet = UtilGmail.makeRecordSpreassheet(config)
     recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
   }
+  /**
+   * 設定スプレッドシートを作成する
+   * @param {Object} config - 設定オブジェクト
+   * @returns {ConfigSpreadsheet} 作成された設定スプレッドシート
+   */
   static makeConfigSpreassheet(config){
     const [spreadsheet, _worksheet] = config.getSpreadsheetForConfigSpreadsheet()
 
     const configSpreadsheet = new ConfigSpreadsheet(spreadsheet, config)
     return configSpreadsheet
   }
+  /**
+   * レコードスプレッドシートを作成する
+   * @param {Object} config - 設定オブジェクト
+   * @returns {RecordSpreadsheet} 作成されたレコードスプレッドシート
+   */
   static makeRecordSpreassheet(config){
     const [spreadsheet, _worksheet] = config.getSpreadsheetForRecordSpreadsheet()
 
     const recordSpreadsheet = new RecordSpreadsheet(spreadsheet, config)
     return recordSpreadsheet
   }
+  /**
+   * 開始インデックスと終了インデックスからインデックス配列を作成する
+   * @param {number} startIndex - 開始インデックス
+   * @param {number} endIndex - 終了インデックス
+   * @param {number} makeindexFlag - インデックス作成フラグ（デフォルト: 0）
+   * @returns {Array} [startIndex, endIndex]の配列
+   */
   static makeIndex(startIndex, endIndex, makeindexFlag = 0){
     return [startIndex, endIndex]
   }

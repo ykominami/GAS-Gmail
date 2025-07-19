@@ -40,6 +40,7 @@ class RegisteredEmail {
 
     // ヘッダーが存在しなければ、headerとheaderRangeはnull
     this.getRangeForHeaderAndData(this.worksheet, this.yklibbConfig)
+
     if(this.clearFlag){
       this.totalRange.clear()
     }
@@ -98,20 +99,22 @@ class RegisteredEmail {
    * 重複チェック、行の削除・追加、ワークシートの更新を行う
    */
   adjustRows(){
-    const reformRequire = this.adjustCol1()
-    if( reformRequire ){
+    const needsChange = this.adjustCol1()
+    if( needsChange ){
       const [idSet, selectedRows] = this.distinctValues(this.dataRowsValues)
-      const range = this.dataRowsRange.offset(0, 0, selectedRows.length)
-      range.setValues(selectedRows)
+      const length = selectedRows.length
+      let range
+      if( length > 0 ){
+        range = this.dataRowsRange.offset(0, 0, length)
+        // 書き換えが必要な場合は、行数が減るということだから、書換え前の行が残らないように、あらかじめクリアしておく
+        this.dataRowsRange.clearContent()
+        range.setValues(selectedRows)
+      }
+      else{
+        range = this.dataRowsRange.offset(0, 0, 1, 1)
+      }
       this.dataRowsRange = range
       this.dataRowsValues = selectedRows
-    }
-    else{
-      const dataRowsRange = this.dataRowsRange.offset(1, 0)
-      // ワークシートのdataRowsを更新
-      const dataRowsValues = this.dataRowsValues
-      dataRowsRange.setValues( dataRowsValues )
-      this.dataRowsRange = dataRowsRange
     }
   }
 
@@ -159,8 +162,10 @@ class RegisteredEmail {
   getRangeForHeaderAndData(worksheet, yklibbConfig){
     let dataRowsValues = []
     const [header, totalValues, headerRange, dataRowsRange, totalRange] = YKLibb.Gssx.setupSpreadsheetAndHeaderAndData(this.worksheet, this.yklibbConfig)
+
+
     this.header = header
-    if( !totalValues ){
+    if( totalValues === null ){
       this.totalValues = []
     }
     else{
@@ -171,8 +176,13 @@ class RegisteredEmail {
     if( dataRowsRange !== null ){
       dataRowsValues = dataRowsRange.getValues()
     }
+    else{
+      dataRowsValues = []
+    }
     this.dataRowsValues = dataRowsValues
+
     this.totalRange = totalRange
+
     return totalValues
   }
   
@@ -182,16 +192,17 @@ class RegisteredEmail {
    * @return {boolean} 再構築が必要かどうか
    */
   adjustCol1(){
-    let reformRequire = false
+    let needsChange = false
 
     const valuesCol1 = this.getValuesFromCol1()
     const [idSet, selectedRows] = this.distinctValues(valuesCol1)
     this.addToIdSet([...idSet])
-
-    if( valuesCol1.length !== idSet.size ){
-      reformRequire = true
+    if( idSet.size > 0 ){
+      if( valuesCol1.length !== idSet.size ){
+        needsChange = true
+      }
     }
-    return reformRequire
+    return needsChange
   }
   
   /**
@@ -209,7 +220,13 @@ class RegisteredEmail {
   getIds(){
     return this.ids
   }
-  
+  /**
+   * IDが存在するか判定する
+   * @return {number} IDの数
+   */
+  hasId(value){
+    return this.idSet.has(value)
+  }
   /**
    * IDの数を取得する
    * @return {number} IDの数
@@ -231,7 +248,8 @@ class RegisteredEmail {
    * @return {Array} 1列目の値の配列
    */
   getValuesFromCol1(){
-    return this.getCol1(this.worksheet, this.yklibbConfig)
+    const values =  this.getCol1(this.worksheet, this.yklibbConfig)
+    return values
   }
   
   /**
@@ -265,7 +283,7 @@ class RegisteredEmail {
     const [idSet, selectedRows] = rows.reduce( (accumulator, currentValue) => {
       const id = currentValue[this.indexOfHeaderId]
       YKLiblog.Log.debug(`id=${id}`)
-      if( id !== null && typeof(id) !== "undefined" ){
+      if( id !== null && typeof(id) !== "undefined" && id.trim().length > 0){
         if( !accumulator[0].has(id) ){
           accumulator[0].add(id)
           accumulator[1].push(currentValue)

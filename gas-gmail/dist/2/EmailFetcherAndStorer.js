@@ -225,8 +225,10 @@ class EmailFetcherAndStorer{
 
     const [within2, newLastDateTime2] = this.searchWithFrom(queryInfo)
     
-    // 検索対象ラベルが付いていて、検索済みラベルが付いていないメッセージと、指定検索条件に合致するが、検索済みラベルがついていないメッセージのどちらも存在しない場合
-    if( within1.getMsgCount() === 0 && within2.getMsgCount() === 0 ){
+    // いかの２つの検索で、どちらも存在しない場合
+    // 　1)検索対象ラベルが付いていて、検索済みラベルが付いていないメッセージ
+    //   2)指定検索条件に合致するが、検索済みラベルがついていないメッセージ
+    if( within6.getMsgCount() === 0 && within2.getMsgCount() === 0 ){
       // スプレッドシートに検索結果記録が存在しない場合、(検索済みであることを示す)endLabelを剥がして、検索をやり直す
       const idsSize = this.registeredEmail.getIdsSize()
       if( idsSize === 0 ){

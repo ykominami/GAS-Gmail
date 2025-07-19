@@ -347,6 +347,15 @@ class TargetedEmail {
   }
 
   /**
+   * nth値を設定します
+   * 
+   * @param {number} nth値
+   */
+  setNth(value){
+    this.nth = value
+  }
+
+  /**
    * count値を設定します
    * 
    * @param {number} value - 設定するcount値

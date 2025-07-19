@@ -100,8 +100,8 @@ class Top {
 function setupConfig(){
   const config = new Config()
   // configSpreadsheet = config.setConfigInfoType(Config.CONFIG_INFO())
-  // config.setConfigInfoType(Config.CONFIG_INFO())
-  config.setConfigInfoType(Config.CONFIG_INFO2())
+  config.setConfigInfoType(Config.CONFIG_INFO())
+  // config.setConfigInfoType(Config.CONFIG_INFO2())
   // config.setConfigInfoType(Config.CONFIG_INFOX())
   return config
 }

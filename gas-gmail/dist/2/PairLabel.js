@@ -86,6 +86,37 @@ class PairLabel {
   }
   
   /**
+   * 指定したラベルを持つスレッドを取得する　
+   *
+   * @param {GmailLabel} label - スレッドを取得したいラベルオブジェクト
+   */
+  getThreadsFromLabel(label){
+    // 指定されたラベルを持つスレッドを検索
+    let threads = label.getThreads();
+    return threads
+  }  
+
+  /**
+   * ターゲットラベルを持つスレッドを取得する　
+   *
+   */
+  getThreadsFromTargetLabel(){
+    // 指定されたラベルを持つスレッドを検索
+    const label = this.getTargetLabel()
+    return this.getThreadsFromLabel(label)
+  }  
+
+  /**
+   * エンドラベルを持つスレッドを取得する　
+   *
+   */
+  getThreadsFromEndLabel(){
+    // 指定されたラベルを持つスレッドを検索
+    const label = this.getEndLabel()
+    return this.getThreadsFromLabel(label)
+  }  
+
+  /**
    * 指定したラベルを持つメールからラベルを削除する
    *
    * @param {string} labelName - 削除したいラベル名
@@ -123,52 +154,70 @@ class PairLabel {
    * @param {string} way - 検索方法（EmailFetcherAndStorer.SearchWithTargetLabel() または EmailFetcherAndStorer.SearchWithFrom()）
    */
   addThreadToLabel(within, way){
-    if( within.msgCount > 0 ){
-      YKLiblog.Log.debug(`PairLabel addTreadToLabel 4`)
-      within.array.map( threadAndMessagedataarray => {
-        const thread = threadAndMessagedataarray.thread
-        if( typeof(thread) === "undefined"){
-          throw new Error(`addThreadToLabel threadAndMessagedataarray=${threadAndMessagedataarray} threadAndMessagedataarray.constuctor=${ threadAndMessagedataarray.constructor }`)
-        }
-        YKLiblog.Log.debug(`PairLabel addTreadToLabel 5`)
-        if( way === EmailFetcherAndStorer.SearchWithTargetLabel() ){
-          YKLiblog.Log.debug(`PairLabel addTreadToLabel 6 add Label`)
-          try{
-            thread.addLabel(this.endLabel)
-          }
-          catch(e){
-            YKLiblog.Log.unknown(`${e.name}`)
-            YKLiblog.Log.unknown(`${e.message}`)
-            YKLiblog.Log.unknown(`${e.stack}`)
-          }
-          // throw new Error(`PairLabel addTreadToLabel SearchWithTargetLabel`)
-        }
-        else if(way === EmailFetcherAndStorer.SearchWithFrom()){
-          YKLiblog.Log.debug(`PairLabel addTreadToLabel 7 add Label`)
-          try{
-            thread.addLabel(this.targetLabel)
-          }
-          catch(e){
-            YKLiblog.Log.unknown(`${e.name}`)
-            YKLiblog.Log.unknown(`${e.message}`)
-            YKLiblog.Log.unknown(`${e.stack}`)
-          }
-          try{
-            thread.addLabel(this.endLabel)
-          }
-          catch(e){
-            YKLiblog.Log.unknown(`${e.name}`)
-            YKLiblog.Log.unknown(`${e.message}`)
-            YKLiblog.Log.unknown(`${e.stack}`)
-          }
-        }
-      })
-    }
-    else{
+    if( within.msgCount === 0 ){
       if(within.msgCount != 0){
         throw new Error(`PairLabel addTreadToLabel within.msgCount within.msgCount=${within.msgCount}`)
       }
+      return
     }
+    YKLiblog.Log.debug(`PairLabel addTreadToLabel 4`)
+    within.array.map( threadAndMessagedataarray => {
+      const thread = threadAndMessagedataarray.thread
+      YKLiblog.Log.debug(`PairLabel addTreadToLabel 5`)
+      if( way === EmailFetcherAndStorer.SearchWithTargetLabel() ){
+        YKLiblog.Log.debug(`PairLabel addTreadToLabel 6 add Label`)
+        try{
+          thread.addLabel(this.endLabel)
+        }
+        catch(e){
+          YKLiblog.Log.unknown(`${e.name}`)
+          YKLiblog.Log.unknown(`${e.message}`)
+          YKLiblog.Log.unknown(`${e.stack}`)
+        }
+        // throw new Error(`PairLabel addTreadToLabel SearchWithTargetLabel`)
+      }
+      else if(way === EmailFetcherAndStorer.SearchWithFrom()){
+        YKLiblog.Log.debug(`PairLabel addTreadToLabel 7 add Label`)
+        try{
+          thread.addLabel(this.targetLabel)
+        }
+        catch(e){
+          YKLiblog.Log.unknown(`${e.name}`)
+          YKLiblog.Log.unknown(`${e.message}`)
+          YKLiblog.Log.unknown(`${e.stack}`)
+        }
+        try{
+          thread.addLabel(this.endLabel)
+        }
+        catch(e){
+          YKLiblog.Log.unknown(`${e.name}`)
+          YKLiblog.Log.unknown(`${e.message}`)
+          YKLiblog.Log.unknown(`${e.stack}`)
+        }
+      }
+    })
+  }
+  addTargetLabelToMessage(message){
+    const label = this.getTargetLabel()
+    this.addToMessage(label, message)
+  }
+  addTargetLabelToMessageArray(messageArray){
+    const label = this.getTargetLabel()
+    this.addToMessageArray(label, messageArray)
+  }
+  addEndLabelToMessage(message){
+    const label = this.getEndLabel()
+    this.addToMessage(label, message)
+  }
+  addEndLabelToMessageArray(messageArray){
+    const label = this.getEndLabel()
+    this.addToMessageArray(label, messageArray)
+  }
+  addToMessage(label, message){
+    label.addToMessage(message)
+  }
+  addToMessageArray(label, messageArray){
+    messageArray.forEach(message => label.addToMessage(message));
   }
 }
 

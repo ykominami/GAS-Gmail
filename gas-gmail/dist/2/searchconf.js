@@ -11,27 +11,47 @@ class SearchConf {
    * - item[1]: 最大検索可能回数
    * - item[2]: 最大スレッド数
    * - item[3]: 最大アイテム数
+   * - item[4]: メッセージ数閾値
    */
   constructor(rowIndex, item){
     this.rowIndex = rowIndex
 
-    this.index_maxSearchesAvailable = 1
-    this.maxSearchesAvailable = parseInt(item[ this.index_maxSearchesAvailable ], 10)
+    let currentIndex = 1
+    this.index_maxSearchesAvailable = currentIndex++
+    const x = item[ this.index_maxSearchesAvailable ]
+    const maxSearchesAvailable = parseInt(x, 10)
+    this.maxSearchesAvailable = maxSearchesAvailable
     if( isNaN(this.maxSearchesAvailable) ){
       this.maxThreads = 10
     }
 
-    this.index_maxThreads = 2
-    this.maxThreads = parseInt(item[ this.index_maxThreads ], 10)
+    this.index_maxThreads = currentIndex++
+    const maxThreads = parseInt(item[ this.index_maxThreads ], 10)
+    this.maxThreads = maxThreads
     YKLiblog.Log.debug(`FolderConf item[3]=${item[3]}`)
     if( isNaN(this.maxThreads) ){
       this.maxThreads = 10
     }
 
-    this.index_maxItems = 3
-    this.maxItems = parseInt(item[ this.index_maxItems ], 10)
+    this.index_maxItems = currentIndex++
+    const maxItems = parseInt(item[ this.index_maxItems ], 10)
+    this.maxItems = maxItems
     if( isNaN(this.maxItems) ){
       this.maxItems = 10
+    }
+
+    this.index_threshold = currentIndex++
+    const threshold = parseInt(item[ this.index_threshold ], 10)
+    this.threshold = threshold
+    if( isNaN(this.threshold) ){
+      this.threshold = 49
+    }
+
+    this.index_naxYearsAgo = currentIndex++
+    const maxYearsAgo = parseInt(item[ this.index_maxYearsAgo ], 10)
+    this.maxYearsAgo = maxYearsAgo
+    if( isNaN(this.maxYearsAgo) ){
+      this.maxYearsAgo = 5
     }
   }
   
@@ -42,6 +62,17 @@ class SearchConf {
    */
   isBiggerThanMaxItems(value){
     return (this.maxItems < value)
+  }
+  
+  /**
+   * 指定された値がメッセージ数閾値を超えているかチェック
+   * @param {number} value - チェックする値
+   * @returns {boolean} メッセージ数閾値を超えている場合はtrue、そうでなければfalse
+   */
+  isBiggerThanThreshold(value){
+    const threshold = this.threshold
+    const ret = (threshold < value)
+    return ret
   }
   
   /**
@@ -66,5 +97,21 @@ class SearchConf {
    */
   getMaxItems(){
     return this.maxItems
+  }
+  
+  /**
+   * メッセージ数閾値取得
+   * @returns {number} メッセージ数閾値
+   */
+  getThreshold(){
+    return this.threshold
+  }
+  
+  /**
+   * 最大過去年数を取得
+   * @returns {number} 最大過去年数
+   */
+  getMaxYearsAgo(){
+    return this.maxYearsAgo
   }
 }

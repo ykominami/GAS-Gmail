@@ -10,14 +10,11 @@ class Top {
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.FAULT())
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.ERROR())
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.WARN())
-    YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
+     YKLiblog.Log.setLogLevel(YKLiblog.Log.INFO())
     // YKLiblog.Log.setLogLevel(YKLiblog.Log.DEBUG())
     // YKLiblog.Log.initLogDebug()
     this.config = config
     // this.config.setClearFlag(true)
-
-    this.makeIndexFlag = maxIndexFlag
-    YKLiblog.Log.debug(`this.makeindexFlag=${this.makeIndexFlag}`)
 
     this.limitx = limitx
     this.numOfItems = 0
@@ -44,7 +41,7 @@ class Top {
     const recordSpreadsheet = new RecordSpreadsheet(spreadsheet2, config)
     recordSpreadsheet.addConfigSpreadsheet(configSpreadsheet)
 
-    this.gmail = new Gmail(this.limitx, configSpreadsheet, recordSpreadsheet, config, this.makeIndexFlag)
+    this.gmail = new Gmail(this.limitx, configSpreadsheet, recordSpreadsheet, config)
     YKLiblog.Log.debug(`Top setup this.limitx=${this.limitx}`)
   }
   
@@ -61,35 +58,115 @@ class Top {
     YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
     // 必要ならthis.numOfItemsに反映
     this.numOfItems = this.gmail.explore(startInitIndex, endInitIndex, this.numOfItems, YKLiba.Config.ADDUNDERROW())
+
+    return this.numOfItems
   }
-  
-  /**
-   * すべてのラベルを削除する
-   * @param {number} startInitIndex - 開始インデックス
-   * @param {number} endInitIndex - 終了インデックス
-   */
-  removeLabelAllx(startInitIndex, endInitIndex){
-    if (!this.gmail) {
-      YKLiblog.Log.debug('Top start: gmail is not initialized')
-      return
-    }
-    YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
-    // 必要ならthis.numOfItemsに反映
-    this.numOfItems = this.gmail.removeLabelAllx(startInitIndex, endInitIndex)
+
+  execute2(startInitIndex, endInitIndex){
+    const atable = this.gmail.getATable()
+    atable.clearAndReset()
+
+    const spreadsheetId = atable.getSpreadsheetId()
+    const sheetNames = YKLibb.Gssx.getAllWorksheetNames(spreadsheetId)
+    const exceptNames=  ["GAS-Gmail","_B","_A","Clasp-ts-etc","_config"]
+    const names = sheetNames.filter( name => !exceptNames.includes(name))
+    YKLiblog.Log.debug(`names=${ JSON.stringify(names)}`)
+
+    // const keys = this.gmail.getKeys()
+    const keys = this.gmail.getKeysOfRegisteredEmail()
+    YKLiblog.Log.debug(`keys=${ JSON.stringify(keys)}`)
+
+    const filteredKeys = keys.filter( name => !exceptNames.includes(name))
+    let dataArray
+    let dataArray2
+    YKLiblog.Log.debug(`filteredKeys=${ JSON.stringify(filteredKeys)}`)
+
+    dataArray = this.em(filteredKeys)
+    YKLiblog.Log.debug(`dataArray=${ JSON.stringify(dataArray)}`)
+
+    dataArray2 = this.sort(dataArray)
+    dataArray2.map( data => atable.addDataRowsAndUpdate(data) )
+    YKLiblog.Log.unknown(`dataArray2=${ JSON.stringify(dataArray2)}`)
+
+    const dataArray3 = dataArray2.filter( data => {
+      return parseInt(data[1], 10) !== 0
+    } )
+    YKLiblog.Log.unknown(`dataArray3=${ JSON.stringify(dataArray3)}`)
+    const xnames = dataArray3.map( item => item[0] )
+    YKLiblog.Log.unknown(`xnames=${ JSON.stringify(xnames)}`)
+
+    const dataArray4 = this.em2(xnames)
+    dataArray4.map( ([remail, temail]) => {
+      YKLiblog.Log.unknown(`temail=${ temail }`)
+      temail.setCategory("folder-x")
+      temail.rewrite()
+      temail.update()
+    } )
   }
-  /**
-   * 指定されたラベルを削除する
-   * @param {number} startInitIndex - 開始インデックス
-   * @param {number} endInitIndex - 終了インデックス
-   */
-  removeLabelx(startInitIndex, endInitIndex){
-    if (!this.gmail) {
-      YKLiblog.Log.debug('Top start: gmail is not initialized')
-      return
-    }
-    YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
-    // 必要ならthis.numOfItemsに反映
-    this.numOfItems = this.gmail.removeLabelx(startInitIndex, endInitIndex)
+  sort(array){
+    const indexCount = 1
+    return array.sort( (a,b) => {
+      return a[indexCount] - b[indexCount]
+    })
+  }
+  em(names){
+    const dataArray = names.map( name => {
+      const remail = this.gmail.getRegisteredEmail(name)
+      const temail = this.gmail.getTargetedEmail(name)
+      if( typeof(remail) === "undefined") {
+        return [name, "undefined"]      
+      }
+      else{
+        return [name, remail.getIdsSize(), temail.getCondition(), remail.getSheetUrl() ]  
+      }
+    })
+    return dataArray
+  }
+  em2(names){
+    const dataArray = names.map( name => {
+      const remail = this.gmail.getRegisteredEmail(name)
+      const temail = this.gmail.getTargetedEmail(name)
+      return [remail, temail]
+    })
+    return dataArray
+  }
+  search(queryInfo, registeredEmail, way){
+    const gmailSearch = new GmailSearch()
+    return gmailSearch.searchAndClassify(queryInfo, registeredEmail, way, this.config)
+  }
+
+  execute3(startInitIndex, endInitIndex){
+    const configTable = this.gmail.getConfigTable()
+    const targetedEmailList = configTable.getTargetedEmailList()
+
+    const keys = targetedEmailList.getKeys()
+    YKLiblog.Log.debug(`keys=${ JSON.stringify(keys)}`)
+    // return
+
+    const gmailSearch = new GmailSearch()
+    keys.map( key => {
+      // const targetedEmail = targetedEmailList.getTargetedEmailByKey(key)
+      const registeredEmail = this.gmail.getRegisteredEmail(key)
+      const targetedEmail = registeredEmail.targetedEmail
+      const [pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
+      const maxYearsAgo = targetedEmail.getMaxYearsAgo()
+      const maxThreads = targetedEmail.getMaxThreads()
+
+      const mcount=targetedEmail.getMcount()
+      YKLiblog.Log.debug(`key=${key} mcount=${mcount}`)
+      if(targetedEmail.isOverMessages()){
+        const way = EmailFetcherAndStorer.From()
+        const dateRangeQueryList = new DateRangeQueryList(way, maxYearsAgo)
+        dateRangeQueryList.collectThreads(gmailSearch, queryInfo, maxThreads)
+        YKLiblog.Log.debug(`dateRangeQueryList=${ JSON.stringify(dateRangeQueryList) }`)
+
+        const array = this.search(queryInfo, registeredEmail, way)
+        YKLiblog.Log.debug(`queryInfo.queryResultList=${ JSON.stringify(queryInfo.queryResultList)}`)
+        // YKLiblog.Log.debug(`array.length=${ array.length }`)
+      }
+
+      return mcount
+    })
   }
 }
 
@@ -98,12 +175,22 @@ class Top {
  * @returns {Object} 初期化された設定オブジェクト
  */
 function setupConfig(){
+  let key
+   key = Config.CONFIG_INFO()
+  // key = Config.CONFIG_INFO1()
+  // key = Config.CONFIG_INFO2()
+  // key = Config.CONFIG_INFOX()
+  // key = Config.CONFIG_INFO4()
+
   const config = new Config()
-  // configSpreadsheet = config.setConfigInfoType(Config.CONFIG_INFO())
-  config.setConfigInfoType(Config.CONFIG_INFO())
-  // config.setConfigInfoType(Config.CONFIG_INFO2())
-  // config.setConfigInfoType(Config.CONFIG_INFOX())
-  return config
+
+  const ret = config.setConfigInfoType(key)
+  if( ret ){
+    return config
+  }
+  else{
+    return null
+  }
 }
 
 /**
@@ -128,50 +215,16 @@ function start(){
   top.execute(startIndex, endIndex)
 }
 
-/**
- * すべてのラベルを削除する処理を開始する
- */
-function remoteLabelAll(){
+function start2(){
   const config = setupConfig()
   const [top, startIndex, endIndex] = setupTop(config)
 
-  top.removeLabelAllx(startIndex, endIndex)
+  top.execute2(startIndex, endIndex)
 }
 
-/**
- * 指定されたラベルを削除する処理を開始する
- */
-function removeLabels(){
+function start3(){
   const config = setupConfig()
   const [top, startIndex, endIndex] = setupTop(config)
 
-  top.removeLabelx(startIndex, endIndex)
+  top.execute3(startIndex, endIndex)
 }
-
-/**
- * 指定した名前のシートのURLを取得し、メッセージボックスに表示します。
- */
-function showUrlOfSheetByName() {
-  // ★★★ ここにURLを取得したいシートの名前を入力してください ★★★
-  const sheetName = 'シート2'; 
-
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  // 名前でシートオブジェクトを取得します。
-  const targetSheet = spreadsheet.getSheetByName(sheetName);
-
-  // targetSheetが存在するか（指定した名前のシートが見つかったか）を確認します。
-  if (targetSheet) {
-    // シートが見つかった場合の処理
-    const spreadsheetUrl = spreadsheet.getUrl();
-    const sheetId = targetSheet.getSheetId();
-    const sheetUrl = `${spreadsheetUrl}#gid=${sheetId}`;
-    
-    SpreadsheetApp.getUi().alert(`'${sheetName}' のURL:\n${sheetUrl}`);
-    
-  } else {
-    // シートが見つからなかった場合の処理
-    SpreadsheetApp.getUi().alert(`エラー: '${sheetName}' という名前のシートは見つかりませんでした。`);
-  }
-}
-
-

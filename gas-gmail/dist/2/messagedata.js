@@ -2,13 +2,14 @@ class Messagedata{
   /**
    * Messagedataクラスのコンストラクタ
    * 1個のメッセージに関する情報を管理するインスタンスを初期化する
-   * @param {Array} headers - メッセージのヘッダー情報の配列
+   * @param {Array} names - メッセージ情報の項目名の配列
    * @param {Object} msg - Gmailメッセージオブジェクト
-   * @param {string|null} date_str - 日付文字列（nullの場合はmsgから取得）
+   * @param {string|null} date_str - メッセージの日時の日付文字列（nullの場合はmsgから取得）
    * @param {boolean} recorded - 記録済みフラグ
    * @param {Object} config - 設定オブジェクト
    */
-  constructor (headers, msg, date_str, recorded, config){
+  constructor (names, msg, date_str, recorded, config){
+    this.names = names
     this.config = config
 
     let date
@@ -26,11 +27,11 @@ class Messagedata{
         return null
       }
     }
+    this.date = date
     this.msg = msg
     this.recorded = recorded
     this.isAfter = false
     this.isTruncated = false
-    this.names = [...headers,  "date"]
 
     this.truncated = new Messagedatax(null, null)
     this.original = new Messagedatax(msg, date)
@@ -85,7 +86,7 @@ class Messagedata{
    * @returns {Array} メッセージデータの配列
    */
   getDataAsArray(){
-    this.dataArray = [this.truncated.id, this.truncated.from, this.truncated.subject, this.truncated.date, this.truncated.plainBody]
+    this.dataArray = [this.truncated.id, this.truncated.from, this.truncated.subject, this.truncated.date, this.truncated.plainBody, this.date]
     YKLiblog.Log.debug(`Messagedata.getDataAsArray dataArray.length=${this.dataArray.length} this.dataArray[0]=${this.dataArray[0]} this.dataArray[2]=${this.dataArray[2]}`)
     return this.dataArray
   }

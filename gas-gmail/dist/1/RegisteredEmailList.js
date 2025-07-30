@@ -11,14 +11,16 @@ class RegisteredEmailList {
    */
   constructor(spreadsheet, config){
     this.config = config
-    this.clearFlag = config.getClearFlag()
     this.spreadsheet = spreadsheet
-    this.registeredEmailByKey = {}
-    this.tabledata = null
-    this.keySet = new Set()
+
     const tableDef = config.getRegisteredEmailTableDef()
     this.tableDef = tableDef
     this.sourceHeader = tableDef.getHeader()
+    // this.table = new HeaderTable(spreadsheet, sheetName, config, tableDef)
+
+    this.clearFlag = config.getClearFlag()
+    this.registeredEmailByKey = {}
+    this.keySet = new Set()
     this.yklibbConfig = new YKLibb.Config(this.sourceHeader.length, this.sourceHeader, YKLibb.Config.COMPLETE())
     this.targetedEmailList = null
   }
@@ -29,7 +31,8 @@ class RegisteredEmailList {
    * @description 現在登録されているメールのキーを配列形式で返す
    */
   getKeys(){
-    return Object.keys(this.registeredEmailByKey)
+    const value = Object.keys(this.registeredEmailByKey)
+    return value
   }
   
   /**
@@ -39,7 +42,8 @@ class RegisteredEmailList {
    * @description キーに対応する登録済みメールオブジェクトを返す
    */
   getRegisteredEmailByKey(key){
-    return this.registeredEmailByKey[key]
+    const remail =  this.registeredEmailByKey[key]
+    return remail
   }
   
   /**
@@ -49,7 +53,8 @@ class RegisteredEmailList {
   addRegisteredEmailFromTargetedEmailList(){
     if (this.targetedEmailList) {
       const keys = this.targetedEmailList.getKeys()
-      keys.forEach(key => this.addRegisteredEmail(key, this.clearFlag))
+      const ultimate = false
+      keys.forEach(key => this.addRegisteredEmail(key, ultimate, this.clearFlag))
     }
   }
   
@@ -59,7 +64,7 @@ class RegisteredEmailList {
    * @param {boolean} clearFlag - クリアフラグ（デフォルト: false）
    * @description 指定されたキーで登録済みメールを追加する。既に存在する場合は何もしない
    */
-  addRegisteredEmail(key, clearFlag = false){
+  addRegisteredEmail(key, ultimate, clearFlag = false){
     if(this.keySet.has(key)){
       return
     }
@@ -69,8 +74,13 @@ class RegisteredEmailList {
     }
     
     if (targetedEmail) {
-      const registeredEmail = new RegisteredEmail(targetedEmail, this.spreadsheet, key, this.config, this.tableDef, this.yklibbConfig, clearFlag)
+        if( typeof(ultimate) !== "boolean" ){
+          throw new Error(`${ typeof(ultimate) } ultimate is not boolean`)
+        }
+
+      const registeredEmail = new RegisteredEmail(targetedEmail, this.spreadsheet, key, this.config, this.tableDef, this.yklibbConfig, ultimate, clearFlag)
       this.registeredEmailByKey[key] = registeredEmail
+      YKLiblog.Log.debug(`RegisteredEmail addRegisteredEmail key=${key} |${  JSON.stringify(Object.keys(this.registeredEmailByKey)) }`)
       this.keySet.add(key)
     }
   }

@@ -1,32 +1,46 @@
 class Messagearray{
   /**
    * Messagearrayクラスのコンストラクタ
-   * メッセージとスレッドの配列を管理するための初期化を行う
+   * メッセージデータの配列を管理するための初期化を行う
    * @param {number} maxSearchesAvailable - 利用可能な最大検索数（デフォルト: 0）
    */
-  constructor(maxSearchesAvailable = 0){
-    // ThreadAndMessagedataarrayの配列
+  constructor(){
+    // Messagedataの配列
     this.array = []
     this.msgCount = 0
     this.threadCount = 0
     this.lastDate = new Date(0)
-    this.maxSearchesAvailable = maxSearchesAvailable
-    this.maxThreads = 0
+    this.queryInfo = null
   }
-  
+
+  setQueryInfo(queryInfo){
+    this.queryInfo = queryInfo
+  }
+
+  add(md){
+    this.array.push(md)
+    this.msgCount += 1
+    if( YKLiba.Utils.isAfterDate( this.lastDate, md.lastDate ) ){
+      this.lastDate = md.lastDate
+    }
+    this.maxSearchesAvailable -= 1 
+  }
+
   /**
    * 有効なメッセージデータ配列を追加する
    * スレッドとメッセージの情報を配列に追加し、カウンターを更新する
-   * @param {Object} tam - ThreadAndMessagedataarrayオブジェクト
+   * @param {Object} md - Messagedataオブジェクト
    */
-  addValidMessagedataarray(tam){
-    this.array.push(tam)
-    this.msgCount += tam.messagedataArray.length
-    this.threadCount += 1
-    this.lastDate = tam.thread.getLastMessageDate()
-    this.maxSearchesAvailable -= tam.messagedataArray.length 
+  addValidMessagedata(md){
+    this.array.push(md)
+    this.msgCount += 1
+    // this.threadCount += 1
+    if( YKLiba.Utils.isAfterDate( this.lastDate, tam.lastDate ) ){
+      this.lastDate = tam.lastDate
+    }
+    this.maxSearchesAvailable -= tamSize 
     this.maxThreads -= 1
-    YKLiblog.Log.debug(`Messagearray Valid this.msgCount=${this.msgCount}`)
+    YKLiblog.Log.debug(`Messagearray Valid this.msgCount=${this.msgCount} this.threadCount=${this.threadCount}`)
   }
   
   /**
@@ -36,10 +50,20 @@ class Messagearray{
    */
   addInvalidMessagedataarray(tam){
     this.array.push(tam)
-    this.msgCount += tam.messagedataArray.length
-    this.threadCount += tam.thread.length
+    let messagedataArrayLength = parseInt(tam.messagedataArray.length, 10)
+    if( isNaN(messagedataArrayLength) ){
+      messagedataArrayLength = 0
+    }
+
+    this.msgCount += messagedataArrayLength
+    let threadLength = parseInt(tam.thread.length, 10)
+    if( isNaN(threadLength) ){
+      threadLength = 0
+    }
+
+    // this.threadCount += threadLength
     this.lastDate = tam.thread.getLastMessageDate()    
-    YKLiblog.Log.debug(`Messagearray Invalid this.msgCount=${this.msgCount}`)
+    YKLiblog.Log.debug(`Messagearray Invalid this.msgCount=${this.msgCount} this.threadCount=${this.threadCount} threadLength=${threadLength}`)
   }
   
   /**

@@ -12,6 +12,9 @@ class TargetedEmailList {
     this.searchStatus = null;
     this.keySet = new Set();
     this.targetedEmailByKey = {};
+    //
+    this.keySetX = new Set();
+    this.targetedEmailXByKey = {};
   }
   
   /**
@@ -58,11 +61,33 @@ class TargetedEmailList {
    * @param {Object} rowRange - 行範囲オブジェクト
    */
   addTargetedEmail(i, item, rowRange){
-    const key = item[1];
-    if(key && !this.keySet.has(key)){
-      const targetedEmail = new TargetedEmail(i, item, this.searchConf, rowRange);
+    const targetedEmail = new TargetedEmail(i, item, this.searchConf, rowRange);
+    const key = targetedEmail.getName()
+    if(!this.keySet.has(key)){
       this.targetedEmailByKey[key] = targetedEmail;
+      const keySet = this.keySet
       this.keySet.add(key);
+      const keys = this.getKeys()
+      YKLiblog.Log.debug(`TargetedEmailList addTargetedEmail keys=${keys}`)
+      YKLiblog.Log.debug(`TargetedEmailList addTargetedEmail key=${key}`)
+      const keys2 = Object.keys(this.targetedEmailByKey)
+      YKLiblog.Log.debug(`TargetedEmailList addTargetedEmail keys2=${keys2}`)
+    }
+  }
+  
+  /**
+   * ターゲットメールを追加する
+   * 重複するキーが存在しない場合のみ追加される
+   * @param {number} i - インデックス
+   * @param {Array} item - メールアイテムの配列
+   * @param {Object} rowRange - 行範囲オブジェクト
+   */
+  addTargetedEmailX(i, item, rowRange){
+    const key = item[1];
+    if(key && !this.keySetX.has(key)){
+      const targetedEmailX = new TargetedEmail(i, item, this.searchConf, rowRange);
+      this.targetedEmailXByKey[key] = targetedEmailX;
+      this.keySetX.add(key);
     }
   }
   
@@ -71,15 +96,42 @@ class TargetedEmailList {
    * @returns {Array<string>} キーの配列
    */
   getKeys(){
-    return Object.keys(this.targetedEmailByKey);
+    const keys = Object.keys(this.targetedEmailByKey);
+    return keys
   }
-  
+
+  /**
+   * ターゲットメールXのキー一覧を取得する
+   * @returns {Array<string>} キーの配列
+   */
+  getXKeys(){
+    const keys = Object.keys(this.targetedEmailXByKey);
+    return keys
+  }
+
   /**
    * 指定されたキーに対応するターゲットメールを取得する
    * @param {string} key - ターゲットメールのキー
    * @returns {TargetedEmail|null} 対応するターゲットメール、存在しない場合はnull
    */
   getTargetedEmailByKey(key){
-    return this.targetedEmailByKey[key];
+    let value = this.targetedEmailByKey[key];
+    if( typeof(value) === "undefined" ){
+      value = null
+    }
+    return value
+  }
+
+  /**
+   * 指定されたキーに対応するターゲットメールXを取得する
+   * @param {string} key - ターゲットメールXのキー
+   * @returns {TargetedEmail|null} 対応するターゲットメールX、存在しない場合はnull
+   */
+  getTargetedEmailXByKey(key){
+    let value = this.targetedEmailXByKey[key];
+    if( typeof(value) === "undefined" ){
+      value = null
+    }
+    return value
   }
 }

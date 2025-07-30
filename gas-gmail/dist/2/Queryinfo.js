@@ -13,10 +13,14 @@ class QueryInfo {
    * @param {Array<string>} ways - 検索方法の配列
    * @throws {Error} maxThreadsが0以下の場合にエラーを投げる
    */
-  constructor(from, pairLabel, maxThreads, maxSearchesAvailable, lastDateTime, ways ){
+  constructor(from, pairLabel, maxThreads, maxSearchesAvailable, lastDateTime, ways){
     if( maxThreads <= 0 ){
       throw Error(`maxThreads=${maxThreads}`)
     }
+    this.queryResultList = new QueryResultList()
+    const today = new Date()
+    this.year = today.getFullYear()
+    
     this.from = from
     this.pairLabel = pairLabel
 
@@ -53,7 +57,6 @@ class QueryInfo {
         this.assocQuery[key] = `from:${from2}`
       } 
     } )
-
     this.searchQueries = Object.values(this.assocQuery)
 
     const [validLastDate, validLastDateTime, validLastDateStr] = YKLibb.Util.getValidDateAndDateTime(lastDateTime)
@@ -63,16 +66,73 @@ class QueryInfo {
     this.lastDateTime = validLastDateTime
     this.lastDateStr = validLastDateStr
     this.lastDate = validLastDate
+
+    this.additonalQueryString = ""
   }
-  
+
+  setAdditonalQueryString(additonalQueryString){
+    this.additonalQueryString = additonalQueryString
+  }
+
+  clearAdditionalQueryString(){
+    this.setAdditonalQueryString("")
+  }
+
+  getDateRangeConditionForOneYear(yearsAgo = 0){
+    let dateCondition
+    if( yearsAgo === 0 ){
+      dateCondition = this.makeDateRangeCondition(this.year)       
+    }
+    else{
+      const afterYear = this.year - yearsAgo
+      dateCondition = this.makeDateRangeCondition(afterYear, afterYear + 1)
+    }
+    return dateCondition
+  }
+
+  makeDateRangeCondition(afterYear, beforeYear = null){
+    let beforeString = ""
+
+    const afterString = `after:${afterYear}/1/1`
+    if( beforeYear !== null){
+      beforeString = `before:${beforeYear}/1/1`
+    }
+    return [afterYear, `${afterString} ${beforeString}`]
+  }
+
+  /**
+   * 指定された検索方法に対応するクエリ文字列オブジェクトを取得する
+   * @param {string} way - 検索方法のキー
+   * @returns {string} 対応するGmail検索クエリ文字列オブジェクト
+   */
+  getQuery(way){
+    const mainQueryString = this.assocQuery[way]
+    const additionalQueryString = this.additonalQueryString     
+    const queryString = `${mainQueryString} ${additionalQueryString}`
+    const queryResult = new QueryResult(way, queryString, mainQueryString, additionalQueryString)
+    const index = this.queryResultList.add(way, queryResult)
+    const queryStringObject = new QueryString(queryString, index)
+    YKLiblog.Log.debug(`QueryInfo getQuery way=${way} queryStringObject.string=${queryStringObject.string} queryStringObject.index=${queryStringObject.index}`)
+
+    return queryStringObject
+  }
   /**
    * 指定された検索方法に対応するクエリ文字列を取得する
    * @param {string} way - 検索方法のキー
    * @returns {string} 対応するGmail検索クエリ文字列
    */
   getQueryString(way){
-    const queryString = this.assocQuery[way]
-    YKLiblog.Log.debug(`QueryInfo getQueryString way=${way} queryString=${queryString}`)
+    const mainQueryString = this.assocQuery[way]
+    const additionalQueryString = this.additonalQueryString 
+    const queryString = `${mainQueryString} ${additionalQueryString}`
+
     return queryString
+  }
+
+  setQueryResultByIndex(index, value){
+    this.queryResultList.setResultAsObjectByIndex(index, value)
+  }
+  getQueryResultByIndex(index){
+    return this.queryResultList.getResultAsObjectByIndex(index)
   }
 }

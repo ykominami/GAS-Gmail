@@ -6,12 +6,35 @@ class RecordSpreadsheet {
    * @param {Object} config - 設定オブジェクト
    */
   constructor(spreadsheet, config){
+    this.configSpreadsheet = null
+
     this.config = config
   
     this.spreadsheet = spreadsheet
     this.registeredEmailList = new RegisteredEmailList(spreadsheet, config)
     //
-    this.bTable = new BTable(spreadsheet, config)
+    const ultimate = true
+
+    const way = YKLibb.Config.COMPLETE()
+    const aTableDef = config.getATableDef()
+    this.aTable = this.makeHeaderTable(spreadsheet, config.getASheetName(), config, aTableDef, way, ultimate)
+
+    const bTableDef = config.getBTableDef()
+    this.bTable = this.makeHeaderTable(spreadsheet, config.getBSheetName(), config, bTableDef, way, ultimate)
+  }
+  makeHeaderTable(spreadsheet, sheetName, config, tableDef, way, ultimate){
+    const sourceHeader = tableDef.getHeader()
+    const yklibbConfig = new YKLibb.Config(sourceHeader.length, sourceHeader, way)
+    const table = new HeaderTable(spreadsheet, sheetName, config, tableDef, yklibbConfig, ultimate )
+    return table
+  }
+
+  /**
+   * ATableオブジェクトを取得する
+   * @returns {ATable} ATableオブジェクト
+   */
+  getATable(){
+    return this.aTable
   }
   
   /**

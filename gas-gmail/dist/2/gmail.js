@@ -11,12 +11,11 @@ class Gmail{
    * @param {Object} configSpreadsheet - 設定スプレッドシートオブジェクト
    * @param {Object} recordSpreadsheet - レコードスプレッドシートオブジェクト
    * @param {Object} config - 設定オブジェクト
-   * @param {number} makeindexFlag - インデックス作成フラグ（デフォルト: 0）
    */
-  constructor(limitx, configSpreadsheet, recordSpreadsheet, config, makeindexFlag = 0){
+  constructor(limitx, configSpreadsheet, recordSpreadsheet, config){
     this.limitx = limitx;
     this.configSpreadsheet = configSpreadsheet;
-    this.configTable = this.configSpreadsheet.getConfigTable()
+    this.configTable = this.getConfigTable()
     this.targetedEmailList = this.configTable.getTargetedEmailList()
     this.searchConf = this.configTable.getSearchConf()
     this.searchStatus = this.configTable.getSearchStatus()
@@ -26,7 +25,9 @@ class Gmail{
     this.recordSpreadsheet.addConfigSpreadsheet(this.configSpreadsheet)
     this.bTable = this.getBTable()
     this.config = config
-    this.makeindexFlag = makeindexFlag;
+  }
+  getConfigTable(){
+    return this.configSpreadsheet.getConfigTable()
   }
 
   /**
@@ -35,6 +36,14 @@ class Gmail{
    */
   getBTable(){
     return this.recordSpreadsheet.getBTable()
+  }
+
+  /**
+   * Aテーブルを取得する
+   * @returns {Object} Aテーブルオブジェクト
+   */
+  getATable(){
+    return this.recordSpreadsheet.getATable()
   }
 
   /**
@@ -54,7 +63,8 @@ class Gmail{
   getTargetedEmail(key){
     const configTable = this.configSpreadsheet.getConfigTable()
     const targetedEmailList = configTable.getTargetedEmailList()
-    return targetedEmailList.getTargetedEmailByKey(key)
+    const temail = targetedEmailList.getTargetedEmailByKey(key)
+    return temail
   }
 
   /**
@@ -64,7 +74,13 @@ class Gmail{
    */
   getRegisteredEmail(key){
     const registeredEmailList = this.recordSpreadsheet.getRegisteredEmailList()
-    return registeredEmailList.getRegisteredEmailByKey(key)
+    const remail = registeredEmailList.getRegisteredEmailByKey(key)
+    return remail
+  }
+  getKeysOfRegisteredEmail(){
+    const registeredEmailList = this.recordSpreadsheet.getRegisteredEmailList()
+    const keys = registeredEmailList.getKeys()
+    return keys
   }
 
   /**
@@ -124,9 +140,6 @@ class Gmail{
     targetedEmail.prepareForSearch(backupRootFolderConf)
     
     YKLiblog.Log.debug(`name=${targetedEmail.getName()} nth=${targetedEmail.getNth()} searchStatus.nth=${this.searchStatus.getNth()}`)
-
-    targetedEmail.setMaxSearchesAvailable(this.searchConf.getMaxSearchesAvailable());
-    targetedEmail.setMaxThreads(this.searchConf.getMaxThreads());
   }
 
   /**
@@ -259,7 +272,8 @@ class Gmail{
       return numOfItems
     }  
 
-    const targetedEmail = this.getTargetedEmail(key);
+    // const targetedEmail = this.getTargetedEmail(key);
+    const targetedEmail = registeredEmail.targetedEmail
     if(typeof(targetedEmail) === "undefined" ){
       YKLiblog.Log.debug(`Gmail searchAndStore  targetedEmail=undefined`)
       return numOfItems
@@ -273,7 +287,21 @@ class Gmail{
 
     const [pairLabel, queryInfo] = targetedEmail.makePairLabelAndQueryInfo()
     const emailFetcherAndStorer = new EmailFetcherAndStorer(targetedEmail, registeredEmail, this.limitx, op, nth, this.config, this.bTable) 
-    emailFetcherAndStorer.searchAndRegister(queryInfo)
+    if( emailFetcherAndStorer.existYears() ){
+      const dateRangeQueryList = emailFetcherAndStorer.getDateRangeQueryList()
+      const max = dateRangeQueryList.getYearsSize()
+      // let dateRangeQuery
+      for(let i=0; i<max && emailFetcherAndStorer.isBigMessageNumber(); i++){
+        const dateRangeQuery = dateRangeQueryList.getDateRangeQueryByIndex(i)
+        queryInfo.setAdditonalQueryString(dateRangeQuery.dateRangeCondition)
+        emailFetcherAndStorer.searchAndRegisterLastDateTime(queryInfo)
+        targetedEmail.decrementMcount(dateRangeQuery.length)
+      }
+      queryInfo.clearAdditionalQueryString()
+    }
+    else{
+      emailFetcherAndStorer.searchAndRegisterLastDateTime(queryInfo)
+    }
 
     targetedEmail.setNth( nth )
     targetedEmail.rewrite();

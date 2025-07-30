@@ -51,6 +51,7 @@ class ConfigTable {
       const item = values[i];
       const rowRange = this.totalRange.offset(i,0, 1)
       // YKLiblog.Log.debug(`ConfigTable processRows i=${i} item=${item}`)
+      YKLiblog.Log.debug(`ConfigTable processRows i=${i} item[0]=${item[0]}`)
       switch(item[0]){
         case "backup_root_folder":
           YKLiblog.Log.debug(`ConfigTable processRows i=${i} backup_root_folder`)
@@ -70,6 +71,10 @@ class ConfigTable {
         case "folder":
           YKLiblog.Log.debug(`ConfigTable processRows i=${i} folder`)
           this.targetedEmailList.addTargetedEmail(i, item, rowRange)
+          break;
+        case "folder-x":
+          YKLiblog.Log.debug(`ConfigTable processRows i=${i} folder-x`)
+          this.targetedEmailList.addTargetedEmailX(i, item, rowRange)
           break;
         defualt:
           YKLiblog.Log.debug(`ConfigTable processRows i=${i} default`)

@@ -22,8 +22,22 @@ class Config {
    * 設定情報タイプ: CONFIG_INFO
    * @returns {string} 設定情報タイプの識別子
    */
+  static CONFIG_INFO1() {
+    return "CONFIG_INFO1"
+  }
+  /**
+   * 設定情報タイプ: CONFIG_INFO
+   * @returns {string} 設定情報タイプの識別子
+   */
   static CONFIG_INFO() {
     return "CONFIG_INFO"
+  }
+  /**
+   * 設定情報タイプ: CONFIG_INFO4
+   * @returns {string} 設定情報タイプの識別子
+   */
+  static CONFIG_INFO4() {
+    return "CONFIG_INFO4"
   }
   /**
    * Configクラスのコンストラクタ
@@ -31,14 +45,19 @@ class Config {
    * @param {string|null} option - オプション設定（"noop"の場合、noopモードを有効にする）
    */
   constructor(option = null){
+    this.configInfoTypeArray = [Config.CONFIG_INFO(), Config.CONFIG_INFO1(), Config.CONFIG_INFO2(), Config.CONFIG_INFO4(), Config.CONFIG_INFOX()]
+
     this.limit = 2
     this.configSpreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_SPREADSHEET_ID');
     this.idsSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_IDS_SHEETNAME');
 
     this.configInfoSpreadsheetId = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO_SPREADSHEET_ID');
+    this.configInfo1SheetName = 'INFO1';
     this.configInfoxSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFOX_SHEETNAME');
     this.configInfo2SheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO2_SHEETNAME');
+    this.configInfo4SheetName = "INFO4";
     this.configInfoSheetName = PropertiesService.getScriptProperties().getProperty('CONFIG_INFO_SHEETNAME');
+    this.aSheetName = '_A';
     this.bSheetName = '_B';
     this.docParentFolderId = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_ID');
     this.docParentFolderPath = PropertiesService.getScriptProperties().getProperty('DOC_PARENT_FOLDER_PATH');
@@ -49,6 +68,7 @@ class Config {
     this.clearFlag = false
 
     this.registeredEmailTableDef = this.makeRegisteredEmailTableDef()
+    this.aTableDef = this.makeATableDef()
     this.bTableDef = this.makeBTableDef()
 
     this.noop = false
@@ -109,6 +129,13 @@ class Config {
     return this.registeredEmailTableDef
   }
   /**
+   * Aテーブル定義を取得する
+   * @returns {Config.TableDef} Aテーブル定義
+   */
+  getATableDef(){
+    return this.aTableDef
+  }
+  /**
    * Bテーブル定義を取得する
    * @returns {Config.TableDef} Bテーブル定義
    */
@@ -121,7 +148,17 @@ class Config {
    */
   makeRegisteredEmailTableDef(){
     const nameOfId = "id"
-    const header = [nameOfId, "from", "subject", "dateStr", "plainBody"]
+    const header = [nameOfId, "from", "subject", "dateStr", "plainBody", "date"]
+    const tableDef = new Config.TableDef(header, nameOfId)
+    return tableDef
+  }
+  /**
+   * Aテーブル定義を作成する
+   * @returns {Config.TableDef} 作成されたテーブル定義
+   */
+  makeATableDef(){
+    const nameOfId = "name"
+    const header = [nameOfId, "count", "condtion", "url"]
     const tableDef = new Config.TableDef(header, nameOfId)
     return tableDef
   }
@@ -131,7 +168,12 @@ class Config {
    */
   makeBTableDef(){
     const nameOfId = "name"
-    const header = [nameOfId, "condition", "query", "existingMsgCount", "existingMsgCount2", "existing_id", "existing_id2", "within", "within_id", "remain", "nth", "way", "r", "c", "h", "w"]
+    // const header = [nameOfId, "condition", "query", "existingMsgCount", "existingMsgCount2", "existing_id", "existing_id2", "messageSize", "within", "nth", "way", "r", "c", "h", "w"]
+    const header = [nameOfId, "condition", "query", "existingMsgCount", "existingMsgCount2", "existing_id", "existing_id2", "messageSize", "within", 
+    "numberOfthreadsOfTargetLabel",
+    "numberOfThreadsOfEndLabel",
+    "numberOfthreadsOfTargetLabelRetry",
+    "nth", "way"]
     const tableDef = new Config.TableDef(header, nameOfId)
     return tableDef
   }
@@ -140,7 +182,13 @@ class Config {
    * @param {string} value - 設定情報タイプ
    */
   setConfigInfoType(value){
-    this.configInfoType = value
+    if( this.configInfoTypeArray.includes(value) ){
+      this.configInfoType = value
+    }
+    else{
+      this.configInfoType = null
+    }
+    return this.configInfoType
   }
   /**
    * 設定情報タイプを取得する
@@ -159,12 +207,25 @@ class Config {
     if( configInfoType == Config.CONFIG_INFO() ){
       return this.ConfigInfo(spreadsheet)
     }
+    else if( configInfoType == Config.CONFIG_INFO1() ){
+      return this.ConfigInfo1(spreadsheet)
+    }
     else if( configInfoType == Config.CONFIG_INFO2() ){
       return this.ConfigInfo2(spreadsheet)
+    }
+    else if( configInfoType == Config.CONFIG_INFO4() ){
+      return this.ConfigInfo4(spreadsheet)
     }
     else{
       return this.ConfigInfox(spreadsheet)
     }
+  }
+  /**
+   * Aシート名を取得する
+   * @returns {string} Aシート名
+   */
+  getASheetName(){
+    return this.aSheetName
   }
   /**
    * Bシート名を取得する
@@ -180,7 +241,8 @@ class Config {
    */
   ConfigInfox(spreadsheet){
     YKLiblog.Log.debug(`configInfoxSheetName=${this.configInfoxSheetName}`)
-    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoxSheetName)
+    const ultimate = false
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoxSheetName, ultimate)
     const values = totalRange.getValues()
     YKLiblog.Log.debug(`getConfigInfo values=${values}`)
     return [worksheet, values, totalRange]
@@ -192,7 +254,16 @@ class Config {
    */
   ConfigInfo(spreadsheet){
     YKLiblog.Log.debug(`configInfoSheetName=${this.configInfoSheetName}`)
-    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoSheetName)
+    const ultimate = false
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfoSheetName, ultimate)
+    const values = totalRange.getValues()
+    YKLiblog.Log.debug(`getConfigInfo values=${values}`)
+    return [worksheet, values, totalRange]
+  }
+  ConfigInfo1(spreadsheet){
+    YKLiblog.Log.debug(`configInfo1SheetName=${this.configInfo1SheetName}`)
+    const ultimate = false
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfo1SheetName, ultimate)
     const values = totalRange.getValues()
     YKLiblog.Log.debug(`getConfigInfo values=${values}`)
     return [worksheet, values, totalRange]
@@ -204,30 +275,24 @@ class Config {
    */
   ConfigInfo2(spreadsheet){
     YKLiblog.Log.debug(`configInfo2SheetName=${this.configInfo2SheetName}`)
-    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfo2SheetName)
+    const ultimate = false
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfo2SheetName, ultimate)
     const values = totalRange.getValues()
     YKLiblog.Log.debug(`getConfigInfo values=${values}`)
     return [worksheet, values, totalRange]
   }
   /**
-   * レコードスプレッドシートを取得する
-   * @returns {Array} [spreadsheet, worksheet, values, totalRange] の配列
+   * CONFIG_INFO4タイプの設定情報を取得する
+   * @param {Spreadsheet} spreadsheet - スプレッドシートオブジェクト
+   * @returns {Array} [worksheet, values, totalRange] の配列
    */
-  getRecordSpreadsheet(){
-    YKLiblog.Log.debug(`configSpreadsheetId=${this.configSpreadsheetId}`)
-    const [_spreadsheet, worksheet, values, totalRange] = YKLibb.Gssx.setupSpeadsheetValues(this.configSpreadsheetId, this.configInfo2SheetName)
-    YKLiblog.Log.debug(`getConfigInfo2 values=${values}`)
-    return [_spreadsheet, worksheet, values, totalRange]
-  }
-  /**
-   * 設定スプレッドシートを取得する
-   * @returns {Array} [spreadsheet, worksheet, values, totalRange] の配列
-   */
-  getConfigSpreadsheet(){
-    YKLiblog.Log.debug(`configInfoSpreadsheetId=${this.configInfoSpreadsheetId}`)
-    const [_spreadsheet, worksheet, values, totalRange] = YKLibb.Gssx.setupSpeadsheetValues(this.configInfoSpreadsheetId, this.configInfo2SheetName)
-    YKLiblog.Log.debug(`getConfigInfo2 values=${values}`)
-    return [_spreadsheet, worksheet, values, totalRange]
+  ConfigInfo4(spreadsheet){
+    YKLiblog.Log.debug(`configInfo4SheetName=${this.configInfo4SheetName}`)
+    const ultimate = false
+    const [worksheet, totalRange] = YKLibb.Gssx.getDataSheetRange(spreadsheet, this.configInfo4SheetName, ultimate)
+    const values = totalRange.getValues()
+    YKLiblog.Log.debug(`getConfigInfo values=${values}`)
+    return [worksheet, values, totalRange]
   }
   /**
    * 制限なしを表す値を取得する

@@ -8,26 +8,43 @@ class TargetedEmail {
    * @param {Object} searchConf - 検索設定オブジェクト
    * @param {Object} rowRange - スプレッドシートの行範囲オブジェクト
    */
-  constructor(index, item, searchConf, rowRange){
+  constructor(rowIndex, item, searchConf, rowRange){
     this.rowRange = rowRange
     this.item = item
-    this.index = index
+    this.rowIndex = rowIndex
 
-    let currentIndex = 1
+    let currentIndex = 0
+    this.index_category = currentIndex++
+    const category = item[ this.index_category ]
+    this.category = category
+
+    this.index_mcount = currentIndex++
+    let mcount = item[ this.index_mcount ]
+    mcount = parseInt(mcount, 10)
+    if( isNaN(mcount) ){
+      mcount = 0
+      YKLiblog.Log.debug(`targetedEmail this.name=${this.name} mcount=${mcount}`)
+    }
+    this.mcount = mcount
+
     this.index_name = currentIndex++
     this.name = item[ this.index_name ]
 
     this.index_condition = currentIndex++
-    this.condition = item[ this.index_condition ]
+    const condition = item[ this.index_condition ]
+    this.condition = condition
 
     this.index_backupFolderId = currentIndex++
-    this.backupFolderId = item[ this.index_backupFolderId ]
+    const backupFolderId = item[ this.index_backupFolderId ]
+    this.backupFolderId = backupFolderId
 
     this.index_backupFolderUrl = currentIndex++
-    this.backupFolderUrl = item[ this.index_backupFolderUrl ]
+    const backupFolderUrl = item[ this.index_backupFolderUrl ]
+    this.backupFolderUrl = backupFolderUrl
 
     this.index_worksheetUrl = currentIndex++
-    this.worksheetUrl = item[ this.index_worksheetUrl ]
+    const worksheetUrl = item[ this.index_worksheetUrl ]
+    this.worksheetUrl = worksheetUrl
 
     this.index_existingMessageCount = currentIndex++
     let existingMessageCount = item[ this.index_existingMessageCount ]
@@ -39,28 +56,34 @@ class TargetedEmail {
 
     this.index_messageCount = currentIndex++
     let messageCount = item[ this.index_messageCount ]
+    YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 1 messageCount=${messageCount}`)
     messageCount = parseInt(messageCount, 10)
+    YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 2 messageCount=${messageCount}`)
     if( isNaN(messageCount) ){
       messageCount = 0
+      YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 3 messageCount=${messageCount}`)
     }
     this.messageCount = messageCount
 
     this.index_remainMessageCount = currentIndex++
     let remainMessageCount = item[ this.index_remainMessageCount ]
+    YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 1 remainMessageCount=${remainMessageCount}`)
     remainMessageCount = parseInt(remainMessageCount, 10)
+    YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 2 remainMessageCount=${remainMessageCount}`)
     if( isNaN(remainMessageCount) ){
       remainMessageCount = 0
+      YKLiblog.Log.debug(`targetedEmail this.name=${this.name} 3 remainMessageCount=${remainMessageCount}`)
     }
     this.remainMessageCount = remainMessageCount
 
     this.index_lastDateTime = currentIndex++
-    this.index_lastDateStr = currentIndex++
+    // this.index_lastDateStr = currentIndex++
 
     let lastDateTime = item[this.index_lastDateTime]
-    lastDateTime = parseInt(lastDateTime, 10)
-    if( isNaN(lastDateTime) ){
-      lastDateTime = 0
-    }
+    // lastDateTime = parseInt(lastDateTime, 10)
+    // if( isNaN(lastDateTime) ){
+    //  lastDateTime = 0
+    // }
     //  this.lastDate = new Date(lastDateTime)
     // this.lastDateTime = lastDate.getTime()
     // this.lastDateStr
@@ -89,6 +112,30 @@ class TargetedEmail {
     this.count2 = count2
 
     this.searchConf = searchConf
+  }
+  /**
+   * 指定された値がメッセージ数閾値を超えているかチェック
+   * @param {number} value - チェックする値
+   * @returns {boolean} メッセージ数閾値を超えている場合はtrue、そうでなければfalse
+   */
+  isBiggerThanThreshold(value){
+    return this.searchConf.isBiggerThanThreshold(value)
+  }
+
+  /**
+   * メッセージ数閾値を超えているかチェック
+   * @returns {boolean} メッセージ数閾値を超えている場合はtrue、そうでなければfalse
+   */
+  isOverMessages(){
+    return this.isBiggerThanThreshold(this.mcount)
+  }
+
+  decrementMcount(value){
+    this.mcount -= value
+  }
+
+  setCategory(value){
+    this.category = value
   }
 
   /**
@@ -217,11 +264,6 @@ class TargetedEmail {
   makePairLabelAndQueryInfo(){
     const pairLabel = new PairLabel(this.name)
 
-    if(this.getMaxThreads < 0 ){
-      throw Error(`maxThreads=${this.getMaxThreads}`)
-    }
-    YKLiblog.Log.debug(`TargetedEmail typeof(this.getMaxSearchesAvailable())=${ typeof(this.getMaxSearchesAvailable) }`)
-
     if( !this.condition){
       throw new Error("this.confition is null")
     }
@@ -260,6 +302,9 @@ class TargetedEmail {
       throw new Error("Can't get this.lastDateTime")
     }
 
+    const maxThreads = this.searchConf.maxThreads
+    const maxSearchesAvailable = this.searchConf.maxSearchesAvailable
+
     const queryInfo = new QueryInfo(this.condition, pairLabel, this.searchConf.maxThreads, this.searchConf.maxSearchesAvailable, this.lastDateTime, EmailFetcherAndStorer.Ways())
     return [pairLabel, queryInfo]
   }
@@ -282,7 +327,11 @@ class TargetedEmail {
     YKLiblog.Log.debug(`rewrite this.name=${this.name}`)
     YKLiblog.Log.debug(`rewrite this.item.length=${ this.item.length }`)
     YKLiblog.Log.debug(`rewrite this.item[${this.index}]=${ JSON.stringify( this.item ) }`)
+    this.item[this.index_category] = this.category;
     this.item[this.index_name] = this.name;
+    YKLiblog.Log.debug(`rewrite B this.mcount=${this.mcount}`)
+    this.item[this.index_mcount] = this.mcount;
+    YKLiblog.Log.debug(`rewrite A this.mcount=${this.mcount}`)
     this.item[this.index_backupFolderId] = this.backupFolderId;
 
     this.item[this.index_backupFolderId] = this.backupFolderId;
@@ -301,7 +350,7 @@ class TargetedEmail {
 
     YKLiblog.Log.debug(`this.index=${this.index} this.index_lastDateStr=${this.index_lastDateStr} this.item[${this.index}][${this.index_lastDateStr}]=${this.item[this.index_lastDateStr]}`)
     this.item[this.index_nth] = this.nth;
-    // this.item[this.index_count] = this.count;
+    this.item[this.index_count] = this.count;
     this.item[this.index_count2] = this.count2;
     YKLiblog.Log.unknown(`TargetedEmail rewrite this.name=${this.name} this.existingMessageCount=${ this.existingMessageCount }`)
     YKLiblog.Log.unknown(`TargetedEmail rewrite this.name=${this.name} this.messageCount=${ this.messageCount }`)
@@ -314,11 +363,22 @@ class TargetedEmail {
    */
   update(){
     const rangeShape = YKLiba.Range.getRangeShape(this.rowRange)
-    YKLiblog.Log.debug(`rangeShape=${ JSON.stringify(rangeShape) }`)
-    YKLiblog.Log.debug(`this.item=${ JSON.stringify(this.item) }` )
+    YKLiblog.Log.debug(`TargetedEmail update rangeShape=${ JSON.stringify(rangeShape) }`)
+    YKLiblog.Log.debug(`TargetedEmail update this.item=${ JSON.stringify(this.item) }` )
     this.rowRange.setValues( [this.item] )
   }
 
+  getMaxYearsAgo(){
+    return this.searchConf.getMaxYearsAgo()
+  }
+
+  getMaxThreads(){
+    return this.searchConf.getMaxThreads()
+  }
+
+  getMcount(){
+    return this.mcount
+  }
   /**
    * ワークシートのURLを設定します
    * 
@@ -380,21 +440,5 @@ class TargetedEmail {
    */
   getCondition() {
     return this.condition;
-  }
-  /**
-   * 最大検索可能回数を設定します
-   * 
-   * @param {number} value - 設定する最大検索可能回数
-   */
-  setMaxSearchesAvailable(value){
-    this.maxSearchesAvailable = value
-  }
-  /**
-   * 最大スレッド数を設定します
-   * 
-   * @param {number} value - 設定する最大スレッド数
-   */
-  setMaxThreads(value){
-    this.maxThreads = value
   }
 }

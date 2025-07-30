@@ -18,23 +18,23 @@ class BackupFile {
    * 既に列挙済みの場合は何もしない
    */
   listup(){
-    YKLiblog.Log.debug(`listup 1 ##############`)
+    YKLiblog.Log.debug(`BackupFile listup 1 ##############`)
     if( this.fileArrayByKey !== null ){
-      YKLiblog.Log.debug(`listup 2 ##############`)
+      YKLiblog.Log.debug(`BackupFile listup 2 ##############`)
       return
     }
-    YKLiblog.Log.debug(`listup 3 ##############`)
+    YKLiblog.Log.debug(`BackupFile listup 3 ##############`)
     this.fileArrayByKey = {}
     const files = this.folder.getFilesByType(MimeType.GOOGLE_DOCS);
     // const files = this.folder.getFiles()
     while (files.hasNext()) {
       const file = files.next();
       const filename = file.getName()
-      YKLiblog.Log.debug(`listup 4 filename=${filename}`)
+      YKLiblog.Log.debug(`BackupFile listup 4 filename=${filename}`)
       if( !this.filenameSet.has(filename) ){
         this.filenameSet.add(filename)
         this.fileArrayByKey[filename] = file
-        YKLiblog.Log.debug(`listup 5 add filename=${filename}`)
+        YKLiblog.Log.debug(`BackupFile listup 5 add filename=${filename}`)
       }
     }
   }
@@ -53,11 +53,11 @@ class BackupFile {
    * @throws {Error} messageDataListが未定義の場合にエラーを投げる
    */
   saveData(messageDataList){
-    YKLiblog.Log.debug(`1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
+    YKLiblog.Log.debug(`BackupFile 1 gmailsave|saveData|messagedata=${ JSON.stringify(messageDataList).slice(0,100) }`)
     if( typeof(messageDataList) !== "undefined" ){
-      YKLiblog.Log.debug(`GmailSave.saveData 1`)
+      YKLiblog.Log.debug(`BackupFile GmailSave.saveData 1`)
       // const folder = store.get('folder')
-      YKLiblog.Log.debug(`GmailSave.saveData folder url=${this.folder.getUrl()}`)
+      YKLiblog.Log.debug(`BackupFile GmailSave.saveData folder url=${this.folder.getUrl()}`)
       this.outputSupplementaryFileFromArray(messageDataList, this.folder)
     }
     else{
@@ -98,34 +98,34 @@ class BackupFile {
   getOrCreateFile(filename, content){
     let file
     this.listup()
-    YKLiblog.Log.debug(`11 ############## filenameSet=${ JSON.stringify( [...this.filenameSet] ) }`)
+    YKLiblog.Log.debug(`BackupFile 11 ############## filenameSet=${ JSON.stringify( [...this.filenameSet] ) }`)
 
     if( !this.filenameSet.has(filename) ){
-      YKLiblog.Log.debug(`12 ############## filenameSet=${ JSON.stringify( [...this.filenameSet] ) }`)
-      YKLiblog.Log.debug(`13 ############## filename=${ filename }`)
+      YKLiblog.Log.debug(`BackupFile 12 ############## filenameSet=${ JSON.stringify( [...this.filenameSet] ) }`)
+      YKLiblog.Log.debug(`BackupFile 13 ############## filename=${ filename }`)
       const doc = DocumentApp.create(filename)
-      YKLiblog.Log.debug(`14-0A ############## doc=${ doc }`)
+      YKLiblog.Log.debug(`BackupFile 14-0A ############## doc=${ doc }`)
       const docId = doc.getId()
-      YKLiblog.Log.debug(`14-0B ############## docId=${ docId }`)
+      YKLiblog.Log.debug(`BackupFile 14-0B ############## docId=${ docId }`)
       file = DriveApp.getFileById(docId)
       file.moveTo(this.folder)
-      YKLiblog.Log.debug(`14-0C ############## file=${ file }`)
+      YKLiblog.Log.debug(`BackupFile 14-0C ############## file=${ file }`)
       const fileId = file.getId()
-      YKLiblog.Log.debug(`14-0D ############## fileId=${ fileId }`)
+      YKLiblog.Log.debug(`BackupFile 14-0D ############## fileId=${ fileId }`)
       const mimeType = file.getMimeType()
-      YKLiblog.Log.debug(`14-1 ############## mimeType=${ mimeType }`)
+      YKLiblog.Log.debug(`BackupFile 14-1 ############## mimeType=${ mimeType }`)
 
       this.fileArrayByKey[filename] = file
     }
     else{
       file = this.fileArrayByKey[filename]
       const mimeType = file.getMimeType()
-      YKLiblog.Log.debug(`14-2 ############## filename=${ mimeType }`)
+      YKLiblog.Log.debug(`BackupFile 14-2 ############## filename=${ mimeType }`)
     }
-    YKLiblog.Log.debug(`01 ############## filename=${ filename }`)
-    YKLiblog.Log.debug(`00 ############## file=${ file }`)
+    YKLiblog.Log.debug(`BackupFile 01 ############## filename=${ filename }`)
+    YKLiblog.Log.debug(`BackupFile 00 ############## file=${ file }`)
     const fileId = file.getId()
-    YKLiblog.Log.debug(`02 ############## fileId=${ fileId }`)
+    YKLiblog.Log.debug(`BackupFile 02 ############## fileId=${ fileId }`)
     const doc = DocumentApp.openById(fileId)
     const body = doc.getBody();
     body.clear(); // この1行が、テキスト、画像、表などすべてを消去します

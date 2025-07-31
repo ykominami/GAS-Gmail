@@ -22,6 +22,16 @@ class RecordSpreadsheet {
     const bTableDef = config.getBTableDef()
     this.bTable = this.makeHeaderTable(spreadsheet, config.getBSheetName(), config, bTableDef, way, ultimate)
   }
+  /**
+   * ヘッダーテーブルを作成する
+   * @param {Spreadsheet} spreadsheet - スプレッドシートオブジェクト
+   * @param {string} sheetName - シート名
+   * @param {Object} config - 設定オブジェクト
+   * @param {Object} tableDef - テーブル定義オブジェクト
+   * @param {string} way - テーブルの配置方法
+   * @param {boolean} ultimate - 最終的なテーブルかどうか
+   * @returns {HeaderTable} 作成されたヘッダーテーブルオブジェクト
+   */
   makeHeaderTable(spreadsheet, sheetName, config, tableDef, way, ultimate){
     const sourceHeader = tableDef.getHeader()
     const yklibbConfig = new YKLibb.Config(sourceHeader.length, sourceHeader, way)

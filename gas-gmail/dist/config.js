@@ -260,6 +260,11 @@ class Config {
     YKLiblog.Log.debug(`getConfigInfo values=${values}`)
     return [worksheet, values, totalRange]
   }
+  /**
+   * CONFIG_INFO1タイプの設定情報を取得する
+   * @param {Spreadsheet} spreadsheet - スプレッドシートオブジェクト
+   * @returns {Array} [worksheet, values, totalRange] の配列
+   */
   ConfigInfo1(spreadsheet){
     YKLiblog.Log.debug(`configInfo1SheetName=${this.configInfo1SheetName}`)
     const ultimate = false

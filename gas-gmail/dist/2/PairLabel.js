@@ -197,25 +197,51 @@ class PairLabel {
       }
     })
   }
+  /**
+   * ターゲットラベルを指定したメッセージに追加する
+   * @param {GmailMessage} message - ラベルを追加するGmailメッセージ
+   */
   addTargetLabelToMessage(message){
     const label = this.getTargetLabel()
     this.addToMessage(label, message)
   }
+  /**
+   * ターゲットラベルをメッセージ配列の全メッセージに追加する
+   * @param {Array<GmailMessage>} messageArray - ラベルを追加するGmailメッセージの配列
+   */
   addTargetLabelToMessageArray(messageArray){
     const label = this.getTargetLabel()
     this.addToMessageArray(label, messageArray)
   }
+  /**
+   * エンドラベルを指定したメッセージに追加する
+   * @param {GmailMessage} message - ラベルを追加するGmailメッセージ
+   */
   addEndLabelToMessage(message){
     const label = this.getEndLabel()
     this.addToMessage(label, message)
   }
+  /**
+   * エンドラベルをメッセージ配列の全メッセージに追加する
+   * @param {Array<GmailMessage>} messageArray - ラベルを追加するGmailメッセージの配列
+   */
   addEndLabelToMessageArray(messageArray){
     const label = this.getEndLabel()
     this.addToMessageArray(label, messageArray)
   }
+  /**
+   * 指定したラベルをメッセージに追加する
+   * @param {GmailLabel} label - 追加するGmailラベル
+   * @param {GmailMessage} message - ラベルを追加するGmailメッセージ
+   */
   addToMessage(label, message){
     label.addToMessage(message)
   }
+  /**
+   * 指定したラベルをメッセージ配列の全メッセージに追加する
+   * @param {GmailLabel} label - 追加するGmailラベル
+   * @param {Array<GmailMessage>} messageArray - ラベルを追加するGmailメッセージの配列
+   */
   addToMessageArray(label, messageArray){
     messageArray.forEach(message => label.addToMessage(message));
   }

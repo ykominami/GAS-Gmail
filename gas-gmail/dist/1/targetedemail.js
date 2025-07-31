@@ -130,10 +130,18 @@ class TargetedEmail {
     return this.isBiggerThanThreshold(this.mcount)
   }
 
+  /**
+   * メッセージカウントを指定された値だけ減算する
+   * @param {number} value - 減算する値
+   */
   decrementMcount(value){
     this.mcount -= value
   }
 
+  /**
+   * カテゴリを設定する
+   * @param {string} value - 設定するカテゴリ名
+   */
   setCategory(value){
     this.category = value
   }
@@ -154,11 +162,11 @@ class TargetedEmail {
    * 検索の準備を行います
    * バックアップフォルダの作成とバックアップファイルの初期化を行います
    * 
-   * @param {Object} backupRootFolderInfo - バックアップルートフォルダ情報
+   * @param {Object} backupRootFolderConf - バックアップルートフォルダ設定
    * @throws {Error} バックアップフォルダの作成に失敗した場合
    */
-  prepareForSearch(backupRootFolderInfo){
-    this.backupFolder = this.getOrCreateBackupFolderFromBackupRootFolder(backupRootFolderInfo)
+  prepareForSearch(backupRootFolderConf){
+    this.backupFolder = this.getOrCreateBackupFolderFromBackupRootFolder(backupRootFolderConf)
     if(this.backupFolder === null){
       throw Error("Can't get or create backupFolder")
     }
@@ -210,11 +218,11 @@ class TargetedEmail {
   /**
    * バックアップルートフォルダからバックアップフォルダを取得または作成します
    * 
-   * @param {Object} backupRootFolderInfo - バックアップルートフォルダ情報
+   * @param {Object} backupRootFolderConf - バックアップルートフォルダ設定
    * @returns {Object|null} バックアップフォルダオブジェクト、失敗時はnull
    */
-  getOrCreateBackupFolderFromBackupRootFolder(backupRootFolderInfo){
-    const parentFolder = backupRootFolderInfo.getFolder()
+  getOrCreateBackupFolderFromBackupRootFolder(backupRootFolderConf){
+    const parentFolder = backupRootFolderConf.getFolder()
     return this.getOrCreateBackupFolder(this.backupFolderId, parentFolder, this.name )
   }
 
@@ -282,17 +290,15 @@ class TargetedEmail {
     if( typeof(this.searchConf) === "undefined"){
       throw new Error("Can't get this.searchConf")
     }
-    if( !this.searchConf.maxThreads){
-      throw new Error("this.searchConf.maxThreads is null")
+    const maxThreads = this.searchConf.getMaxThreads();
+    const maxSearchesAvailable = this.searchConf.getMaxSearchesAvailable();
+    
+    if (maxThreads === null || maxThreads === undefined) {
+      throw new Error("Failed to get maxThreads from searchConf");
     }
-    if( typeof(this.searchConf.maxThreads) === "undefined"){
-      throw new Error("Can't get this.searchConf.maxThreads")
-    }
-    if( !this.searchConf.maxSearchesAvailable){
-      throw new Error("this.searchConf.maxSearchesAvailable is null")
-    }
-    if( typeof(this.searchConf.maxSearchesAvailable) === "undefined"){
-      throw new Error("Can't get this.searchConf.maxSearchesAvailable")
+    
+    if (maxSearchesAvailable === null || maxSearchesAvailable === undefined) {
+      throw new Error("Failed to get maxSearchesAvailable from searchConf");
     }
     Logger.log(`makePairLabelAndQueryInfo this.lastDateTime=${this.lastDateTime}`)
     if( this.lastDateTime === null ){
@@ -302,10 +308,14 @@ class TargetedEmail {
       throw new Error("Can't get this.lastDateTime")
     }
 
-    const maxThreads = this.searchConf.maxThreads
-    const maxSearchesAvailable = this.searchConf.maxSearchesAvailable
-
-    const queryInfo = new QueryInfo(this.condition, pairLabel, this.searchConf.maxThreads, this.searchConf.maxSearchesAvailable, this.lastDateTime, EmailFetcherAndStorer.Ways())
+    const queryInfo = new QueryInfo(
+      this.condition, 
+      pairLabel, 
+      maxThreads, 
+      maxSearchesAvailable, 
+      this.lastDateTime, 
+      EmailFetcherAndStorer.Ways()
+    )
     return [pairLabel, queryInfo]
   }
 

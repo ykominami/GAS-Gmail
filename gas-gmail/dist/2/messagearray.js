@@ -13,10 +13,18 @@ class Messagearray{
     this.queryInfo = null
   }
 
+  /**
+   * クエリ情報を設定する
+   * @param {Object} queryInfo - 設定するクエリ情報オブジェクト
+   */
   setQueryInfo(queryInfo){
     this.queryInfo = queryInfo
   }
 
+  /**
+   * メッセージデータを配列に追加する
+   * @param {Object} md - 追加するメッセージデータオブジェクト
+   */
   add(md){
     this.array.push(md)
     this.msgCount += 1

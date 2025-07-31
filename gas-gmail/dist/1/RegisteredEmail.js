@@ -52,6 +52,10 @@ class RegisteredEmail {
     const lastId = this.getLastId()
   }
   
+  /**
+   * スプレッドシートのURLを取得する
+   * @return {string} スプレッドシートのURL
+   */
   getSheetUrl(){
     return this.sheetUrl
   }
@@ -108,23 +112,24 @@ class RegisteredEmail {
     return this.ids
   }
   /**
-   * IDが存在するか判定する
-   * @return {number} IDの数
+   * 指定されたIDが存在するか確認する
+   * @param {*} value - 確認するID
+   * @return {boolean} IDが存在する場合はtrue、それ以外はfalse
    */
   hasId(value){
     return this.idSet.has(value)
   }
   /**
-   * IDの数を取得する
-   * @return {number} IDの数
+   * 登録されているIDの数を取得する
+   * @return {number} 登録されているIDの数
    */
   getIdsSize(){
     return this.ids.length
   }
   
   /**
-   * 最後のIDを取得する
-   * @return {*} 最後のID
+   * 最後に登録されたIDを取得する
+   * @return {*} 最後のID（存在しない場合はnull）
    */
   getLastId(){
     let value = null
@@ -136,12 +141,12 @@ class RegisteredEmail {
   }
   
   /**
-   * メッセージデータを登録する
+   * メッセージデータをスプレッドシートに登録する
    * @param {Object} within - MessageArrayクラスのインスタンス
-   * @param {string} op - 操作タイプ（REWRITE または addUnderRow）
-   * @param {number} limit - 文字列の制限
+   * @param {string} op - 操作タイプ（'REWRITE' または 'addUnderRow'）
+   * @param {number} limit - 文字列の最大長
    * @param {Date} lastDate - 前回処理した日時
-   * @return {Array} [メッセージデータリスト]
+   * @return {Array|null} 登録したメッセージデータの配列（該当データがない場合はnull）
    */
   registerData(within, op, limit, lastDate){
     // YKLiblog.Log.debug(`RegisteredEmail registerData `)

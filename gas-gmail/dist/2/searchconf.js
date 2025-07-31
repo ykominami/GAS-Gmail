@@ -18,40 +18,43 @@ class SearchConf {
 
     let currentIndex = 1
     this.index_maxSearchesAvailable = currentIndex++
-    const x = item[ this.index_maxSearchesAvailable ]
-    const maxSearchesAvailable = parseInt(x, 10)
-    this.maxSearchesAvailable = maxSearchesAvailable
-    if( isNaN(this.maxSearchesAvailable) ){
-      this.maxThreads = 10
+    const x_maxSearchesAvailable = item[ this.index_maxSearchesAvailable ]
+    const maxSearchesAvailable = parseInt(x_maxSearchesAvailable, 10)
+    this._maxSearchesAvailable = maxSearchesAvailable
+    if( isNaN(this._maxSearchesAvailable) ){
+      this._maxSearchesAvailable = 10
     }
 
     this.index_maxThreads = currentIndex++
-    const maxThreads = parseInt(item[ this.index_maxThreads ], 10)
+    const x_maxThreads = item[ this.index_maxThreads ]
+    const maxThreads = parseInt(x_maxThreads , 10)
     this.maxThreads = maxThreads
-    YKLiblog.Log.debug(`FolderConf item[3]=${item[3]}`)
     if( isNaN(this.maxThreads) ){
       this.maxThreads = 10
     }
 
     this.index_maxItems = currentIndex++
-    const maxItems = parseInt(item[ this.index_maxItems ], 10)
-    this.maxItems = maxItems
-    if( isNaN(this.maxItems) ){
-      this.maxItems = 10
+    const x_maxItems = item[ this.index_maxItems ]
+    const maxItems = parseInt(x_maxItems, 10)
+    this.x_maxItems = maxItems
+    if( isNaN(this.x_maxItems) ){
+      this.x_maxItems = 10
     }
 
     this.index_threshold = currentIndex++
-    const threshold = parseInt(item[ this.index_threshold ], 10)
-    this.threshold = threshold
-    if( isNaN(this.threshold) ){
-      this.threshold = 49
+    const x_threshold = item[ this.index_threshold ]
+    const threshold = parseInt(x_threshold, 10)
+    this.x_threshold = threshold
+    if( isNaN(this.x_threshold) ){
+      this.x_threshold = 49
     }
 
     this.index_naxYearsAgo = currentIndex++
-    const maxYearsAgo = parseInt(item[ this.index_maxYearsAgo ], 10)
-    this.maxYearsAgo = maxYearsAgo
-    if( isNaN(this.maxYearsAgo) ){
-      this.maxYearsAgo = 5
+    const x_maxYearsAgo = item[ this.index_naxYearsAgo ]
+    const maxYearsAgo = parseInt(x_maxYearsAgo, 10)
+    this.x_maxYearsAgo = maxYearsAgo
+    if( isNaN(this.x_maxYearsAgo) ){
+      this.x_maxYearsAgo = 5
     }
   }
   
@@ -61,7 +64,9 @@ class SearchConf {
    * @returns {boolean} 最大アイテム数を超えている場合はtrue、そうでなければfalse
    */
   isBiggerThanMaxItems(value){
-    return (this.maxItems < value)
+    const maxItems = this.getMaxItems()
+    const ret = (maxItems < value)
+    return ret
   }
   
   /**
@@ -70,7 +75,7 @@ class SearchConf {
    * @returns {boolean} メッセージ数閾値を超えている場合はtrue、そうでなければfalse
    */
   isBiggerThanThreshold(value){
-    const threshold = this.threshold
+    const threshold = this.getThreshold()
     const ret = (threshold < value)
     return ret
   }
@@ -80,7 +85,7 @@ class SearchConf {
    * @returns {number} 最大検索可能回数
    */
   getMaxSearchesAvailable(){
-    return this.maxSearchesAvailable
+    return this.x_maxSearchesAvailable
   }
   
   /**
@@ -88,7 +93,7 @@ class SearchConf {
    * @returns {number} 最大スレッド数
    */
   getMaxThreads(){
-    return this.maxThreads
+    return this.x_maxThreads
   }
   
   /**
@@ -96,7 +101,7 @@ class SearchConf {
    * @returns {number} 最大アイテム数
    */
   getMaxItems(){
-    return this.maxItems
+    return this.x_maxItems
   }
   
   /**
@@ -104,7 +109,7 @@ class SearchConf {
    * @returns {number} メッセージ数閾値
    */
   getThreshold(){
-    return this.threshold
+    return this.x_threshold
   }
   
   /**
@@ -112,6 +117,6 @@ class SearchConf {
    * @returns {number} 最大過去年数
    */
   getMaxYearsAgo(){
-    return this.maxYearsAgo
+    return this.x_maxYearsAgo
   }
 }

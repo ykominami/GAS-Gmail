@@ -26,6 +26,11 @@ class Gmail{
     this.bTable = this.getBTable()
     this.config = config
   }
+  
+  getLimix(){
+    return this.limitx
+  }
+
   getConfigTable(){
     return this.configSpreadsheet.getConfigTable()
   }
@@ -173,8 +178,9 @@ class Gmail{
     const end2 = min
 
     for(let i=start; i <= end2; i++){
-      if( this.isBiggerThanMaxItems(numOfItems) ){
-        YKLiblog.Log.debug(`Gmail explore break numOfItems=${numOfItems} this.searchConf.maxItems=${this.searchConf.maxItems}`)
+      if (this.isBiggerThanMaxItems(numOfItems)) {
+        const maxItems = this.searchConf.getMaxItems();
+        YKLiblog.Log.debug(`Gmail explore break numOfItems=${numOfItems} maxItems=${maxItems}`);
         break;
       }
       const key = keys[i]

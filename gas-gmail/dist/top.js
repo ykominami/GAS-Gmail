@@ -55,13 +55,18 @@ class Top {
       YKLiblog.Log.debug('Top start: gmail is not initialized')
       return
     }
-    YKLiblog.Log.debug(`Top setup this.gmail.limitx=${this.gmail.limitx}`)
+    YKLiblog.Log.debug(`Top setup this.gmail.getLimitx()=${this.gmail.getLimitx()}`)
     // 必要ならthis.numOfItemsに反映
     this.numOfItems = this.gmail.explore(startInitIndex, endInitIndex, this.numOfItems, YKLiba.Config.ADDUNDERROW())
 
     return this.numOfItems
   }
 
+  /**
+   * メールの分析とカテゴリ分類を実行する
+   * @param {number} startInitIndex - 開始インデックス（未使用）
+   * @param {number} endInitIndex - 終了インデックス（未使用）
+   */
   execute2(startInitIndex, endInitIndex){
     const atable = this.gmail.getATable()
     atable.clearAndReset()
@@ -103,12 +108,22 @@ class Top {
       temail.update()
     } )
   }
+  /**
+   * 配列を2番目の要素の数値で昇順にソートする
+   * @param {Array} array - ソートする配列
+   * @returns {Array} ソートされた配列
+   */
   sort(array){
     const indexCount = 1
     return array.sort( (a,b) => {
       return a[indexCount] - b[indexCount]
     })
   }
+  /**
+   * メール情報の配列を生成する
+   * @param {Array} names - メール名の配列
+   * @returns {Array} 各メールの情報を含む配列
+   */
   em(names){
     const dataArray = names.map( name => {
       const remail = this.gmail.getRegisteredEmail(name)
@@ -122,6 +137,11 @@ class Top {
     })
     return dataArray
   }
+  /**
+   * メールオブジェクトのペアを生成する
+   * @param {Array} names - メール名の配列
+   * @returns {Array} 登録メールと対象メールのペアの配列
+   */
   em2(names){
     const dataArray = names.map( name => {
       const remail = this.gmail.getRegisteredEmail(name)
@@ -130,11 +150,23 @@ class Top {
     })
     return dataArray
   }
+  /**
+   * Gmailを検索して結果を分類する
+   * @param {Object} queryInfo - クエリ情報オブジェクト
+   * @param {Object} registeredEmail - 登録済みメールオブジェクト
+   * @param {string} way - 検索方法
+   * @returns {Array} 検索結果の配列
+   */
   search(queryInfo, registeredEmail, way){
     const gmailSearch = new GmailSearch()
     return gmailSearch.searchAndClassify(queryInfo, registeredEmail, way, this.config)
   }
 
+  /**
+   * メールのスレッドを収集して分析する
+   * @param {number} startInitIndex - 開始インデックス（未使用）
+   * @param {number} endInitIndex - 終了インデックス（未使用）
+   */
   execute3(startInitIndex, endInitIndex){
     const configTable = this.gmail.getConfigTable()
     const targetedEmailList = configTable.getTargetedEmailList()
@@ -215,6 +247,9 @@ function start(){
   top.execute(startIndex, endIndex)
 }
 
+/**
+ * Gmailの分析とカテゴリ分類を開始する
+ */
 function start2(){
   const config = setupConfig()
   const [top, startIndex, endIndex] = setupTop(config)
@@ -222,6 +257,9 @@ function start2(){
   top.execute2(startIndex, endIndex)
 }
 
+/**
+ * Gmailのスレッド収集と分析を開始する
+ */
 function start3(){
   const config = setupConfig()
   const [top, startIndex, endIndex] = setupTop(config)

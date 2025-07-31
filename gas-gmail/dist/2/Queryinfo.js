@@ -70,14 +70,26 @@ class QueryInfo {
     this.additonalQueryString = ""
   }
 
+  /**
+   * 追加のクエリ文字列を設定する
+   * @param {string} additonalQueryString - 追加するクエリ文字列
+   */
   setAdditonalQueryString(additonalQueryString){
     this.additonalQueryString = additonalQueryString
   }
 
+  /**
+   * 追加のクエリ文字列をクリアする
+   */
   clearAdditionalQueryString(){
     this.setAdditonalQueryString("")
   }
 
+  /**
+   * 指定された年数前の1年間の日付範囲条件を取得する
+   * @param {number} [yearsAgo=0] - 現在から何年前の日付範囲を取得するか（デフォルト: 0 = 今年）
+   * @returns {Array} 日付範囲条件の配列 [afterYear, dateRangeString]
+   */
   getDateRangeConditionForOneYear(yearsAgo = 0){
     let dateCondition
     if( yearsAgo === 0 ){
@@ -90,6 +102,12 @@ class QueryInfo {
     return dateCondition
   }
 
+  /**
+   * 指定された年範囲からGmail検索用の日付範囲条件を生成する
+   * @param {number} afterYear - 検索開始年
+   * @param {number} [beforeYear=null] - 検索終了年（指定がない場合は無制限）
+   * @returns {Array} 日付範囲条件の配列 [afterYear, dateRangeString]
+   */
   makeDateRangeCondition(afterYear, beforeYear = null){
     let beforeString = ""
 
@@ -129,9 +147,19 @@ class QueryInfo {
     return queryString
   }
 
+  /**
+   * 指定されたインデックスのクエリ結果を設定する
+   * @param {number} index - クエリ結果のインデックス
+   * @param {Object} value - 設定するクエリ結果オブジェクト
+   */
   setQueryResultByIndex(index, value){
     this.queryResultList.setResultAsObjectByIndex(index, value)
   }
+  /**
+   * 指定されたインデックスのクエリ結果を取得する
+   * @param {number} index - 取得するクエリ結果のインデックス
+   * @returns {Object} クエリ結果オブジェクト
+   */
   getQueryResultByIndex(index){
     return this.queryResultList.getResultAsObjectByIndex(index)
   }

@@ -82,13 +82,7 @@ class ConfigTable {
       }
     }
   }
-  /**
-   * 検索設定を取得する
-   * @returns {SearchConf|null} 検索設定オブジェクト
-   */
-  getSearchConf(){
-    return this.searchConf
-  }
+
   /**
    * 検索ステータスを取得する
    * @returns {SearchStatus|null} 検索ステータスオブジェクト
@@ -96,6 +90,15 @@ class ConfigTable {
   getSearchStatus(){
     return this.searchStatus
   }
+  
+  /**
+   * 検索設定を取得する
+   * @returns {SearchConf|null} 検索設定オブジェクト
+   */
+  getSearchConf(){
+    return this.searchConf
+  }
+  
   /**
    * 対象メールリストを取得する
    * @returns {TargetedEmailList} 対象メールリストオブジェクト

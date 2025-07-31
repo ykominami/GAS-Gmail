@@ -16,14 +16,6 @@ class ConfigSpreadsheet {
   }
 
   /**
-   * 検索設定を取得する
-   * @returns {Object} 検索設定オブジェクト
-   */
-  getSearchConf(){
-    return this.configTable.getSearchConf()
-  }
-
-  /**
    * ConfigTableインスタンスを取得する
    * @returns {ConfigTable} ConfigTableインスタンス
    * @throws {Error} ConfigTableが初期化されていない場合

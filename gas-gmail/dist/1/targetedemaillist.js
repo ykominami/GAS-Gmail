@@ -101,34 +101,12 @@ class TargetedEmailList {
   }
 
   /**
-   * ターゲットメールXのキー一覧を取得する
-   * @returns {Array<string>} キーの配列
-   */
-  getXKeys(){
-    const keys = Object.keys(this.targetedEmailXByKey);
-    return keys
-  }
-
-  /**
    * 指定されたキーに対応するターゲットメールを取得する
    * @param {string} key - ターゲットメールのキー
    * @returns {TargetedEmail|null} 対応するターゲットメール、存在しない場合はnull
    */
   getTargetedEmailByKey(key){
     let value = this.targetedEmailByKey[key];
-    if( typeof(value) === "undefined" ){
-      value = null
-    }
-    return value
-  }
-
-  /**
-   * 指定されたキーに対応するターゲットメールXを取得する
-   * @param {string} key - ターゲットメールXのキー
-   * @returns {TargetedEmail|null} 対応するターゲットメールX、存在しない場合はnull
-   */
-  getTargetedEmailXByKey(key){
-    let value = this.targetedEmailXByKey[key];
     if( typeof(value) === "undefined" ){
       value = null
     }

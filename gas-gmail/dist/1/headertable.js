@@ -152,7 +152,7 @@ class HeaderTable{
         this.dataRowsRange = dataRowsRange
         this.dataRowsValues = this.dataRowsRange.getValues()
         this.totalRange = this.headerRange.offset(0,0, 2, this.headerRange.getWidth() )
-      }      
+      }
       this.dataRowsRange.setValues( this.dataRowsValues )
       const totalValues = this.totalRange.getValues()
       this.totalValues = totalValues
